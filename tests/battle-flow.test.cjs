@@ -1,0 +1,5 @@
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const {CommandFlow}=require('../battle-ui.js');
+test('commands are entered Touma then Nina and submitted only after both',()=>{const f=new CommandFlow({touma:{hp:120},nina:{hp:90}});assert.equal(f.actor,'touma');assert.equal(f.choose({skill:'attack',target:0}),false);assert.equal(f.actor,'nina');assert.equal(f.choose({skill:'heal',target:'touma'}),true);assert.equal(f.commands.touma.skill,'attack');});
+test('cancel from second actor returns to first and discards later command',()=>{const f=new CommandFlow({touma:{hp:120},nina:{hp:90}});f.choose({skill:'attack',target:0});assert.equal(f.back(),true);assert.equal(f.actor,'touma');assert.deepEqual(f.commands,{});});
+test('fallen actor is skipped without allowing a phantom action',()=>{const f=new CommandFlow({touma:{hp:0},nina:{hp:40}});assert.equal(f.actor,'nina');assert.equal(f.choose({skill:'rescue'}),true);assert.equal(f.commands.touma.skill,'skip');assert.equal(f.back(),false);});

@@ -1,0 +1,26 @@
+.classic-enemy,.status-box{position:relative}
+.battle-effect{position:absolute;inset:0;pointer-events:none;z-index:3;--glow:#ffe8b0}
+.battle-effect:before,.battle-effect:after{content:'';position:absolute;left:50%;top:40%;pointer-events:none}
+.effect-slash .battle-effect:before,.effect-team .battle-effect:before{width:130%;height:7px;border-radius:100%;background:#fff6dc;box-shadow:0 0 16px #ffd27c;animation:blade .55s ease-out both}
+.effect-team .battle-effect:after{width:130%;height:7px;border-radius:100%;background:#c7faff;box-shadow:0 0 20px #a4eaff;animation:blade-cross .7s ease-out both}
+.effect-fire .battle-effect:before{width:95px;height:95px;border-radius:50%;background:radial-gradient(circle,#fff4cb 0%,#ffca65 25%,#ef853866 55%,transparent 72%);animation:spell-bloom .8s ease-out both}
+.effect-ring .battle-effect:before,.effect-heal .battle-effect:before{width:110px;height:75px;border:4px solid #ffe4a2;border-radius:50%;box-shadow:0 0 16px #ffe4a277,inset 0 0 12px #ffe4a244;animation:spell-bloom .85s ease-out both}
+.effect-heal .battle-effect{--glow:#baf2da}.effect-heal .battle-effect:before{border-color:#baf2da;width:90px;height:60px}
+.effect-shield .battle-effect:before{width:56px;height:65px;border:3px solid #bcecff;border-radius:25% 25% 50% 50%;background:#bcecff22;box-shadow:0 0 15px #bcecff55;animation:spell-bloom .9s ease-out both}
+.battle-effect i{position:absolute;left:50%;top:40%;width:6px;height:6px;background:var(--glow);box-shadow:0 0 8px var(--glow);border-radius:50%;animation:spark-flight .8s ease-out both}
+.effect-shield .battle-effect i,.effect-hurt .battle-effect i{display:none}
+.effect-slash,.effect-fire,.effect-ring,.effect-team,.effect-hurt{animation:impact .42s ease-out both}
+.effect-target.fallen-enemy{animation:gentle-defeat 1.1s ease-out both}
+.enemy-lunge{animation:enemy-lunge .48s ease-in-out both}
+.effect-hurt{box-shadow:inset 0 0 20px #eeb78777}
+.battle-number{position:absolute;left:50%;top:25%;z-index:5;pointer-events:none;font:bold 30px Georgia,serif;color:#fff1ca;text-shadow:0 2px 2px #152037,2px 0 2px #152037,-2px 0 2px #152037;animation:number-rise 1.15s ease-out both}
+.effect-heal .battle-number{color:#bdf9d6}.effect-hurt .battle-number{color:#ffd2b8}
+@keyframes blade{0%{transform:translate(-75%,-50%) rotate(-38deg) scaleX(.1);opacity:0}20%{opacity:1}60%{transform:translate(-50%,-50%) rotate(-38deg) scaleX(1)}100%{transform:translate(-25%,-50%) rotate(-38deg) scaleX(.8);opacity:0}}
+@keyframes blade-cross{0%,15%{transform:translate(-50%,-50%) rotate(38deg) scaleX(0);opacity:0}40%{opacity:1}100%{transform:translate(-50%,-50%) rotate(38deg) scaleX(1.2);opacity:0}}
+@keyframes spell-bloom{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-60%) scale(1.7);opacity:0}}
+@keyframes spark-flight{0%{transform:rotate(var(--angle)) translateX(8px);opacity:0}20%{opacity:1}100%{transform:rotate(var(--angle)) translateX(80px);opacity:0}}
+@keyframes impact{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}45%{transform:translateX(6px)}70%{transform:translateX(-3px)}}
+@keyframes enemy-lunge{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(12px) scale(1.07)}}
+@keyframes gentle-defeat{0%,35%{opacity:1}100%{opacity:.12}}
+@keyframes number-rise{0%{transform:translate(-50%,10px);opacity:0}15%,65%{opacity:1}100%{transform:translate(-50%,-40px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.classic-battle *{animation:none!important;transition:none!important}.battle-effect{display:none}.battle-number{transform:translateX(-50%)}.effect-target.fallen-enemy{opacity:.35}}

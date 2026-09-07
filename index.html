@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>おかえりの灯 — 帰り灯祭りまで・試作版</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="battle.css"></head>
+<body>
+<main id="app">
+ <header class="masthead"><div class="brand"><span class="brand-mark">♧</span> おかえりの灯 <span class="edition">帰り灯祭りまで / 試作版</span></div><nav><button id="journalButton" aria-label="旅の手帳を開く">旅の手帳 <kbd>J</kbd></button><button id="soundButton" aria-label="音を切り替える">音 OFF</button><button id="menuButton">メニュー</button></nav></header>
+ <section id="stage" aria-label="ゲーム画面">
+  <canvas id="world" width="1152" height="768" tabindex="0" aria-label="雪国の探索。矢印キーで移動、Eで調べる、Qで二人を切り替え。"></canvas>
+  <div id="hud" hidden><div class="location"><small id="chapter">第一話 · 帰り灯の日</small><strong id="locationName">雪の町 ユキネ</strong><span id="weather">冬の終わり / 午前</span></div><div class="objective"><small>いま、すること</small><span id="objectiveText"></span></div><button id="leadButton" class="lead"><span id="leadDot"></span><span id="leadText"></span><kbd>Q</kbd></button><div id="interactPrompt" hidden></div></div>
+  <section id="titleScreen" class="title-screen"><div class="title-copy"><p class="eyebrow">A LITTLE JOURNEY, TOGETHER.</p><p class="title-intro">きみと灯して、ふたりで帰ろう。</p><h1>おかえりの<span>灯</span></h1><div class="gold-line"></div><p class="title-description">雪に包まれた町と、幼馴染のふたり。<br>いつもの道が、少しだけ特別になる冬の物語。</p><div class="title-actions"><button id="startButton" class="primary">はじめから <span>→</span></button><button id="chapterButton">章を選んではじめる</button><button id="continueButton" hidden>つづきから</button></div><p class="title-note">森・水路・丘・帰り灯祭り · 三つの結末<br>キーボード / クリック / 画面の移動ボタン</p></div><div class="title-bottom"><span>TOUMA & NINA</span><span>春を待つ、小さな冒険。</span></div></section>
+  <section id="dialogue" class="dialogue" hidden aria-label="会話"><div id="portrait" class="portrait"></div><div class="dialogue-body"><div id="speaker"></div><p id="dialogueText" aria-live="polite"></p><div id="choices"></div><button id="nextDialogue">つづける <kbd>Enter</kbd> <span>▸</span></button></div></section>
+  <section id="battleScreen" class="battle-screen classic-battle" hidden aria-label="戦闘"></section>
+  <section id="modal" class="modal" hidden><div class="modal-card"><div id="modalContent"></div></div></section>
+  <div id="toast" role="status" hidden></div>
+ </section>
+ <footer id="controls"><div class="keyboard-help"><span><kbd>W A S D</kbd> / <kbd>↑↓←→</kbd> 移動</span><span><kbd>E</kbd> 調べる</span><span><kbd>Q</kbd> 交代</span><span>地面をクリックして移動</span></div><div class="touch-controls"><button data-move="left" aria-label="左へ">←</button><button data-move="up" aria-label="上へ">↑</button><button data-move="down" aria-label="下へ">↓</button><button data-move="right" aria-label="右へ">→</button><button id="interactButton">調べる</button></div><span id="saveStatus">この端末に自動保存</span></footer>
+</main>
+<script src="core.js"></script><script src="story.js"></script><script src="assets/walk-data.js"></script><script src="sprites.js"></script><script src="assets/cast-data.js"></script><script src="cast.js"></script><script src="assets/residents-data.js"></script><script src="residents-art.js"></script><script src="world.js"></script><script src="battle-ui.js"></script><script src="music.js"></script><script src="canal.js"></script><script src="chapters.js"></script><script src="hill.js"></script><script src="side-stories.js"></script><script src="game.js"></script>
+</body></html>

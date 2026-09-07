@@ -1,0 +1,8 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>旅の音楽 — おかえりの灯</title>
+<style>body{margin:0;padding:36px 22px;background:#142e38;color:#f2ebdb;font:16px system-ui}main{max-width:760px;margin:auto}h1{font-size:28px;margin:6px 0 20px}p{color:#b9cbcb;line-height:1.8}section{padding:20px 24px;margin:16px 0;border:1px solid #ffffff26;background:#ffffff05;border-radius:12px}h2{font-size:19px;margin:0 0 8px}audio{display:block;width:100%;margin-top:15px}a{color:#e9c58a}small{color:#b9cbcb}</style>
+<main><small>おかえりの灯 · ORIGINAL MUSIC</small><h1>二人の旅を、音でも。</h1><p>曲はループします。別の曲を再生すると、それまでの曲は止まります。</p>
+<section><h2>OP · 雪明かりの約束</h2><p>物語の始まり。ベルから、広がる旋律へ。</p><audio controls loop preload="metadata" src="assets/snowbound-promise.wav"></audio></section>
+<section><h2>村 · 窓辺の帰り灯</h2><p>帰ってきた二人を迎える、小さな冬のワルツ。</p><audio controls loop preload="metadata" src="assets/winter-hearth.wav"></audio></section>
+<section><h2>探索 · 雪道の二重奏</h2><p>森・水路・丘を歩く、笛と弦をはじくような響き。</p><audio controls loop preload="metadata" src="assets/snowpath-duet.wav"></audio></section>
+<section><h2>戦闘 · 灯りのステップ</h2><p>二人で息を合わせる、軽い打楽器とピアノのリズム。</p><audio controls loop preload="metadata" src="assets/lantern-step.wav"></audio></section>
+<a href="index.html">本編へ</a></main><script>const players=[...document.querySelectorAll('audio')];for(const p of players)p.addEventListener('play',()=>{for(const other of players)if(other!==p)other.pause();});</script></html>

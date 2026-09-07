@@ -10,7 +10,7 @@ let saved=null;try{saved=C.restoreSave(localStorage.getItem(saveKey));}catch{}$(
 function save(){try{localStorage.setItem(saveKey,JSON.stringify(state));if(saveKey===normalSaveKey)saved=C.restoreSave(JSON.stringify(state));$('saveStatus').textContent=saveKey===normalSaveKey?'この端末に保存しました':'章選択の旅を保存しました（通常の旅は保持）';}catch{$('saveStatus').textContent='保存できません。終了すると進行が失われます';}}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,2600);}
 function updateHud(){
- $('locationName').textContent=state.scene==='town'?'雪の町 ユキネ':state.scene==='canal'?'雪解けの共同水路':state.scene==='hill'?'風待ちの丘':'粉ひきの森';$('weather').textContent=state.flags.festivalStarted?'帰り灯祭り / 夜':state.flags.hillStarted?'祭りの日 / 夕暮れ':state.flags.lit?'冬の終わり / 夕暮れ':'冬の終わり / 午前';
+ $('locationName').textContent=state.scene==='house'?'二人の家':state.scene==='town'?'雪の町 ユキネ':state.scene==='canal'?'雪解けの共同水路':state.scene==='hill'?'風待ちの丘':'粉ひきの森';$('weather').textContent=state.scene==='house'?'薪の灯り / 家の中':state.flags.festivalStarted?'帰り灯祭り / 夜':state.flags.hillStarted?'祭りの日 / 夕暮れ':state.flags.lit?'冬の終わり / 夕暮れ':'冬の終わり / 午前';
  $('chapter').textContent=state.flags.festivalStarted?'最終話 · 帰り灯祭り':state.flags.hillStarted?'第三話 · 風待ちの丘':state.flags.canalStarted?'第二話 · 水音の帰る道':'第一話 · 帰り灯の日';
  $('objectiveText').textContent=S.objective(state);$('leadText').textContent=name(state.lead)+'が先頭';$('leadDot').style.background=state.lead==='touma'?'#77b8b6':'#cb8267';
  const o=nearest();$('interactPrompt').hidden=!o||mode!=='explore';if(o)$('interactPrompt').textContent='E　'+o.label;
@@ -25,15 +25,15 @@ function showLine(){
  if(q[2])for(const [label,action] of q[2]){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{if(action)action();nextDialogue();};$('choices').append(b);}
 }
 function nextDialogue(){if(mode!=='dialogue')return;queueIndex++;if(queueIndex<queue.length){showLine();return;}$('dialogue').hidden=true;mode='explore';let done=afterTalk;afterTalk=null;if(done)done();updateHud();}
-function start(s,fromSave,key=normalSaveKey){saveKey=key;state=s;mode='explore';$('titleScreen').hidden=true;$('hud').hidden=false;$('modal').hidden=true;$('battleScreen').hidden=true;$('dialogue').hidden=true;renderer.reset(state);updateHud();canvas.focus();if(!fromSave){setMusic('opening');talk(S.intro,()=>{save();setMusic('village');});}else{travelMusic();toast('二人の旅を再開しました');}}
+function start(s,fromSave,key=normalSaveKey){saveKey=key;state=s;mode='explore';$('titleScreen').hidden=true;$('hud').hidden=false;$('modal').hidden=true;$('battleScreen').hidden=true;$('dialogue').hidden=true;renderer.reset(state);updateHud();canvas.focus();if(!fromSave){setMusic('opening');talk(S.intro,()=>{save();setMusic('village');});}else{travelMusic();if(state.pendingEvening)evening(state.pendingEvening);else toast('二人の旅を再開しました');}}
 function nearest(){return S.activeObjects(state).map(o=>({o,d:Math.hypot(o.x-state.x,o.y-state.y)})).filter(p=>p.d<1.65).sort((a,b)=>a.d-b.d)[0]?.o;}
 function switchLead(){if(mode!=='explore')return;state.lead=state.lead==='touma'?'nina':'touma';updateHud();save();tone(state.lead==='nina'?523:392,.12);}
 function scene(next,x,y){state.scene=next;travelMusic();state.x=x;state.y=y;renderer.reset(state);route=[];save();updateHud();}
 function interact(){if(mode==='dialogue'){if(!queue[queueIndex][2])nextDialogue();return;}if(mode!=='explore')return;const o=nearest();if(!o){toast('気になるものに近づいて、調べてみよう');return;}handle(o.id);}
-function handle(id){const f=state.flags;if(OkaeriSideStories.handle(id,{state,talk,save,updateHud,toast,openModal,closeModal}))return;if(['elna','orlf'].includes(id)){talk(S.residentLines(state,id));return;}if(OkaeriHill.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle}))return;if(OkaeriCanal.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle}))return;
+function handle(id){const f=state.flags;if(handleHouse(id))return;if(OkaeriSideStories.handle(id,{state,talk,save,updateHud,toast,openModal,closeModal}))return;if(['elna','orlf'].includes(id)){talk(S.residentLines(state,id));return;}if(OkaeriHill.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;if(OkaeriCanal.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;
  if(id==='board'){
   if(f.returned){talk([['','二枚の出発札は、並んで町の欄に戻っている。'],['nina',f.waterReturned?'今日も、二人で帰ってこられたね。':'今度は東の水路だね。帰ったらまた、ここに寄ろう。']]);return;}
-  if(f.lit){f.returned=true;save();talk([['','トウマとニナは、二枚の出発札を並べて戻した。'],['サエ','おかえり。灯台の火、町からも見えたよ。'],['touma','ただいま。二人で、ともしてきました。'],['サエ','そうか。手は？　冷やしすぎてないかい。'],['nina','橋で少し。でも、待ってもらってから直しました。'],['サエ','うん。いい報告だ。'],['','サエは二枚の札を確かめて、傾いていた方を指先で直した。'],['touma','そこからでも、見えるんですね。札の傷。'],['サエ','毎日見てるからね。'],['マロ','お疲れさま！　焼き場も準備できたよ。まずは食べていって。'],['nina','……いい匂い。朝から楽しみにしてたんだ。'],['','濡れた外套を掛け、二人で食卓につく。\n冷たかった指先が、ゆっくり温まっていく。'],['nina','トウマ。明日も、一緒に行こうね。'],['touma','うん。お弁当、今度は俺が作る。'],['nina','じゃあ、飲み物は私。甘さ控えめ、だよね。']],demoComplete);return;}
+  if(f.lit){f.returned=true;save();talk([['','トウマとニナは、二枚の出発札を並べて戻した。'],['サエ','おかえり。灯台の火、町からも見えたよ。'],['touma','ただいま。二人で、ともしてきました。'],['サエ','そうか。手は？　冷やしすぎてないかい。'],['nina','橋で少し。でも、待ってもらってから直しました。'],['サエ','うん。いい報告だ。'],['','サエは二枚の札を確かめて、傾いていた方を指先で直した。'],['touma','そこからでも、見えるんですね。札の傷。'],['サエ','毎日見てるからね。'],['マロ','お疲れさま！　焼き場も準備できたよ。まずは食べていって。'],['nina','……いい匂い。朝から楽しみにしてたんだ。'],['','濡れた外套を掛け、二人で食卓につく。\n冷たかった指先が、ゆっくり温まっていく。'],['nina','トウマ。明日も、一緒に行こうね。'],['touma','うん。お弁当、今度は俺が作る。'],['nina','じゃあ、飲み物は私。甘さ控えめ、だよね。']],()=>evening('one'));return;}
   if(f.board){talk([['nina','札、二人分あるね。これで、ちゃんと帰ってこなくちゃ。'],['touma','帰ろう。二人で。']]);return;}
   talk([['','「トウマ」「ニナ」――二枚の木札を、森の欄に掛ける。'],['nina','昔は、サエさんの札の隣に付いて歩いてたね。'],['touma','今年は俺たちだけだ。'],['','札の下端には、小さな丸いくぼみがある。ニナが手袋の親指で、そっとなぞった。'],['nina','これ、背伸びして掛けようとして、落とした跡。まだ残ってる。'],['touma','俺が椅子を持ってくる前に登るから。'],['nina','トウマだって、下で受け止めるって言ったよ。'],['touma','……札じゃなくて、お前をな。'],['nina','うん。……頼りにしてる。'],['touma','こっちも。']],()=>{f.board=true;save();updateHud();toast('行き先を記録した。北の道から森へ。');});return;
  }
@@ -80,7 +80,22 @@ function journal(){if(!['explore','title'].includes(mode))return;if(mode==='titl
 function menu(){if(mode==='title'){journal();return;}if(mode==='dialogue'||mode==='battle'){toast('会話や戦闘が終わってから開けます');return;}if(mode==='modal')return;
  openModal('<span class="tag">ひと休み</span><h2>旅のメニュー</h2><p>進行はこの端末に自動保存されます。ブラウザーや開き方を変えると、保存は引き継がれません。</p>',[['戻る',closeModal,true],['タイトルへ',()=>{closeModal();save();mode='title';setMusic('opening');$('titleScreen').hidden=false;$('hud').hidden=true;$('continueButton').hidden=!saved;}]],mode);
 }
-function demoComplete(){openModal('<span class="tag">第一話 · 完</span><h2>おかえりの灯</h2><div class="ending-art"></div><p>森の灯台に、二人で火を届けました。<br>遊んでくれて、ありがとうございます。</p><p>次は第二話「水音の帰る道」。町の東口から、共同水路の修理へ進めます。</p>',[['第二話へ進む',()=>{closeModal();handle('canalExit');},true],['町をもう少し歩く',closeModal]],'explore');}
+function evening(key){
+ state.pendingEvening=key;scene('house',11,11);
+ talk(S.nightScenes[key],()=>{delete state.pendingEvening;state.flags['night'+key[0].toUpperCase()+key.slice(1)]=true;save();
+ const end=S.endings[key];openModal('<span class="tag">'+(end?'おかえりの灯 · END':'一日の終わり')+'</span><h2>'+(end?end.title:key==='three'?'祭りの支度ができた':'おやすみ。また明日')+'</h2><p>'+(end?'同じ家から、二人の明日が続いていきます。遊んでくれて、ありがとうございます。':key==='three'?'家で着替えた二人は、これから帰り灯祭りへ。':'炉のそばに二人分のカップ。今日のことを、家に置いて眠ろう。')+'</p>',[['家で過ごす',closeModal,true],[key==='three'?'二人で祭りへ':end?'町へ出る':'翌朝、町へ',()=>{closeModal();scene('town',3,13);}]],'explore');});
+}
+function handleHouse(id){
+ if(id==='ourHome'){scene('house',12,12);return true;}
+ if(state.scene!=='house')return false;
+ if(id==='houseExit'){scene('town',3,13);return true;}
+ if(id==='homeTable'){
+ const options=[['one','returned','第一話 · 二つのカップ'],['two','waterReturned','第二話 · 味見の距離'],['three','festivalStarted','第三話 · いつもと違う支度'],['touma','endingTouma','最終話 · 恋人になった家'],['nina','endingNina','最終話 · 返事の続き'],['friends','endingFriends','最終話 · 明日の席']].filter(([,flag])=>state.flags[flag]);
+ openModal('<h2>二人の食卓</h2><p>今日のことを、少し話そう。終えた章の夜を読み返せます。</p>',[...options.map(([key,,label])=>[label,()=>{closeModal();evening(key);}]),['今はお茶にする',()=>{closeModal();talk([['nina','お湯、沸いてるよ。'],['touma','じゃあ、二人分。']]);},true]],'explore');return true;
+ }
+ const lines={"toumaDesk":[["","磨いた修理机。小箱には「ニナの外套」と書かれた予備の留め金。工具の柄には、滑り止めの布が巻いてある。"],["nina","この布、まだ使ってくれてるんだ。"],["touma","手に馴染んでるから。"],["nina","……そっか。新しいのも、同じ色にするね。"]],"toumaBooks":[["","雪道の地図、家具の直し方、料理の本。スープのページだけ、何度も開いた跡がある。"],["nina","これ、私の好きなやつ。"],["touma","次は、焦がさない。"],["nina","この前のも、おいしかったよ。最後のところ以外。"]],"ninaMirror":[["","小さな鏡台。手作りの鏡枠に、青いリボンが掛かっている。引き出しの上には、書きかけのお礼のカード。"],["touma","鏡の高さ、これでいい？"],["nina","うん。毎朝、ちゃんと見える。"],["touma","何が？"],["nina","……直してくれた人が、丁寧だったってこと。"]],"ninaWardrobe":[["","畳んだ冬服と、色順に並んだ毛糸。二人分の手袋が、同じ籠に収まっている。"],["touma","俺のも、ここに？"],["nina","片方なくす人がいるので。"],["touma","助かります。"],["nina","出かけるときは、私に声かけてね。手袋、渡すから。"]],homeStove:[['','町から分けてもらった小さな薪ストーブ。脚のがたつきは、トウマが直した。'],['nina','火の番、今日は私ね。'],['touma','寝る前に、一緒に見よう。']],toumaRoom:[['','トウマの部屋。整えた寝床の脇に、修理道具と読みかけの本がある。'],['nina','入るときは、ノックするね。'],['touma','俺も、そうする。']],ninaRoom:[['','ニナの部屋。寝床には繕った毛布。小さな棚に、お気に入りの糸が並んでいる。'],['touma','窓、冷気は入らない？'],['nina','大丈夫。トウマが直してくれたから。']],homeShelf:[['','古い家の鍵と、町の人たちと写った一枚の写真。血のつながりはなくても、二人を育ててくれた顔が並ぶ。'],['nina','この家の掃除、みんな来てくれたね。'],['touma','マロさんは、掃除よりパンを配ってた。'],['nina','それも、大事なお仕事。']],homeSewing:[['','繕い机には、ニナの針箱と、トウマの予備の留め金。互いの道具が少しずつ隣り合っている。'],['nina','ここ、半分使っていいよ。'],['touma','もう半分、借りてる。'],['nina','うん。知ってる。']]};
+ if(lines[id]){talk(lines[id]);return true;}return false;
+}
 function move(dx,dy){if(mode!=='explore')return false;const x=state.x+dx,y=state.y+dy;if(!S.walkable(state,x,y))return false;state.x=x;state.y=y;updateHud();return true;}
 function pathTo(tx,ty){
  if(mode!=='explore')return;const o=S.activeObjects(state).find(o=>Math.hypot(o.x-tx,o.y-ty)<1);const goal=(x,y)=>o?Math.hypot(o.x-x,o.y-y)<1.5:x===tx&&y===ty;
@@ -90,7 +105,7 @@ function pathTo(tx,ty){
 }
 function tone(freq,duration){if(!sound)return;try{audio ||=new(window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.0001,audio.currentTime);g.gain.exponentialRampToValueAtTime(.055,audio.currentTime+.03);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+duration);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+duration);}catch{}}
 function musicFailure(){sound=false;bgm.stop();$('soundButton').textContent='音 OFF';toast('音楽を再生できませんでした。もう一度「音 OFF」を押してください。');}
-function travelMusic(){setMusic(state.scene==='town'?'village':'journey');}
+function travelMusic(){setMusic(['town','house'].includes(state.scene)?'village':'journey');}
 function setMusic(scene){bgm.select(scene).catch(musicFailure);$('soundButton').title={opening:'OP「雪明かりの約束」',village:'村「窓辺の帰り灯」',journey:'探索「雪道の二重奏」',battle:'戦闘「灯りのステップ」'}[scene];}
 async function toggleSound(){
  const button=$('soundButton');if(button.disabled)return;

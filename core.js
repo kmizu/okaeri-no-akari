@@ -83,14 +83,19 @@ function resolveTurn(input,commands,order){
  b.events=events;b.turn++;return b;
 }
 function restoreSave(raw){try{
- const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
- const flags={};for(const key of ['board','bread','mochi','log','rest','repair','crab','guardian','lit','returned','lamp','sae','gift','canalStarted','waterGate','canalCrab','waterFlow','waterLit','canalRest','waterReturned','hillStarted','windbreak','hillGuardian','hillLens','hillLit','hillRest','festivalStarted','festivalMeal','festivalRibbon','endingTouma','endingNina','endingFriends','sewingAsked','sewingFound','sewingReturned','seamVisible','signAsked','signFixed','signReported'])flags[key]=s.flags[key]===true;
+ const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill','house'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
+ const flags={};for(const key of ['board','bread','mochi','log','rest','repair','crab','guardian','lit','returned','lamp','sae','gift','canalStarted','waterGate','canalCrab','waterFlow','waterLit','canalRest','waterReturned','hillStarted','windbreak','hillGuardian','hillLens','hillLit','hillRest','festivalStarted','festivalMeal','festivalRibbon','endingTouma','endingNina','endingFriends','sewingAsked','sewingFound','sewingReturned','seamVisible','signAsked','signFixed','signReported','waitingPost','waitingLit','waitingRest','waitingReported','nightOne','nightTwo','nightThree','nightTouma','nightNina','nightFriends'])flags[key]=s.flags[key]===true;
  if((flags.lit&&!flags.guardian)||(flags.guardian&&!flags.repair)||(flags.repair&&!flags.log)||(flags.log&&!flags.mochi)||(s.scene==='forest'&&!flags.board))return null;
  if((s.scene==='canal'&&(!flags.canalStarted||!flags.returned||!flags.lit))||(flags.waterGate&&!flags.canalStarted)||(flags.canalCrab&&!flags.waterGate)||(flags.waterFlow&&!flags.canalCrab)||(flags.waterLit&&!flags.waterFlow)||(flags.waterReturned&&!flags.waterLit))return null;
  if((s.scene==='hill'&&!flags.hillStarted)||(flags.hillStarted&&!flags.waterReturned)||(flags.windbreak&&!flags.hillStarted)||(flags.hillGuardian&&!flags.windbreak)||(flags.hillLens&&!flags.hillGuardian)||(flags.hillLit&&!flags.hillLens)||(flags.festivalStarted&&!flags.hillLit)||((flags.festivalMeal||flags.festivalRibbon)&&!flags.festivalStarted))return null;
+ if((flags.waitingLit&&!flags.waitingPost)||(flags.waitingReported&&!flags.waitingLit))return null;
  if((flags.sewingReturned&&!flags.sewingFound)||(flags.seamVisible&&!flags.sewingReturned)||(flags.signReported&&!flags.signFixed))return null;
  const endings=['endingTouma','endingNina','endingFriends'].filter(k=>flags[k]);if(endings.length>1||(endings.length&&(!flags.festivalMeal||!flags.festivalRibbon)))return null;
- return {version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
+ const nightRequirements={one:'returned',two:'waterReturned',three:'festivalStarted',touma:'endingTouma',nina:'endingNina',friends:'endingFriends'};
+ if(s.scene==='house'&&(s.x<3||s.x>20||s.y<3||s.y>13))return null;
+ for(const [key,requirement] of Object.entries(nightRequirements))if(flags['night'+key[0].toUpperCase()+key.slice(1)]&&!flags[requirement])return null;
+ if(s.pendingEvening&&(!nightRequirements[s.pendingEvening]||!flags[nightRequirements[s.pendingEvening]]||s.scene!=='house'))return null;
+ return {...(s.pendingEvening?{pendingEvening:s.pendingEvening}:{}),version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
  }catch{return null;}}
 function chooseEnding(choice,courage,response){if(choice==='confess')return 'touma';if(choice==='stay')return 'friends';if(choice==='wait'){if(courage<2)return 'ask';return response==='yes'?'nina':response==='notYet'?'friends':'confession';}return 'friends';}
 const C={newBattle,actions,resolveTurn,intentions,restoreSave,chooseEnding};if(typeof module!=='undefined')module.exports=C;root.OkaeriCore=C;

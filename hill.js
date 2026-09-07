@@ -16,7 +16,7 @@ function handle(id,a){
   if(!f.hillLit)return false;
   if(f.festivalStarted){talk([['サエ','もう仕事はおしまい。今夜は二人とも、祭りのお客さんだよ。']]);return true;}
   scene('town',12,10);
-  talk([['サエ','おかえり。丘の灯り、ここからも見えたよ。'],['touma','ただいま。風よけも、直してきました。'],['nina','レンズも。遠くまで届いてるといいな。'],['サエ','もう着いた人がいるよ。「灯りがあって助かった」って。'],['','サエは二枚の出発札を、そっと町の欄に戻した。'],['サエ','よく帰ってきたね。さあ、温かいうちに食べておいで。'],['','最終話　帰り灯祭り\n広場でマロの料理を受け取り、繕いものの籠に寄ってみよう。']],()=>done('festivalStarted'));return true;
+  talk([['サエ','おかえり。丘の灯り、ここからも見えたよ。'],['touma','ただいま。風よけも、直してきました。'],['nina','レンズも。遠くまで届いてるといいな。'],['サエ','もう着いた人がいるよ。「灯りがあって助かった」って。'],['','サエは二枚の出発札を、そっと町の欄に戻した。'],['サエ','よく帰ってきたね。さあ、温かいうちに食べておいで。'],['','最終話　帰り灯祭り\n広場でマロの料理を受け取り、繕いものの籠に寄ってみよう。']],()=>{done('festivalStarted');a.evening?.('three');});return true;
  }
  if(f.festivalStarted&&s.scene==='town'){
   if(id==='bakery'){
@@ -34,7 +34,7 @@ function handle(id,a){
     const finish=ending=>{closeModal();talk(OkaeriStory.endings[ending].lines,()=>{
      for(const k of ['endingTouma','endingNina','endingFriends'])f[k]=false;
      done({touma:'endingTouma',nina:'endingNina',friends:'endingFriends'}[ending]);
-     openModal('<span class="tag">おかえりの灯 · END</span><h2>'+OkaeriStory.endings[ending].title+'</h2><div class="ending-art"></div><p>'+(ending==='friends'?'今の二人のまま、また明日の約束を。':'幼馴染の帰り道から、恋人としての明日へ。')+'</p><p>遊んでくれて、ありがとうございます。</p>',[['祭りの町へ',closeModal,true]],'explore');
+     if(a.evening){a.evening(ending);return;}openModal('<span class="tag">おかえりの灯 · END</span><h2>'+OkaeriStory.endings[ending].title+'</h2><div class="ending-art"></div><p>'+(ending==='friends'?'今の二人のまま、また明日の約束を。':'幼馴染の帰り道から、恋人としての明日へ。')+'</p><p>遊んでくれて、ありがとうございます。</p>',[['祭りの町へ',closeModal,true]],'explore');
     });};
     const wait=()=>{closeModal();talk([['nina','……もう少し、ここにいていい？'],['touma','うん。'],['nina','トウマが好き。幼馴染としてだけじゃなくて。',null,'shy'],['nina','明日からも、一番近くで笑っていたい。']],()=>openModal('<h2>ニナの言葉に、返事をする</h2><p>トウマは、ゆっくり息を吸った。</p>',[['「俺も好きだ」',()=>finish('nina'),true],['「まだ、今の関係を大切にしたい」',()=>{closeModal();talk([['touma','大事なんだ。でも、まだ恋人としての気持ちは決められない。'],['nina','……うん。ちゃんと答えてくれて、ありがとう。明日も会ってね。']],()=>finish('friends'));}]],'explore'));};
     openModal('<span class="tag">祭りの帰り道</span><h2>ニナに、伝えたいこと</h2><p>どの選択にも、二人の明日が続きます。</p>',[['自分から、好きだと伝える',()=>finish('touma'),true],['ニナの言葉を待つ',wait],['今の二人のままでいたい',()=>finish('friends')],['もう少し祭りを歩く',closeModal]],'explore');

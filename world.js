@@ -178,6 +178,30 @@ function lantern(c,x,y,lit=true){
 
 Renderer.prototype.background=function(scene){
  if(this.cache[scene])return this.cache[scene];const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+ if(scene==='house'){
+  rect(c,0,0,W,H,'#243c46');shadow(c,585,682,480,55);
+  block(c,133,112,884,560,20,'#755b46','#35484a','#d5c6a5');
+  rect(c,144,144,864,528,'#aa8962');
+  for(let row=0;row<22;row++){const yy=144+row*24;rect(c,144,yy,864,23,row%3===0?'#a18460':row%3===1?'#b3956f':'#ad8d65');
+   for(let xx=144+(row%2)*60;xx<1008;xx+=120){line(c,[[xx,yy],[xx,yy+22]],'#69574466',1);line(c,[[xx+8,yy+8],[Math.min(xx+104,1006),yy+10]],'#dfbf8825',1);}
+  }
+  // Cutaway walls, with two separate bedroom doors opening into the shared room.
+  block(c,133,116,884,28,14,'#d0b48a','#7c7865','#f1dfba');
+  for(const [xx,ww] of [[144,144],[336,480],[864,144]])block(c,xx,288,ww,38,8,'#ac987b','#6e7568','#e0cfaa');
+  block(c,576,144,48,182,8,'#b6a082','#6e7568','#e0cfaa');
+  for(const xx of [300,828]){rect(c,xx-10,303,36,15,'#72593e');line(c,[[xx-10,318],[xx+26,318]],'#d9c79e',2);}
+  for(const wx of [375,782]){
+   block(c,wx,154,78,63,5,'#596b6c','#3a5358','#d7c9a5');rect(c,wx+6,159,65,50,'#5d819a');
+   ellipse(c,wx+54,174,8,8,'#e1e6ce');line(c,[[wx+39,159],[wx+39,209]],'#d0c6a6',3);line(c,[[wx+6,184],[wx+71,184]],'#d0c6a6',3);
+   poly(c,[[wx-6,152],[wx+18,152],[wx+10,220],[wx-8,220]],'#aa7768');poly(c,[[wx+64,152],[wx+85,152],[wx+86,220],[wx+73,220]],'#aa7768');
+  }
+  rect(c,413,497,318,103,'#876458');rect(c,422,504,300,89,'#b79776');
+  line(c,[[431,513],[714,513],[714,582],[431,582],[431,513]],'#dfc8a0',3);
+  block(c,690,350,263,34,13,'#9a815d','#56645a','#d6c3a0');
+  for(let i=0;i<5;i++){ellipse(c,718+i*39,349,11,5,'#eee2c4');rect(c,710+i*39,340,16,9,'#c4b99a');}
+  c.font='bold 15px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f2dfb9';c.fillText('トウマの部屋',389,279);c.fillText('ニナの部屋',812,279);c.fillText('二人の家',590,709);
+  glow(c,275,445,170);glow(c,560,472,180);this.cache[scene]=cv;return cv;
+ }
  let g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#bdd6df');g.addColorStop(.5,'#dce6df');g.addColorStop(1,'#9bbdc9');c.fillStyle=g;c.fillRect(0,0,W,H);
  const paths=[];const path=(p,w)=>paths.push([p,w]);
  const flushPaths=()=>{const lift=scene==='hill'?23:scene==='canal'?13:8;c.save();c.lineJoin='round';
@@ -221,7 +245,10 @@ Renderer.prototype.background=function(scene){
  }else{
   rect(c,0,0,W,H,'#769daa');
   path([[264,738],[264,454],[599,454],[599,214],[1008,214],[1008,113]],137);
-  path([[264,454],[264,352]],110);flushPaths();
+  path([[264,454],[264,352]],110);path([[264,624],[120,624],[120,456]],100);flushPaths();
+  c.fillStyle='#e4eee6';c.font='bold 12px "Yu Gothic UI"';c.textAlign='center';c.fillText('白樺の待ち場',116,684);
+  for(const bx of [49,166]){block(c,bx,503,8,117,4,'#dce2d8','#8fa9ad','#f6f2e6');for(let j=0;j<8;j++)line(c,[[bx,512+j*13],[bx+5,514+j*13]],'#728889',2);line(c,[[bx+4,527],[bx-13,511]],'#afc2bd',4);}
+
   for(let i=0;i<75;i++){let x=(i*163+40)%W,y=(i*97+40)%H;let tx=Math.round((x-24)/T),ty=Math.round((y-24)/T);const raw={scene:'forest',flags:{mochi:true,log:true,repair:true,crab:true,guardian:true}};if(!OkaeriStory.walkable(raw,tx,ty))tree(c,x,y,1+(i%4)*.1);}
   house(c,164,244,155,89);c.fillStyle='#e2d5b7';c.font='12px "Yu Gothic UI"';c.textAlign='center';c.fillText('森の休憩小屋',241,326);
   line(c,[[480,304],[721,320]],'#527d9166',49);line(c,[[480,294],[721,310]],'#b0d8df99',21);
@@ -246,6 +273,25 @@ Renderer.prototype.draw=function(s,time,mode){
  for(const o of OkaeriStory.activeObjects(s)){
   const x=o.x*T+24,y=o.y*T+24;drawables.push({y,draw:()=>{
   if(!['exit','npc','mochi','crab','guardian','camp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
+  if(o.type==='homeTable'){
+   for(const dx of [-43,43]){block(c,x+dx-12,y+7,25,9,5,'#aa8a61','#5e6755','#d9bc8e');for(const leg of [-9,8])rect(c,x+dx+leg,y+16,4,12,'#685943');}
+   for(const dx of [-54,45])block(c,x+dx,y-27,8,48,5,'#665442','#3b4c46','#b4a07c');
+   block(c,x-72,y-67,144,50,16,'#987a54','#5b6050','#d4b889');rect(c,x-32,y-65,62,47,'#e5d3ad');
+   for(const dx of [-15,16]){ellipse(c,x+dx,y-47,9,6,'#f4e5c7');ellipse(c,x+dx,y-48,6,3,'#aa7046');}
+   rect(c,x-52,y-49,13,4,'#d0a261');glow(c,x+48,y-47,70);block(c,x+43,y-65,10,21,4,'#65715a','#405448','#b7b991');rect(c,x+45,y-62,6,12,'#ffe0a1');
+  }
+  if(o.type==='homeStove'){block(c,x-41,y-71,68,69,17,'#4f5852','#303f3e','#919483');block(c,x-20,y-128,15,57,7,'#5e665a','#344849','#a6a68a');rect(c,x-29,y-51,43,31,'#2d3534');glow(c,x-8,y-31,135);poly(c,[[x-24,y-23],[x-16,y-43],[x-9,y-31],[x,y-48],[x+9,y-23]],'#ffc575');ellipse(c,x-7,y-75,19,8,'#a6a285');}
+
+  if(o.type==='homeDesk'){for(const dx of [-32,25])rect(c,x+dx,y-7,7,26,'#6b5140');block(c,x-40,y-31,80,30,7,'#a67c53','#615447','#d7b585');rect(c,x-28,y-32,29,16,'#829d92');line(c,[[x-22,y-29],[x-8,y-18]],'#d3d6c4',3);rect(c,x-23,y-28,8,5,'#6b5b46');block(c,x+10,y-39,21,10,3,'#967153','#595c4c','#d3af77');ellipse(c,x+22,y-38,3,2,'#e5cf87');}
+  if(o.type==='homeBooks'){block(c,x-23,y-52,46,63,7,'#9e7956','#615740','#d3b58a');rect(c,x-18,y-46,35,49,'#594e42');for(let j=0;j<2;j++){for(let i=0;i<5;i++){rect(c,x-16+i*6,y-43+j*25,5,19-i%3*3,['#869b8b','#ba8874','#d2bc8c'][i%3]);line(c,[[x-15+i*6,y-39+j*25],[x-12+i*6,y-39+j*25]],'#e5d6b4',1);}rect(c,x-20,y-21+j*25,41,4,'#bf976e');}}
+  if(o.type==='homeMirror'){for(const dx of [-28,22])rect(c,x+dx,y-4,6,23,'#795d4d');block(c,x-34,y-20,68,19,6,'#b88d70','#705e50','#dfc2a0');ellipse(c,x,y-47,25,32,'#b58d64');ellipse(c,x,y-47,20,27,'#b5d0ca');line(c,[[x-11,y-63],[x+8,y-43]],'#eaf0dc',3);line(c,[[x-7,y-52],[x+10,y-35]],'#dce8d8',2);rect(c,x-27,y-21,15,9,'#eae0c7');ellipse(c,x+23,y-22,7,4,'#809fa6');line(c,[[x+24,y-20],[x+29,y-8]],'#819ead',3);}
+  if(o.type==='homeWardrobe'){block(c,x-22,y-61,44,76,8,'#a68064','#675d4c','#d2b591');rect(c,x-17,y-55,33,58,'#67564b');for(let i=0;i<3;i++){rect(c,x-13,y-49+i*10,25,7,['#b98786','#9da98c','#d2bd9a'][i]);}rect(c,x-18,y-17,35,4,'#c39d74');for(let i=0;i<3;i++)ellipse(c,x-10+i*10,y-6,5,7,['#bd8e8c','#8eabb0','#e0c999'][i]);}
+  if(o.type==='homeBed'){block(c,x-31,y-70,63,88,10,'#997e5c','#576252','#c6b991');rect(c,x-27,y-67,55,80,'#e8dcc0');rect(c,x-25,y-45,52,57,o.id==='ninaRoom'?'#b48077':'#6c9694');rect(c,x-20,y-62,43,16,'#f4e8cd');line(c,[[x-24,y-36],[x+25,y-36]],'#d8c8a2',3);}
+  if(o.type==='homeShelf'){block(c,x-38,y-47,76,52,9,'#a08660','#586752','#d5c29c');rect(c,x-29,y-40,30,25,'#d9bc8b');rect(c,x-26,y-37,24,19,'#647d73');for(let i=0;i<3;i++)ellipse(c,x-21+i*7,y-29,3,4,'#d2b79b');ellipse(c,x+20,y-24,5,5,'#dfc789');line(c,[[x+20,y-20],[x+20,y-9],[x+26,y-9]],'#dfc789',2);}
+  if(o.type==='homeSewing'){block(c,x-36,y-30,72,28,10,'#a88c65','#586956','#dbbf92');ellipse(c,x-17,y-35,12,8,'#ae7772');line(c,[[x-22,y-41],[x-7,y-28]],'#dfc5a1',2);block(c,x+10,y-42,20,14,4,'#7d8f76','#516558','#b9c6a5');}
+  if(o.type==='waitingPost'){block(c,x-4,y-45,8,54,5,'#8b7c60','#52675e','#c1baa1');poly(c,[[x-28,y-44],[x+19,y-44],[x+30,y-35],[x+19,y-27],[x-28,y-27]],s.flags.waitingPost?'#b3a17a':'#7c8678');line(c,[[x-28,y-46],[x+20,y-46]],'#edf1e6',4);c.font='bold 9px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#fff0ca';c.fillText('町へ',x,y-32);}
+  if(o.type==='waitingLight'){lantern(c,x,y,!!s.flags.waitingLit);}
+  if(o.type==='waitingBench'){for(const bx of [-25,19])block(c,x+bx,y-9,6,21,5,'#756c52','#4e655e','#adad8f');block(c,x-30,y-15,60,9,13,'#988362','#566c61','#d6d6bd');block(c,x-30,y-37,60,16,5,'#8b7d60','#576c63','#e3e9dc');}
   if(o.type==='sewingBox'){block(c,x-18,y-13,36,22,10,'#947a55','#5c6455','#d0c19d');block(c,x-20,y-19,40,8,10,'#b4a58b','#7b8d87','#e5e9dc');rect(c,x-4,y-9,8,8,'#d6bd82');if(!s.flags.sewingFound)glow(c,x,y-8,25);}
   if(o.type==='returnSign'){rect(c,x-3,y-35,6,43,'#6e7467');line(c,[[x,y-33],[x+20,y-33],[x+20,y-21]],'#b8a278',2);rect(c,x+9,y-22,24,22,s.flags.signFixed?'#ece5d2':'#b77865');line(c,[[x+12,y-15],[x+28,y-15]],'#7d8477',2);}
   if(o.type==='windbreak'){
@@ -287,7 +333,7 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='crab')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='guardian')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='tower'){ellipse(c,x,y+7,43,17,'#425e6555');block(c,x-25,y-83,50,89,22,'#a4b0a1','#677e7b','#d4dfcf');rect(c,x-33,y-86,66,12,'#b3bfb0');poly(c,[[x-39,y-84],[x,y-119],[x+39,y-84]],'#e5ece1');rect(c,x-14,y-66,28,38,s.flags.lit?'#ffd18a':'#405f67');if(s.flags.lit)glow(c,x,y-47,150);rect(c,x-10,y-20,20,27,'#5a6a61');}
-  if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
+  if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':o.id==='ourHome'?'⌂':o.id==='houseExit'?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
   const ready=(['log','waterGate','windbreak'].includes(o.id)?s.lead==='touma':['repair','regulator','hillLens'].includes(o.id)?s.lead==='nina':true);const distance=Math.hypot(s.x-o.x,s.y-o.y);
   if(distance<2&&mode==='explore'){ellipse(c,x,y-(o.type==='guardian'?115:o.type==='npc'?82:56)+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(o.type==='guardian'?111:o.type==='npc'?78:52)+Math.sin(t*3)*2);}
  }});}
@@ -302,7 +348,7 @@ Renderer.prototype.draw=function(s,time,mode){
  for(const actor of party)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
- for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
+ if(s.scene!=='house')for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
  const vign=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);vign.addColorStop(0,'#071d3000');vign.addColorStop(1,'#071d3077');c.fillStyle=vign;c.fillRect(0,0,W,H);
 };
 function enemySvg(type){return OkaeriCast.battleArt(type);}

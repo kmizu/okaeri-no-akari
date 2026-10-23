@@ -270,8 +270,10 @@ Renderer.prototype.draw=function(s,time,mode){
   for(const [x,y] of [[330,430],[730,520]]){rect(c,x-30,y,60,15,'#a38362');rect(c,x-25,y+15,6,17,'#7c715e');rect(c,x+19,y+15,6,17,'#7c715e');ellipse(c,x,y-3,20,9,'#e7cb98');}
  }
  const drawables=[];
- for(const o of OkaeriStory.activeObjects(s)){
+ for(const source of OkaeriStory.activeObjects(s)){
+  const o=source.base||source;
   const x=o.x*T+24,y=o.y*T+24;drawables.push({y,draw:()=>{
+  if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
   if(!['exit','npc','mochi','crab','guardian','camp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
   if(o.type==='homeTable'){
    for(const dx of [-43,43]){block(c,x+dx-12,y+7,25,9,5,'#aa8a61','#5e6755','#d9bc8e');for(const leg of [-9,8])rect(c,x+dx+leg,y+16,4,12,'#685943');}
@@ -326,6 +328,8 @@ Renderer.prototype.draw=function(s,time,mode){
   }
   if(o.type==='npc'){if(['elna','orlf'].includes(o.id))OkaeriResidentsArt.drawMap(c,o.id,x,y);else OkaeriCast.drawMap(c,o.id==='sae'?'sae':'maro',x,y,t);}
   if(o.type==='lamp')lantern(c,x,y);
+  if(o.type==='episodeEvent'){if(o.base?.type==='npc'){if(['elna','orlf'].includes(o.base.id))OkaeriResidentsArt.drawMap(c,o.base.id,x,y);else OkaeriCast.drawMap(c,o.base.id==='sae'?'sae':'maro',x,y,t);}ellipse(c,x,y+4,23,9,'#e1c58288');line(c,[[x-16,y-5],[x,y-18],[x+16,y-5]],'#ffe2a4',3);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#fff1cc';c.fillText('◆',x,y-27);}
+  if(o.type==='episodeNpc'||(o.type==='episodeEvent'&&['リツ','ユラ'].includes(o.person))){OkaeriResidentsArt.drawMap(c,o.id==='yura'||o.person==='ユラ'?'yura':'ritsu',x,y);}
   if(o.type==='basket'){ellipse(c,x,y,16,10,'#978468');rect(c,x-12,y-12,24,11,'#cab699');line(c,[[x-13,y-10],[x-8,y-24],[x+8,y-24],[x+13,y-10]],'#837258',3);}
   if(o.type==='log'){line(c,[[x-10,y-43],[x+12,y+44]],'#766855',23);line(c,[[x-11,y-41],[x+10,y+40]],'#e3e8db',7);}
   if(o.type==='repair'){lantern(c,x+33,y-20,s.flags.repair);if(!s.flags.repair){line(c,[[x-15,y-5],[x+11,y+5]],'#ae8a59',4);ellipse(c,x,y-5,6,6,'#dfbb77');}}
@@ -345,8 +349,9 @@ Renderer.prototype.draw=function(s,time,mode){
  this.f.dir=OkaeriSprites.facing(fx,fy,this.f.dir);this.f.x+=fx*.22;this.f.y+=fy*.22;
  const followersMoving=Math.hypot(fx,fy)>1;
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
- for(const actor of party)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
+ for(const actor of party.filter(actor=>!(s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||actor.id===s.lead))drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
+ if(s.episode?.chapter===3&&s.scene==='canal'&&s.episode.step>=1&&s.episode.step<=3){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
  if(s.scene!=='house')for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
  const vign=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);vign.addColorStop(0,'#071d3000');vign.addColorStop(1,'#071d3077');c.fillStyle=vign;c.fillRect(0,0,W,H);

@@ -51,3 +51,8 @@
 ## エルナとオルフ
 
 residents-atlas.png：新住人二名。上段エルナ、下段オルフ、各段は左からマップ用チップ、通常フェイス、笑顔フェイス。既存の住人顔グラとチップを画風参照として新規生成。チップ区画のみゲーム内でマゼンタ透過し、区画境界を4px避けて表示。元PNGは未加工で保存。
+
+
+## リツ・ユラ（2026-09-08）
+Built-in image_gen を使用。既存 residents-atlas.png を絵柄と3列2行の配置参照として、新しい素材シート ritsu-yura-atlas.png を生成。上段：リツ（栗色短髪、青灰色の防寒着、水番の工具）。下段：ユラ（銀髪の低いまとめ髪、くすんだ赤紫の防寒着、薬草の鞄）。各段は全身チップ／通常顔／笑顔。左列のマゼンタ背景は実行時に透過し、顔グラは中央・右列を表示。住人は既存住人と同じ静止チップ方式。
+Prompt: Match the existing cozy watercolor RPG atlas, exact 3x2 grid, 1536x1024. Ritsu is a clean-shaven 28-year-old waterworks keeper with chestnut hair, slate-blue padded coat, oatmeal scarf, wrench and notebook. Yura is a mature 52-year-old clinician with silver-gray bun, dusty cranberry padded coat, cream scarf and medicinal-leaf satchel. Each row: full-body chibi on #FF00FF, normal bust, smiling bust on cream parchment. Preserve identical identity and clothing between sprite and faces. No text or borders.

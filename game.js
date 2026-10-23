@@ -2,7 +2,7 @@
 'use strict';
 const C=OkaeriCore,S=OkaeriStory,W=OkaeriWorld,$=id=>document.getElementById(id);
 const normalSaveKey='okaeri-forest-v1',chapterSaveKey='okaeri-chapter-v1';let saveKey=normalSaveKey;const canvas=$('world'),renderer=new W.Renderer(canvas);
-const fresh=()=>({version:1,scene:'town',x:12,y:10,lead:'touma',flags:{},courage:0});
+const fresh=()=>globalThis.OkaeriEpisodes?OkaeriEpisodes.create(1):({version:1,scene:'town',x:12,y:10,lead:'touma',flags:{},courage:0});
 let state=fresh(),mode='title',queue=[],afterTalk=null,queueIndex=0,battle=null,commands={},order=['touma','nina'],battleOrigin=null,modalReturn='explore',route=[],routeTarget=null,lastMove=0,held={},sound=false,audio=null,bgm=new OkaeriMusic();
 const name=id=>id==='touma'?'トウマ':id==='nina'?'ニナ':id;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -12,7 +12,8 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 function updateHud(){
  $('locationName').textContent=state.scene==='house'?'二人の家':state.scene==='town'?'雪の町 ユキネ':state.scene==='canal'?'雪解けの共同水路':state.scene==='hill'?'風待ちの丘':'粉ひきの森';$('weather').textContent=state.scene==='house'?'薪の灯り / 家の中':state.flags.festivalStarted?'帰り灯祭り / 夜':state.flags.hillStarted?'祭りの日 / 夕暮れ':state.flags.lit?'冬の終わり / 夕暮れ':'冬の終わり / 午前';
  $('chapter').textContent=state.flags.festivalStarted?'最終話 · 帰り灯祭り':state.flags.hillStarted?'第三話 · 風待ちの丘':state.flags.canalStarted?'第二話 · 水音の帰る道':'第一話 · 帰り灯の日';
- $('objectiveText').textContent=S.objective(state);$('leadText').textContent=name(state.lead)+'が先頭';$('leadDot').style.background=state.lead==='touma'?'#77b8b6':'#cb8267';
+ if(state.episode){$('chapter').textContent=OkaeriEpisodes.title(state);$('weather').textContent=state.scene==='house'?'薪の灯り / 二人の家':state.episode.chapter===8?'吹雪 / 祭りの前日':state.episode.chapter===9?'帰り灯祭り / 夜':state.episode.chapter===10?'祭りの翌日 / 晴れ間':'冬の終わり / 日中';}
+ $('objectiveText').textContent=(state.episode&&OkaeriEpisodes.objective(state))||S.objective(state);$('leadText').textContent=name(state.lead)+'が先頭';$('leadDot').style.background=state.lead==='touma'?'#77b8b6':'#cb8267';
  const o=nearest();$('interactPrompt').hidden=!o||mode!=='explore';if(o)$('interactPrompt').textContent='E　'+o.label;
 }
 function openModal(html,buttons,returnMode=mode){modalReturn=returnMode;mode='modal';held={};route=[];$('modalContent').innerHTML=html+'<div class="actions" id="modalActions"></div>';
@@ -21,16 +22,17 @@ function openModal(html,buttons,returnMode=mode){modalReturn=returnMode;mode='mo
 function closeModal(){ $('modal').hidden=true;mode=modalReturn;canvas.focus();updateHud(); }
 function talk(lines,done){held={};route=[];queue=lines;queueIndex=0;afterTalk=done;mode='dialogue';$('dialogue').hidden=false;showLine();updateHud();}
 function showLine(){
- const q=queue[queueIndex],speaker=q[0],mood=q[3]||S.faceCues[q[1]]||'neutral';$('speaker').textContent=speaker?name(speaker):'おかえりの灯';$('dialogueText').textContent=q[1];const faceId={touma:'touma',nina:'nina','サエ':'sae','マロ':'maro','エルナ':'elna','オルフ':'orlf'}[speaker];$('portrait').className='portrait '+(faceId?faceId+' '+mood:'other');$('portrait').setAttribute('aria-label',name(speaker)+'の表情：'+({neutral:'通常',happy:'笑顔',shy:'照れ'}[mood]));$('portrait').textContent=faceId?'':'❄';$('choices').replaceChildren();$('nextDialogue').hidden=!!q[2];
+ const q=queue[queueIndex],speaker=q[0],mood=q[3]||S.faceCues[q[1]]||'neutral';$('speaker').textContent=speaker?name(speaker):'おかえりの灯';$('dialogueText').textContent=q[1];const faceId={touma:'touma',nina:'nina','サエ':'sae','マロ':'maro','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'}[speaker];$('portrait').className='portrait '+(faceId?faceId+' '+mood:'other');$('portrait').setAttribute('aria-label',name(speaker)+'の表情：'+({neutral:'通常',happy:'笑顔',shy:'照れ'}[mood]));$('portrait').textContent=faceId?'':speaker==='リツ'?'リツ':speaker==='ユラ'?'ユラ':'❄';$('choices').replaceChildren();$('nextDialogue').hidden=!!q[2];
  if(q[2])for(const [label,action] of q[2]){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{if(action)action();nextDialogue();};$('choices').append(b);}
 }
 function nextDialogue(){if(mode!=='dialogue')return;queueIndex++;if(queueIndex<queue.length){showLine();return;}$('dialogue').hidden=true;mode='explore';let done=afterTalk;afterTalk=null;if(done)done();updateHud();}
 function start(s,fromSave,key=normalSaveKey){saveKey=key;state=s;mode='explore';$('titleScreen').hidden=true;$('hud').hidden=false;$('modal').hidden=true;$('battleScreen').hidden=true;$('dialogue').hidden=true;renderer.reset(state);updateHud();canvas.focus();if(!fromSave){setMusic('opening');talk(S.intro,()=>{save();setMusic('village');});}else{travelMusic();if(state.pendingEvening)evening(state.pendingEvening);else toast('二人の旅を再開しました');}}
 function nearest(){return S.activeObjects(state).map(o=>({o,d:Math.hypot(o.x-state.x,o.y-state.y)})).filter(p=>p.d<1.65).sort((a,b)=>a.d-b.d)[0]?.o;}
-function switchLead(){if(mode!=='explore')return;state.lead=state.lead==='touma'?'nina':'touma';updateHud();save();tone(state.lead==='nina'?523:392,.12);}
+function switchLead(){if(mode!=='explore')return;if(state.episode&&OkaeriEpisodes.current(state)?.solo){toast('今は'+(state.lead==='nina'?'避難棚にいるニナ':'岸にいるトウマ')+'を操作しています。画面の目的を進めよう。');return;}state.lead=state.lead==='touma'?'nina':'touma';updateHud();save();tone(state.lead==='nina'?523:392,.12);}
 function scene(next,x,y){state.scene=next;travelMusic();state.x=x;state.y=y;renderer.reset(state);route=[];save();updateHud();}
 function interact(){if(mode==='dialogue'){if(!queue[queueIndex][2])nextDialogue();return;}if(mode!=='explore')return;const o=nearest();if(!o){toast('気になるものに近づいて、調べてみよう');return;}handle(o.id);}
-function handle(id){const f=state.flags;if(handleHouse(id))return;if(OkaeriSideStories.handle(id,{state,talk,save,updateHud,toast,openModal,closeModal}))return;if(['elna','orlf'].includes(id)){talk(S.residentLines(state,id));return;}if(OkaeriHill.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;if(OkaeriCanal.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;
+function episodeApi(){return {state,talk,save,updateHud,toast,scene,openModal,closeModal,startBattle};}
+function handle(id){const f=state.flags;if(state.episode&&OkaeriEpisodes.handle(id,episodeApi()))return;if(handleHouse(id))return;if(OkaeriSideStories.handle(id,{state,talk,save,updateHud,toast,openModal,closeModal}))return;if(['elna','orlf'].includes(id)){talk(S.residentLines(state,id));return;}if(OkaeriHill.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;if(OkaeriCanal.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;
  if(id==='board'){
   if(f.returned){talk([['','二枚の出発札は、並んで町の欄に戻っている。'],['nina',f.waterReturned?'今日も、二人で帰ってこられたね。':'今度は東の水路だね。帰ったらまた、ここに寄ろう。']]);return;}
   if(f.lit){f.returned=true;save();talk([['','トウマとニナは、二枚の出発札を並べて戻した。'],['サエ','おかえり。灯台の火、町からも見えたよ。'],['touma','ただいま。二人で、ともしてきました。'],['サエ','そうか。手は？　冷やしすぎてないかい。'],['nina','橋で少し。でも、待ってもらってから直しました。'],['サエ','うん。いい報告だ。'],['','サエは二枚の札を確かめて、傾いていた方を指先で直した。'],['touma','そこからでも、見えるんですね。札の傷。'],['サエ','毎日見てるからね。'],['マロ','お疲れさま！　焼き場も準備できたよ。まずは食べていって。'],['nina','……いい匂い。朝から楽しみにしてたんだ。'],['','濡れた外套を掛け、二人で食卓につく。\n冷たかった指先が、ゆっくり温まっていく。'],['nina','トウマ。明日も、一緒に行こうね。'],['touma','うん。お弁当、今度は俺が作る。'],['nina','じゃあ、飲み物は私。甘さ控えめ、だよね。']],()=>evening('one'));return;}
@@ -71,9 +73,11 @@ function startBattle(kind){setMusic('battle');
 function resolve(team=false){if(mode!=='battle')return;try{
  battle=C.resolveTurn(battle,team?{team:'flare'}:commands,order);tone(battle.status==='victory'?659:392,.15);classicBattle.showResult(battle);
  }catch(err){toast(err.message.replace('SP','MP'));classicBattle.begin(battle);}}
-function victory(){travelMusic();if(state.scene==='hill'){closeModal();$('battleScreen').hidden=true;mode='explore';state.flags.hillGuardian=true;save();updateHud();talk([['','枝角の番人は、ゆっくり雪の上に伏せた。荒れていた灯りが、穏やかに戻っている。'],['nina','待っててね。すぐに、灯台をともすから。'],['touma','今度は俺たちが、帰り道を守る。']]);return;}if(state.scene==='canal'){closeModal();$('battleScreen').hidden=true;mode='explore';state.flags.canalCrab=true;save();updateHud();talk([['','ヤドカリは、温まった水の中へそっと降りていった。'],['nina','帰る場所、見つかったね。'],['touma','俺たちも、水を家まで連れていこう。']]);return;}closeModal();$('battleScreen').hidden=true;mode='explore';state.flags[battle.kind]=true;save();updateHud();
+function victory(){travelMusic();if(state.episode&&OkaeriEpisodes.current(state)?.battle){$('battleScreen').hidden=true;mode='explore';OkaeriEpisodes.won(episodeApi());return;}if(state.scene==='hill'){closeModal();$('battleScreen').hidden=true;mode='explore';state.flags.hillGuardian=true;save();updateHud();talk([['','枝角の番人は、ゆっくり雪の上に伏せた。荒れていた灯りが、穏やかに戻っている。'],['nina','待っててね。すぐに、灯台をともすから。'],['touma','今度は俺たちが、帰り道を守る。']]);return;}if(state.scene==='canal'){closeModal();$('battleScreen').hidden=true;mode='explore';state.flags.canalCrab=true;save();updateHud();talk([['','ヤドカリは、温まった水の中へそっと降りていった。'],['nina','帰る場所、見つかったね。'],['touma','俺たちも、水を家まで連れていこう。']]);return;}closeModal();$('battleScreen').hidden=true;mode='explore';state.flags[battle.kind]=true;save();updateHud();
  const lines=battle.kind==='mochi'?[['','雪玉たちは、すっかり小さくなって道端へ跳ねていった。'],['nina','あったかくなったんだね。よかった。'],['touma','この先、小屋がある。お昼にしよう。']]:battle.kind==='crab'?[['','氷の溶けたカップから、小さなはさみがのぞく。\nヤドカリは水路へ、ことこと歩いていった。'],['nina','あのカップ、誰かの忘れ物かな。'],['touma','今はあいつの家だな。']]:[['','枝角の番人が、ゆっくり頭を下げる。\n二人は巣を受け取り、低い木の枝へ戻した。'],['nina','ここなら、風も当たらないよ。'],['touma','……守ってたんだな。ずっと。'],['','苔の上で、小鳥が一声鳴いた。'],['nina','さあ。私たちも、灯りをつけよう。']];talk(lines);}
-function journal(){if(!['explore','title'].includes(mode))return;if(mode==='title'){openModal('<span class="tag">はじめに</span><h2>二人で、灯りを届ける</h2><p>森・水路・丘・帰り灯祭りと三つの結末を遊べる試作版です。町の人と話し、二人の得意なことを使って道を開きましょう。本編二時間分はまだ入っていません。</p><p>操作：矢印 / WASDで移動、E・Enterで調べる、Qで先頭交代。地面や人物をクリックしても移動できます。</p>',[['閉じる',closeModal,true]],'title');return;}
+function journal(){if(!['explore','title'].includes(mode))return;
+ if(mode==='explore'&&state.episode){const ep=state.episode,e=OkaeriEpisodes.current(state);const buttons=[['閉じる',closeModal,true]];if(e&&!ep.complete)buttons.push(['目的地のあるマップへ',()=>{closeModal();scene(e.scene,...OkaeriEpisodes.spawns[e.scene]);}]);openModal('<h2>'+OkaeriEpisodes.title(state)+'</h2><p>'+(OkaeriEpisodes.objective(state)||S.objective(state))+'</p>'+OkaeriEpisodesData.titles.map((t,i)=>'<p>'+(i+1<ep.chapter?'✓ ':i+1===ep.chapter?'→ ':'○ ')+(i+1)+'. '+t+'</p>').join('')+'<h3>二人の思い出</h3>'+((globalThis.OkaeriActivities?.notes(state)||[]).map(n=>'<p>◆ '+n+'</p>').join('')||'<p>二人で選んだことが、ここに残ります。</p>')+'<p>リツ：町に戻った水番。ユラ：二人を幼い頃から知る診療所の先生。</p>',buttons,'explore');return;}
+if(mode==='title'){openModal('<span class="tag">はじめに</span><h2>二人で、灯りを届ける</h2><p>森・水路・丘・帰り灯祭りと三つの結末を遊べる試作版です。町の人と話し、二人の得意なことを使って道を開きましょう。本編二時間分はまだ入っていません。</p><p>操作：矢印 / WASDで移動、E・Enterで調べる、Qで先頭交代。地面や人物をクリックしても移動できます。</p>',[['閉じる',closeModal,true]],'title');return;}
  const steps=[['board','出発札を掛ける'],['mochi','こごえモチを落ち着かせる'],['log','トウマで倒木を動かす'],['repair','ニナで灯りの橋を修理する'],['crab','氷殻を火花で溶かす'],['guardian','枝角の番人と向き合う'],['lit','二人で灯台をともす'],['returned','出発札を戻して、ただいま'],['canalStarted','共同水路の依頼を受ける'],['waterGate','トウマで水門を支える'],['canalCrab','水路のヤドカリを落ち着かせる'],['waterFlow','ニナで調整灯をつなぐ'],['waterLit','水路の帰り灯をともす'],['waterReturned','マロに水の便りを届ける'],['hillStarted','風待ちの丘へ出発'],['windbreak','トウマで風よけを直す'],['hillGuardian','尾根の番人を落ち着かせる'],['hillLens','ニナでレンズを合わせる'],['hillLit','丘の灯台をともす'],['festivalStarted','帰り灯祭りへ'],['festivalMeal','二人でスープを食べる'],['festivalRibbon','帰り結びを贈り合う']];
  const html='<span class="tag">旅の手帳</span><h2>二人の灯守日誌</h2><p>'+S.objective(state)+'</p>'+steps.map(([k,v])=>'<div class="journal-step"><span>'+(state.flags[k]?'✓':'○')+'</span>'+v+'</div>').join('')+'<h3>町の人との寄り道</h3>'+OkaeriSideStories.notes(state).map(n=>'<div class="journal-step"><span>'+(n.done?'✓':'◇')+'</span><div><strong>'+n.title+'</strong><br>'+n.text+'</div></div>').join('')+'<h3>道中の思い出</h3><p>'+(state.flags.bread?'焼き菓子をもらった。':'パン屋には、いい匂いがしている。')+'<br>'+(state.flags.rest?'小屋で、二人のお昼を食べた。':'森の小屋で、ひと休みできそう。')+'</p><p>'+(state.flags.canalRest?'水番の休憩所で、次の人の薪を残した。':'共同水路にも、小さな休憩所がある。')+'</p><h3>二人の得意なこと</h3><p>トウマ：倒木を動かす / 崩し斬り・かばう<br>ニナ：灯りの修理 / 火花・回復<br>戦闘では毎回HP・SPが満タンで始まる試作仕様です。</p>';
  const btns=[['冒険に戻る',closeModal,true]];if(state.flags.lit&&state.scene==='forest')btns.push(['町へ帰る',()=>{closeModal();scene('town',12,3);}]);openModal(html,btns,'explore');}
@@ -83,13 +87,14 @@ function menu(){if(mode==='title'){journal();return;}if(mode==='dialogue'||mode=
 function evening(key){
  state.pendingEvening=key;scene('house',11,11);
  talk(S.nightScenes[key],()=>{delete state.pendingEvening;state.flags['night'+key[0].toUpperCase()+key.slice(1)]=true;save();
+ if(state.episode&&key==='one'){state.episode.complete=true;save();OkaeriEpisodes.endDay(episodeApi());return;}
  const end=S.endings[key];openModal('<span class="tag">'+(end?'おかえりの灯 · END':'一日の終わり')+'</span><h2>'+(end?end.title:key==='three'?'祭りの支度ができた':'おやすみ。また明日')+'</h2><p>'+(end?'同じ家から、二人の明日が続いていきます。遊んでくれて、ありがとうございます。':key==='three'?'家で着替えた二人は、これから帰り灯祭りへ。':'炉のそばに二人分のカップ。今日のことを、家に置いて眠ろう。')+'</p>',[['家で過ごす',closeModal,true],[key==='three'?'二人で祭りへ':end?'町へ出る':'翌朝、町へ',()=>{closeModal();scene('town',3,13);}]],'explore');});
 }
 function handleHouse(id){
  if(id==='ourHome'){scene('house',12,12);return true;}
  if(state.scene!=='house')return false;
  if(id==='houseExit'){scene('town',3,13);return true;}
- if(id==='homeTable'){
+ if(id==='homeTable'){if(state.episode){if(state.episode.complete)OkaeriEpisodes.endDay(episodeApi());else talk([['nina','今日の用事が済んだら、ここで話そうね。'],['touma','うん。お茶の分の薪は、残しておこう。']]);return true;}
  const options=[['one','returned','第一話 · 二つのカップ'],['two','waterReturned','第二話 · 味見の距離'],['three','festivalStarted','第三話 · いつもと違う支度'],['touma','endingTouma','最終話 · 恋人になった家'],['nina','endingNina','最終話 · 返事の続き'],['friends','endingFriends','最終話 · 明日の席']].filter(([,flag])=>state.flags[flag]);
  openModal('<h2>二人の食卓</h2><p>今日のことを、少し話そう。終えた章の夜を読み返せます。</p>',[...options.map(([key,,label])=>[label,()=>{closeModal();evening(key);}]),['今はお茶にする',()=>{closeModal();talk([['nina','お湯、沸いてるよ。'],['touma','じゃあ、二人分。']]);},true]],'explore');return true;
  }
@@ -116,6 +121,8 @@ async function toggleSound(){
 }
 setMusic('opening');
 function chapterSelect(){
+ if(globalThis.OkaeriEpisodes){const enter=(n,r=null)=>{start(OkaeriEpisodes.create(n,r),n!==1,chapterSaveKey);save();};const buttons=OkaeriEpisodesData.titles.map((t,i)=>['第'+(i+1)+'話 · '+t,()=>{if(i===9){openModal('<h2>第10話の関係を選ぶ</h2><p>章選択用です。通常の旅の選択は変わりません。</p>',[['トウマから告白して恋人',()=>enter(10,'touma'),true],['ニナから告白して恋人',()=>enter(10,'nina')],['今の二人のまま',()=>enter(10,'friends')],['戻る',chapterSelect]],'title');}else enter(i+1);}]);let replay=null;try{replay=C.restoreSave(localStorage.getItem(chapterSaveKey));}catch{}if(replay)buttons.push(['章選択の旅の続き',()=>start(replay,true,chapterSaveKey)]);buttons.push(['戻る',closeModal]);openModal('<h2>十話の帰り道</h2><p>通常の旅と章選択は別々に保存します。第9・10話には結末の内容が含まれます。</p>',buttons,'title');return;}
+
  const enter=id=>{const s=OkaeriChapters.create(id);start(s,id!==1,chapterSaveKey);if(id===2)handle('canalExit');if(id===3)handle('hillExit');if(id===4)handle('festivalStart');save();};
  const names=['第一話 · 森の灯台','第二話 · 水音の帰る道','第三話 · 風待ちの丘','最終話 · 帰り灯祭り'];
  const buttons=names.map((n,i)=>[n,()=>enter(i+1),i===2]);let replay=null;try{replay=C.restoreSave(localStorage.getItem(chapterSaveKey));}catch{}

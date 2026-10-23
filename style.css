@@ -13,3 +13,7 @@
 .portrait.maro{background-position:0% 100%}.portrait.sae.happy{background-position:100% 0%}.portrait.maro.happy{background-position:100% 100%}
 
 .portrait.elna,.portrait.orlf{background-image:url("assets/residents-atlas.png");background-size:300% 200%;background-position:50% 0%;background-repeat:no-repeat;border:2px solid #d4c7a7;box-shadow:none}.portrait.elna.happy{background-position:100% 0%}.portrait.orlf{background-position:50% 100%}.portrait.orlf.happy{background-position:100% 100%}
+
+
+
+.portrait.ritsu,.portrait.yura{background-image:url("assets/ritsu-yura-atlas.png");background-size:300% 200%;background-position:50% 0%;background-repeat:no-repeat;border:2px solid #d4c7a7;box-shadow:none}.portrait.ritsu.happy{background-position:100% 0%}.portrait.yura{background-position:50% 100%}.portrait.yura.happy{background-position:100% 100%}

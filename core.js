@@ -84,6 +84,10 @@ function resolveTurn(input,commands,order){
 }
 function restoreSave(raw){try{
  const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill','house'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
+ let memories;
+ if(s.memories!==undefined){if(!s.memories||typeof s.memories!=='object'||Array.isArray(s.memories))return null;const allowed={gift:['tea','bookmark'],sled:['aligned'],window:['sealed'],signal:['waited'],ritsuReturn:['read'],yuraRounds:['read'],unsentLetter:['read'],stormThanks:['read']};memories={};for(const [k,v] of Object.entries(s.memories)){if(!allowed[k]?.includes(v))return null;memories[k]=v;}}
+ let episode;
+ if(s.episode!==undefined){const e=s.episode,counts=[0,0,4,6,4,4,4,4,5,4,4];if(!e||!Number.isInteger(e.chapter)||e.chapter<1||e.chapter>10||!Number.isInteger(e.step)||e.step<0||e.step>counts[e.chapter]||typeof e.complete!=='boolean'||![null,'touma','nina','friends'].includes(e.route)||((e.chapter<9)&&e.route!==null)||(e.chapter===10&&!e.route)||(e.chapter===9&&((e.step>=3)!==!!e.route))||(e.chapter>1&&e.complete!==(e.step===counts[e.chapter])))return null;episode={chapter:e.chapter,step:e.step,route:e.route,complete:e.complete};}
  const flags={};for(const key of ['board','bread','mochi','log','rest','repair','crab','guardian','lit','returned','lamp','sae','gift','canalStarted','waterGate','canalCrab','waterFlow','waterLit','canalRest','waterReturned','hillStarted','windbreak','hillGuardian','hillLens','hillLit','hillRest','festivalStarted','festivalMeal','festivalRibbon','endingTouma','endingNina','endingFriends','sewingAsked','sewingFound','sewingReturned','seamVisible','signAsked','signFixed','signReported','waitingPost','waitingLit','waitingRest','waitingReported','nightOne','nightTwo','nightThree','nightTouma','nightNina','nightFriends'])flags[key]=s.flags[key]===true;
  if((flags.lit&&!flags.guardian)||(flags.guardian&&!flags.repair)||(flags.repair&&!flags.log)||(flags.log&&!flags.mochi)||(s.scene==='forest'&&!flags.board))return null;
  if((s.scene==='canal'&&(!flags.canalStarted||!flags.returned||!flags.lit))||(flags.waterGate&&!flags.canalStarted)||(flags.canalCrab&&!flags.waterGate)||(flags.waterFlow&&!flags.canalCrab)||(flags.waterLit&&!flags.waterFlow)||(flags.waterReturned&&!flags.waterLit))return null;
@@ -95,7 +99,7 @@ function restoreSave(raw){try{
  if(s.scene==='house'&&(s.x<3||s.x>20||s.y<3||s.y>13))return null;
  for(const [key,requirement] of Object.entries(nightRequirements))if(flags['night'+key[0].toUpperCase()+key.slice(1)]&&!flags[requirement])return null;
  if(s.pendingEvening&&(!nightRequirements[s.pendingEvening]||!flags[nightRequirements[s.pendingEvening]]||s.scene!=='house'))return null;
- return {...(s.pendingEvening?{pendingEvening:s.pendingEvening}:{}),version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
+ return {...(memories?{memories}:{}),...(episode?{episode}:{}),...(s.pendingEvening?{pendingEvening:s.pendingEvening}:{}),version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
  }catch{return null;}}
 function chooseEnding(choice,courage,response){if(choice==='confess')return 'touma';if(choice==='stay')return 'friends';if(choice==='wait'){if(courage<2)return 'ask';return response==='yes'?'nina':response==='notYet'?'friends':'confession';}return 'friends';}
 const C={newBattle,actions,resolveTurn,intentions,restoreSave,chooseEnding};if(typeof module!=='undefined')module.exports=C;root.OkaeriCore=C;

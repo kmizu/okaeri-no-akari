@@ -7,10 +7,10 @@ const skills={
 const common=[{id:'guard',name:'防御',cost:0,desc:'このターン受けるダメージを半減。'},{id:'rescue',name:'手を貸す',cost:0,desc:'倒れた相手をHP30％で起こす。'},{id:'herb',name:'薬草',cost:0,desc:'味方一人のHPを45回復。冷えも解除。',target:'ally'}];
 const clone=x=>JSON.parse(JSON.stringify(x));
 const enemy=(name,hp,type,ice=false)=>({name,hp,max:hp,type,ice,broken:0});
-function newBattle(kind){
+function newBattle(kind,options={}){
  const groups={mochi:[enemy('こごえモチ',38,'mochi'),enemy('こごえモチ',38,'mochi')],crab:[enemy('こおりヤドカリ',65,'crab',true)],guardian:[enemy('枝角の番人',230,'guardian')]};
  if(!groups[kind])throw Error('Unknown encounter');
- return {kind,turn:1,gauge:0,items:3,status:'active',logs:[],enemies:groups[kind],heroes:{touma:{name:'トウマ',hp:120,max:120,sp:6,maxSp:6,chill:0,buff:0},nina:{name:'ニナ',hp:90,max:90,sp:8,maxSp:8,chill:0,buff:0}}};
+ return {kind,turn:1,gauge:0,items:3,status:'active',logs:[],...(options.support?{support:options.support}:{}),enemies:groups[kind],heroes:{touma:{name:'トウマ',hp:120,max:120,sp:6,maxSp:6,chill:0,buff:0},nina:{name:'ニナ',hp:90,max:90,sp:8,maxSp:8,chill:0,buff:0}}};
 }
 function intentions(b){return b.enemies.map((e,i)=>{
  if(e.hp<=0)return null;
@@ -74,6 +74,11 @@ function resolveTurn(input,commands,order){
    emit((covered?'トウマがニナをかばった！ ':'')+h.name+'に '+n+' ダメージ。',{type:'hurt',hero:target,source:i,amount:n,covered},'enemy:'+i);
    if(counters.has(target)&&h.hp>0){hit(e,24,false,target);counters.delete(target);}
   }
+ }
+ // 支え役（コハル）は命令を受けない。毎ターンの終わりに、いちばん冷えている一人の手を温める。
+ if(b.support&&b.enemies.some(e=>e.hp>0)){
+  const need=Object.entries(b.heroes).filter(([,h])=>h.hp>0&&(h.hp<h.max||h.chill>0)).sort((x,y)=>x[1].hp/x[1].max-y[1].hp/y[1].max)[0];
+  if(need){const [id,h]=need,before=h.hp;h.hp=Math.min(h.max,h.hp+12);h.chill=0;emit('コハルの温め草。'+h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before},'koharu');}
  }
  if(cooperation)b.gauge=Math.min(3,b.gauge+1);
  for(const h of Object.values(b.heroes)){h.chill=Math.max(0,h.chill-1);h.buff=Math.max(0,h.buff-1);}

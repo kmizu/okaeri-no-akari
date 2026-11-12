@@ -57,6 +57,14 @@ function ambient(s){
  const bed=indoors?'hearth':weather==='blizzard'?'blizzard':s.scene==='canal'?(flood?'flood':'water'):s.scene==='town'?(ep?.chapter===9?'crowd':'night'):'wind';
  return {time,weather,bgm,bed,indoors};
 }
+// コハルが三人目として一緒に歩く場面。
+function companion(s){
+ const ep=s.episode;if(!ep||ep.complete||['house','lampworkshop'].includes(s.scene)||root.OkaeriJourney?.active(s))return false;
+ if(ep.chapter===5)return ep.step===2&&s.scene==='hill';
+ if(ep.chapter===8)return ep.step>=1&&s.scene==='hill';
+ if(ep.chapter===10)return (ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=1);
+ return false;
+}
 function setBase(a){stage.time=a.time;stage.weather=a.weather;}
 function time(){return stage.over.time||stage.time;}
 function weather(){return stage.over.weather||stage.weather;}
@@ -171,7 +179,7 @@ function charCost(ch,slow=1){
  const base=ch==='\n'?190:'。！？'.includes(ch)?240:'、'.includes(ch)?130:'…―—'.includes(ch)?150:'　 '.includes(ch)?60:30;
  return base*slow;
 }
-const speakerIds={'サエ':'sae','マロ':'bakery','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'};
-root.OkaeriDirector={MOODS,MARKS,markSvg,normalize,mood,stage,ambient,setBase,time,weather,apply,fade,emote,clearOverrides,pre,light,weatherLayer,post,charCost,reduced,speakerIds,now};
+const speakerIds={'コハル':'koharu','サエ':'sae','マロ':'bakery','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'};
+root.OkaeriDirector={companion,MOODS,MARKS,markSvg,normalize,mood,stage,ambient,setBase,time,weather,apply,fade,emote,clearOverrides,pre,light,weatherLayer,post,charCost,reduced,speakerIds,now};
 if(typeof module!=='undefined')module.exports=root.OkaeriDirector;
 })(typeof globalThis!=='undefined'?globalThis:this);

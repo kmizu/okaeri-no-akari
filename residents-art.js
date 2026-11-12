@@ -8,6 +8,8 @@ function loadAtlas(src,ids){return new Promise((resolve,reject)=>{const img=new 
   c.putImageData(pixels,0,0);const f=document.createElement('canvas');f.width=r-l+1;f.height=bottom-top+1;f.getContext('2d').drawImage(cv,l,top,f.width,f.height,0,0,f.width,f.height);frames[id]=f;
  }resolve();}catch(e){reject(e);}};img.onerror=()=>reject(Error('住人の画像を読み込めませんでした'));img.src=src;});}
 const ready=Promise.all([loadAtlas(root.OkaeriResidentsImage,["elna","orlf"]),...(root.OkaeriNewResidentsImage?[loadAtlas(root.OkaeriNewResidentsImage,["ritsu","yura"])]:[])]);
+// コハルの立ち絵は背景を抜いた一枚絵。読めなくても他の住人は表示する。
+const koharu=new Image();koharu.onload=()=>{frames.koharu=koharu;};koharu.src='assets/koharu-town-cut.png';
 function drawMap(c,id,x,y){const f=frames[id];if(!f)return;const h=76,w=f.width/f.height*h;c.save();c.fillStyle='#29475940';c.beginPath();c.ellipse(x,y+8,20,5,0,0,Math.PI*2);c.fill();c.drawImage(f,x-w/2,y+11-h,w,h);c.restore();}
 root.OkaeriResidentsArt={ready,drawMap};
 })(globalThis);

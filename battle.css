@@ -68,3 +68,7 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
 
 
 
+
+/* コハル（支え役）。命令は受けず、毎ターンの終わりに温め草を使う。 */
+.actor-koharu .hero-battle-sprite{background:url('assets/koharu-battle-quarter.png') 0% 0%/300% 100% no-repeat}
+.actor-koharu{--unit-size:clamp(88px,16cqw,140px)}

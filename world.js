@@ -2,8 +2,8 @@
 'use strict';
 const W=1152,H=768,T=48;
 let lightLog=null; // 背景を描く間、ともっている灯りの位置を控える（夜の光に使う）
-function Renderer(canvas){this.c=canvas.getContext('2d');this.t=0;this.p={x:600,y:504,dir:'down'};this.f={x:600,y:552,dir:'down'};this.target={x:600,y:504};this.follow={x:600,y:552};this.cache={};}
-Renderer.prototype.reset=function(s){const x=s.x*48+24,y=s.y*48+24;this.p={x,y,dir:'down'};this.f={x:x-24,y:y+28,dir:'down'};this.target={x,y};this.follow={x:x-24,y:y+28};};
+function Renderer(canvas){this.c=canvas.getContext('2d');this.t=0;this.p={x:600,y:504,dir:'down'};this.f={x:600,y:552,dir:'down'};this.target={x:600,y:504};this.follow={x:600,y:552};this.g={x:600,y:590,dir:'down'};this.follow2={x:600,y:590};this.cache={};}
+Renderer.prototype.reset=function(s){const x=s.x*48+24,y=s.y*48+24;this.p={x,y,dir:'down'};this.f={x:x-24,y:y+28,dir:'down'};this.target={x,y};this.follow={x:x-24,y:y+28};this.g={x:x+22,y:y+44,dir:'down'};this.follow2={x:x+22,y:y+44};};
 const ellipse=(c,x,y,rx,ry,color)=>{c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();};
 const rect=(c,x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
 const line=(c,pts,color,width=2)=>{c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();};
@@ -338,7 +338,7 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='npc'){if(['elna','orlf'].includes(o.id))OkaeriResidentsArt.drawMap(c,o.id,x,y);else OkaeriCast.drawMap(c,o.id==='sae'?'sae':'maro',x,y,t);}
   if(o.type==='lamp')lantern(c,x,y);
   if(o.type==='episodeEvent'){if(o.base?.type==='npc'){if(['elna','orlf'].includes(o.base.id))OkaeriResidentsArt.drawMap(c,o.base.id,x,y);else OkaeriCast.drawMap(c,o.base.id==='sae'?'sae':'maro',x,y,t);}ellipse(c,x,y+4,23,9,'#e1c58288');line(c,[[x-16,y-5],[x,y-18],[x+16,y-5]],'#ffe2a4',3);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#fff1cc';c.fillText('◆',x,y-27);}
-  if(o.type==='episodeNpc'||(o.type==='episodeEvent'&&['リツ','ユラ'].includes(o.person))){OkaeriResidentsArt.drawMap(c,o.id==='yura'||o.person==='ユラ'?'yura':'ritsu',x,y);}
+  if(o.type==='episodeNpc'||(o.type==='episodeEvent'&&['リツ','ユラ'].includes(o.person))){OkaeriResidentsArt.drawMap(c,o.id==='koharu'?'koharu':o.id==='yura'||o.person==='ユラ'?'yura':'ritsu',x,y);}
   if(o.type==='basket'){ellipse(c,x,y,16,10,'#978468');rect(c,x-12,y-12,24,11,'#cab699');line(c,[[x-13,y-10],[x-8,y-24],[x+8,y-24],[x+13,y-10]],'#837258',3);}
   if(o.type==='log'){line(c,[[x-10,y-43],[x+12,y+44]],'#766855',23);line(c,[[x-11,y-41],[x+10,y+40]],'#e3e8db',7);}
   if(o.type==='repair'){lantern(c,x+33,y-20,s.flags.repair);if(!s.flags.repair){line(c,[[x-15,y-5],[x+11,y+5]],'#ae8a59',4);ellipse(c,x,y-5,6,6,'#dfbb77');}}
@@ -351,14 +351,17 @@ Renderer.prototype.draw=function(s,time,mode){
   if(distance<2&&mode==='explore'){ellipse(c,x,y-(o.type==='guardian'?115:o.type==='npc'?82:56)+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(o.type==='guardian'?111:o.type==='npc'?78:52)+Math.sin(t*3)*2);}
  }});}
  const tx=s.x*T+24,ty=s.y*T+24;
- if(tx!==this.target.x||ty!==this.target.y){this.follow={...this.target};this.p.dir=OkaeriSprites.facing(tx-this.target.x,ty-this.target.y,this.p.dir);this.target={x:tx,y:ty};}
+ if(tx!==this.target.x||ty!==this.target.y){this.follow2={...this.follow};this.follow={...this.target};this.p.dir=OkaeriSprites.facing(tx-this.target.x,ty-this.target.y,this.p.dir);this.target={x:tx,y:ty};}
  this.p.x+=(tx-this.p.x)*.22;this.p.y+=(ty-this.p.y)*.22;
  const moving=Math.hypot(tx-this.p.x,ty-this.p.y)>1;
  const fx=this.follow.x-this.f.x,fy=this.follow.y-this.f.y;
  this.f.dir=OkaeriSprites.facing(fx,fy,this.f.dir);this.f.x+=fx*.22;this.f.y+=fy*.22;
  const followersMoving=Math.hypot(fx,fy)>1;
+ const gx=this.follow2.x-this.g.x,gy=this.follow2.y-this.g.y;this.g.dir=OkaeriSprites.facing(gx,gy,this.g.dir);this.g.x+=gx*.2;this.g.y+=gy*.2;
+ const third=D?.companion(s)&&OkaeriSprites.has?.('koharu');
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
  const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
+ if(third)shown.push({...this.g,id:'koharu',moving:Math.hypot(gx,gy)>1});
  for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
  if(s.scene==='canal'&&((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||D?.stage.over.flood)){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
@@ -372,6 +375,7 @@ Renderer.prototype.draw=function(s,time,mode){
  D?.post(c,time,who=>{
   if(who===s.lead)return {x:this.p.x,y:this.p.y-82-lift};
   if(who===follower)return drawnParty.includes(who)?{x:this.f.x,y:this.f.y-82-lift}:null;
+  if(who==='コハル'&&third)return {x:this.g.x,y:this.g.y-78-lift};
   const id=D.speakerIds[who];if(!id)return null;
   const o=objects.find(o=>o.id===id||o.base?.id===id||(o.person===who)||(o.type==='journeyProp'&&o.kind===id));
   return o?{x:o.x*T+24,y:o.y*T+24-96-lift}:null;

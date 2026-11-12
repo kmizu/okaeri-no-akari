@@ -28,18 +28,22 @@ function openModal(html,buttons,returnMode=mode){Sfx?.play('page');modalReturn=r
 }
 function closeModal(){ $('modal').hidden=true;mode=modalReturn;canvas.focus();updateHud(); }
 function talk(lines,done){held={};route=[];queue=lines.map(D.normalize);queueIndex=0;afterTalk=done;talkSerial++;mode='dialogue';$('dialogue').hidden=false;showLine();updateHud();}
-const faceIds={touma:'touma',nina:'nina','サエ':'sae','マロ':'maro','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'};
+const koharuFaces={happy:1,joy:1,shy:2,fluster:2,love:2,angry:3,sad:4},Stills=globalThis.OkaeriStills;
+const faceIds={'コハル':'koharu',touma:'touma',nina:'nina','サエ':'sae','マロ':'maro','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'};
 function showLine(){
- const q=queue[queueIndex],speaker=q.speaker,moodName=q.mood||S.faceCues[q.text]||'neutral',m=D.mood(moodName),faceId=faceIds[speaker],cue=q.cue||{};
+ const q=queue[queueIndex],speaker=q.speaker,moodName=q.mood||S.faceCues[q.text]||'neutral',faceId=faceIds[speaker],cue=q.cue||{};
+ // コハルは「ふくれ顔」「泣きそう」の絵を持つので、その二つは記号を重ねない。
+ let m=D.mood(moodName);if(faceId==='koharu'&&['angry','sad'].includes(moodName))m={face:m.face};
  $('dialogue').className='dialogue'+(speaker?'':' narration')+(m.tone?' tone-'+m.tone:'');
  $('speaker').textContent=speaker?name(speaker):'';$('dialogueText').textContent=q.text;
- $('portrait').className='portrait '+(faceId?faceId+' '+m.face:'other');$('portrait').setAttribute('aria-label',speaker?name(speaker)+'の表情：'+({neutral:'通常',happy:'笑顔',shy:'照れ'}[m.face]):'語り');$('portrait').textContent=faceId?'':speaker?speaker.slice(0,2):'';
+ $('portrait').className='portrait '+(faceId?faceId+' '+m.face:'other');$('portrait').style.setProperty?.('--k',faceId==='koharu'?(koharuFaces[moodName]||0):0);$('portrait').setAttribute('aria-label',speaker?name(speaker)+'の表情：'+({neutral:'通常',happy:'笑顔',shy:'照れ'}[m.face]):'語り');$('portrait').textContent=faceId?'':speaker?speaker.slice(0,2):'';
  $('portraitMark').innerHTML=speaker&&m.mark?D.markSvg(m.mark):'';$('portraitMark').hidden=!(speaker&&m.mark);
  $('choices').replaceChildren();$('nextDialogue').hidden=!!q.choices;
  if(q.choices)for(const [label,action] of q.choices){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{finishTyping();Sfx?.play('confirm');if(action)action();nextDialogue();};$('choices').append(b);}
  // きっかけ: 画面は Director、音はここで鳴らす。
  D.apply(cue,speaker);if(m.mark&&speaker&&!cue.emote)D.emote(speaker,m.mark);
  if(cue.bgm!==undefined)musicCue(cue.bgm);
+ if(cue.still!==undefined)Stills?.show(cue.still);
  if(cue.jingle)bgm.jingle?.(cue.jingle);
  for(const se of [].concat(cue.se||[]))Sfx?.play(se);
  if(m.mark&&speaker)Sfx?.play('pop');
@@ -60,7 +64,7 @@ function nextDialogue(){if(mode!=='dialogue')return;
  queueIndex++;if(queueIndex<queue.length){showLine();return;}
  $('dialogue').hidden=true;mode='explore';typing=null;const serial=talkSerial;let done=afterTalk;afterTalk=null;if(done)done();
  // 続けて次の会話が始まっていなければ、会話中だけの演出（時間帯・曲の指定）を解く。
- if(serial===talkSerial){D.clearOverrides();updateHud();musicCue(null);}
+ if(serial===talkSerial){D.clearOverrides();Stills?.hide();updateHud();musicCue(null);}
 }
 function playOpening(step=0){
  const part=S.opening[step];state.openingStage=step;scene(part.scene,part.x,part.y);setMusic('opening');
@@ -247,7 +251,7 @@ function handle(id){const f=state.flags;if(state.episode&&OkaeriEpisodes.handle(
   ['touma','芯の軸が傾いてた。……よし、立った。ニナ、火を。'],
   ['nina','うん。ランタン、開けるね。'],
   ['','ニナがランタンの種火を、細い芯に移す。灯術の火は、息をひそめるように小さい。\nそれが灯台の大きな芯に触れて――',{bgm:'silence',wait:300}],
-  ['','森の灯台に、あたたかな光が満ちた。',{flash:'warm',se:'lit',jingle:'lit',time:'dusk',lit:true}],
+  ['','森の灯台に、あたたかな光が満ちた。',{still:'chapter-01',flash:'warm',se:'lit',jingle:'lit',time:'dusk',lit:true}],
   ['nina','……ともった！','happy'],
   ['touma','ああ。ともったな。','happy'],
   ['','光が雪の稜線をなぞる。分かれ道の道標が、遠くにひとつ浮かび上がった。\nその下を、荷車の小さな影が動いている。',{bgm:'tender'}],
@@ -269,7 +273,7 @@ function handle(id){const f=state.flags;if(state.episode&&OkaeriEpisodes.handle(
 }
 let classicBattle=null;
 function startBattle(kind){setMusic('battle');
- battleOrigin=kind;battle=C.newBattle(kind);order=['touma','nina'];commands={};mode='battle';held={};route=[];$('battleScreen').hidden=false;
+ battleOrigin=kind;battle=C.newBattle(kind,D.companion(state)?{support:'koharu'}:{});order=['touma','nina'];commands={};mode='battle';held={};route=[];$('battleScreen').hidden=false;
  if(!classicBattle)classicBattle=new OkaeriBattle.BattleUI($('battleScreen'),{
   onTurn:(selected,team)=>{commands=selected;resolve(team);},
   onVictory:victory,onRetry:()=>startBattle(battleOrigin),
@@ -368,7 +372,7 @@ function chapterSelect(){
  buttons.push(['戻る',closeModal]);
  openModal('<span class="tag">CHAPTER SELECT</span><h2>好きな章から始める</h2><p>通常の「つづきから」のセーブは残ります。章選択の旅は別枠に保存します。</p><p>各章は必要な前章の出来事を完了した状態で始まります。章を選び直すと、前の章選択の旅は置き換わります。後の章には物語のネタバレがあります。</p>',buttons,'title');
 }
-$('chapterButton').onclick=chapterSelect;
+$('chapterButton').onclick=chapterSelect;$('galleryButton').onclick=()=>Stills?.gallery(openModal,closeModal);
 $('startButton').onclick=()=>{if(saved)openModal('<h2>新しい一日を始める</h2><p>保存済みの旅を、新しい旅で上書きします。</p>',[['新しく始める',()=>start(fresh(),false),true],['戻る',closeModal]],'title');else start(fresh(),false);};
 $('continueButton').onclick=()=>{let s;try{s=C.restoreSave(localStorage.getItem(normalSaveKey));}catch{}if(s)start(s,true);else toast('保存データを読めません。はじめから遊べます');};
 $('nextDialogue').onclick=nextDialogue;$('leadButton').onclick=switchLead;$('interactButton').onclick=interact;$('journalButton').onclick=journal;$('menuButton').onclick=menu;$('soundButton').onclick=toggleSound;

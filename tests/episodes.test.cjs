@@ -63,3 +63,9 @@ test('the night after the festival differs when Touma went to find Koharu',()=>{
  assert.ok(C.restoreSave(JSON.stringify(E.create(10,'koharu'))));
  const b=E.create(9);b.episode.step=3;b.episode.route='both';assert.match(text(b),/一晩考える/);assert.ok(C.restoreSave(JSON.stringify(E.create(10,'both'))));
 });
+test('every still is cued somewhere in the script and has its web image',()=>{
+ const fs=require('node:fs'),path=require('node:path'),Stills=require('../stills.js');
+ const script=fs.readFileSync(path.join(__dirname,'..','episodes-data.js'),'utf8')+fs.readFileSync(path.join(__dirname,'..','game.js'),'utf8');
+ assert.equal(Stills.list.length,15);
+ for(const s of Stills.list){assert.ok(script.includes("still:'"+s.id+"'"),s.id);for(const f of [s.src,s.thumb])assert.ok(fs.existsSync(path.join(__dirname,'..',f)),f);}
+});

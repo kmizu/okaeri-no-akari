@@ -41,3 +41,20 @@
 html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 #toast,.masthead nav button,.lead,.objective,.location,.modal-card,#controls button{color:var(--ink)}
 #controls{color:#91aeb1}
+
+/* ---- イベントスチル ---- */
+.still{position:absolute;inset:0;z-index:9;background:#0b1c26 center/cover no-repeat;opacity:0;transition:opacity .7s ease}
+.still.is-shown{opacity:1}
+#stage:has(.still.is-shown) #hud{opacity:0;transition:opacity .4s}
+#stage:has(.still.is-shown) .dialogue{background:linear-gradient(130deg,#f9f1dfee,#eae7d9ee)}
+#stage:has(.still.is-shown) .dialogue.narration{background:linear-gradient(130deg,#18343fdd,#102631dd)}
+.still-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:14px}
+.still-card{display:flex;flex-direction:column;gap:6px;padding:6px;text-align:left;font-size:11px;line-height:1.4;color:var(--ink);background:#ffffff0d;border:1px solid #ffffff23;border-radius:8px}
+.still-card img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:5px;display:block}
+.still-card.is-locked{align-items:stretch;color:#8fa7a8}.still-card.is-locked i{display:grid;place-items:center;aspect-ratio:16/9;border-radius:5px;background:#0d2330;font-style:normal;font-size:22px;color:#51707a}
+.modal-card:has(.still-grid){width:min(860px,100%)}
+.still-viewer{position:absolute;inset:0;z-index:60;background:#06121aee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;cursor:zoom-out}
+.still-viewer img{max-width:100%;max-height:calc(100% - 80px);border-radius:8px;box-shadow:0 10px 50px #000a}
+.still-viewer p{margin:0;font-family:'Yu Mincho',serif;letter-spacing:2px;color:#f0d6a0}
+/* ---- コハルの顔 ---- */
+.portrait.koharu{background-image:url("assets/koharu-faces.png");background-size:500% 100%;background-position:calc(var(--k,0)*25%) 0;background-repeat:no-repeat;border:2px solid #d4c7a7;box-shadow:none}

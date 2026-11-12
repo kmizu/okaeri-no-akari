@@ -7,17 +7,18 @@ function background(c,scene,h){
  const text=(s,x,y,size=14,color='#425c66')=>{c.font=size+'px "Yu Gothic UI",sans-serif';c.textAlign='center';c.fillStyle=color;c.fillText(s,x,y);};
  const sky=c.createLinearGradient(0,0,0,768);sky.addColorStop(0,'#7eabc3');sky.addColorStop(.38,'#cddfe0');sky.addColorStop(1,'#acced1');c.fillStyle=sky;c.fillRect(0,0,1152,768);
  if(scene==='lake'){
-  poly(c,[[0,210],[125,70],[230,150],[360,55],[525,195],[645,88],[830,205],[1005,64],[1152,166],[1152,768],[0,768]],'#7393a8');
-  poly(c,[[65,145],[125,70],[177,122],[138,113],[119,123],[106,113]],'#e1ece7');poly(c,[[295,116],[360,55],[432,121],[374,102],[357,113],[335,100]],'#eff1e5');
-  poly(c,[[925,130],[1005,64],[1084,133],[1025,109],[1005,123],[980,111]],'#e9eee5');
-  poly(c,[[0,250],[183,222],[340,259],[550,228],[711,261],[910,215],[1152,253],[1152,768],[0,768]],'#a5c4cf');
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,210],[125,70],[230,150],[360,55],[525,195],[645,88],[830,205],[1005,64],[1152,166],[1152,768],[0,768]],'#7393a8');}if(!root.OkaeriTownArt?.lands(c,'lake1',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[65,145],[125,70],[177,122],[138,113],[119,123],[106,113]],'#e1ece7');poly(c,[[295,116],[360,55],[432,121],[374,102],[357,113],[335,100]],'#eff1e5');}if(!root.OkaeriTownArt?.lands(c,'lake2',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[925,130],[1005,64],[1084,133],[1025,109],[1005,123],[980,111]],'#e9eee5');}if(!root.OkaeriTownArt?.lands(c,'lake3',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,250],[183,222],[340,259],[550,228],[711,261],[910,215],[1152,253],[1152,768],[0,768]],'#a5c4cf');}if(!root.OkaeriTownArt?.lands(c,'lake4',q))for(const [p,col] of q)poly0(c,p,col);}
   const water=c.createLinearGradient(0,250,900,768);water.addColorStop(0,'#8db9cc');water.addColorStop(.6,'#548ca9');water.addColorStop(1,'#376d91');c.fillStyle=water;c.fillRect(330,270,822,498);
   for(let i=0;i<22;i++){const y=303+i*19;line(c,[[345+(i%4)*24,y],[600+i*12,y-3],[1140,y+8]],i%3?'#d7eef025':'#e1f0ed4a',1);}
   for(const p of [[[460,435],[490,470],[570,492],[604,534]],[[900,366],[853,409],[865,463]],[[768,629],[812,647],[842,700]]]){line(c,p,'#b8e3ed66',2);}
-  poly(c,[[0,238],[260,233],[290,307],[455,315],[480,379],[664,365],[721,302],[852,287],[934,156],[1152,133],[1152,297],[1016,319],[942,433],[811,451],[765,489],[504,498],[456,636],[319,768],[0,768]],'#8eafb8');
-  poly(c,[[0,222],[249,217],[278,294],[443,299],[473,366],[648,351],[710,288],[839,274],[925,143],[1152,120],[1152,273],[1004,300],[929,414],[798,430],[754,467],[491,478],[438,620],[300,768],[0,768]],'#e6ede4');
+  root.OkaeriTownArt?.sheet(c,'lake',[[330,270],[1152,270],[1152,768],[330,768]],'#9cc6d6','#3d7496');
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,238],[260,233],[290,307],[455,315],[480,379],[664,365],[721,302],[852,287],[934,156],[1152,133],[1152,297],[1016,319],[942,433],[811,451],[765,489],[504,498],[456,636],[319,768],[0,768]],'#8eafb8');}if(!root.OkaeriTownArt?.lands(c,'lake5',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,222],[249,217],[278,294],[443,299],[473,366],[648,351],[710,288],[839,274],[925,143],[1152,120],[1152,273],[1004,300],[929,414],[798,430],[754,467],[491,478],[438,620],[300,768],[0,768]],'#e6ede4');}if(!root.OkaeriTownArt?.lands(c,'lake6',q))for(const [p,col] of q)poly0(c,p,col);}
   const road=[[P(2),P(12)],[P(6),P(12)],[P(8),P(8)],[P(10),P(7)],[P(17),P(7)],[P(19),P(5)],[P(21),P(4)]];
-  line(c,road.map(([x,y])=>[x+5,y+14]),'#6c8d9a44',92);line(c,road,'#c5d7d6',86);line(c,road,'#f4f3e7',65);
+  if(!root.OkaeriTownArt?.trail(c,'lake',road,70)){line(c,road.map(([x,y])=>[x+5,y+14]),'#6c8d9a44',92);line(c,road,'#c5d7d6',86);line(c,road,'#f4f3e7',65);}
   for(let i=0;i<19;i++){const x=390+i*30,y=380+Math.sin(i*.65)*13;ellipse(c,x,y,3,1.7,'#9cb1b188');ellipse(c,x+7,y+10,3,1.7,'#9cb1b166');}
   for(const [x,y,s] of [[75,210,1.4],[175,330,1.3],[80,440,1.2],[270,120,1.1],[400,180,1],[765,157,1.1],[1080,95,1.2]])tree(c,x,y,s);
   for(let i=0;i<12;i++){const x=440+i*51,y=537+(i%3)*37;line(c,[[x,y],[x+3,y-27-i%4*6]],'#7a9996',2);line(c,[[x+3,y-23],[x+10,y-31]],'#a3ad99',2);}
@@ -28,9 +29,10 @@ function background(c,scene,h){
  }else if(scene==='lakeside'){
   rect(c,0,0,1152,768,'#d9e6df');poly(c,[[0,592],[400,537],[755,538],[1152,493],[1152,768],[0,768]],'#709eaf');
   for(let i=0;i<14;i++)line(c,[[50+i*87,620+i%3*27],[140+i*87,615+i%3*27]],'#bce0df55',2);
-  poly(c,[[0,440],[338,422],[636,437],[749,409],[1152,401],[1152,510],[767,555],[398,553],[0,617]],'#93b1b6');
-  poly(c,[[0,414],[337,400],[638,414],[748,385],[1152,376],[1152,490],[767,531],[398,530],[0,595]],'#f0f0e3');
-  line(c,[[P(3),P(13)],[P(3),P(9)],[P(19),P(9)]],'#d0d8cc',105);line(c,[[P(3),P(13)],[P(3),P(9)],[P(19),P(9)]],'#e9eadd',76);
+  root.OkaeriTownArt?.sheet(c,'lakeside',[[0,592],[400,537],[755,538],[1152,493],[1152,768],[0,768]],'#9cc6d6','#4f86a2');
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,440],[338,422],[636,437],[749,409],[1152,401],[1152,510],[767,555],[398,553],[0,617]],'#93b1b6');}if(!root.OkaeriTownArt?.lands(c,'side1',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,414],[337,400],[638,414],[748,385],[1152,376],[1152,490],[767,531],[398,530],[0,595]],'#f0f0e3');}if(!root.OkaeriTownArt?.lands(c,'side2',q))for(const [p,col] of q)poly0(c,p,col);}
+  if(!root.OkaeriTownArt?.trail(c,'lakeside',[[P(3),P(13)],[P(3),P(9)],[P(19),P(9)]],84)){line(c,[[P(3),P(13)],[P(3),P(9)],[P(19),P(9)]],'#d0d8cc',105);line(c,[[P(3),P(13)],[P(3),P(9)],[P(19),P(9)]],'#e9eadd',76);}
   // The landing is wide enough to work with gloves on; side faces remain visible.
   block(c,744,439,218,242,17,'#b69a75','#6a7972','#dfcfaa');
   for(let y=446;y<678;y+=17){line(c,[[748,y],[955,y]],'#7c7d6355',1);for(const x of [758,925])ellipse(c,x,y+4,1.3,1.3,'#58665d');}

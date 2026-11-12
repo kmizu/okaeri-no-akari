@@ -7,20 +7,20 @@ function background(c,scene,h){
  if(!root.OkaeriField?.names[scene])return false;
  const {rect,poly,line,ellipse,block,house,tree,lantern,glow}=h;
  const text=(s,x,y,size=13,color='#4c6266')=>{c.font=size+'px "Yu Gothic UI",sans-serif';c.textAlign='center';c.fillStyle=color;c.fillText(s,x,y);};
- const road=(pts,w=78)=>{const p=pts.map(([x,y])=>[P(x),P(y)]);line(c,p.map(([x,y])=>[x+5,y+13]),'#6c8d9a40',w+8);line(c,p,'#c9d9d4',w);line(c,p,'#f3f2e6',w-20);};
+ const road=(pts,w=78)=>{const p=pts.map(([x,y])=>[P(x),P(y)]);if(root.OkaeriTownArt?.trail(c,scene+w+p.length,p,w-8))return;line(c,p.map(([x,y])=>[x+5,y+13]),'#6c8d9a40',w+8);line(c,p,'#c9d9d4',w);line(c,p,'#f3f2e6',w-20);};
  if(scene==='herbvale'){
   const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#a9c9c4');sky.addColorStop(.5,'#d6e4d6');sky.addColorStop(1,'#c2d8c8');c.fillStyle=sky;c.fillRect(0,0,W,H);
   // 谷の両側の斜面
-  poly(c,[[0,0],[420,0],[330,150],[210,260],[90,330],[0,380]],'#8fb0a8');poly(c,[[W,0],[700,0],[800,120],[930,95],[1040,170],[W,230]],'#87aaa6');
-  poly(c,[[0,0],[380,0],[300,130],[190,235],[80,300],[0,345]],'#dfe9df');poly(c,[[W,0],[740,0],[830,100],[940,78],[1050,150],[W,205]],'#e6eee3');
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,0],[420,0],[330,150],[210,260],[90,330],[0,380]],'#8fb0a8');poly(c,[[W,0],[700,0],[800,120],[930,95],[1040,170],[W,230]],'#87aaa6');}if(!root.OkaeriTownArt?.lands(c,'vale1',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,0],[380,0],[300,130],[190,235],[80,300],[0,345]],'#dfe9df');poly(c,[[W,0],[740,0],[830,100],[940,78],[1050,150],[W,205]],'#e6eee3');}if(!root.OkaeriTownArt?.lands(c,'vale2',q))for(const [p,col] of q)poly0(c,p,col);}
   // 雪の下からのぞく草地（地面が温かい）
   for(const [x,y,rx,ry] of [[300,480,170,70],[240,540,120,45],[640,330,120,40],[880,300,150,50]]){ellipse(c,x,y,rx,ry,'#b9d1a6');ellipse(c,x,y-4,rx-14,ry-9,'#cfe0b4');}
   // 湯気の立つ小川
   const river=[[1152,520],[980,500],[820,520],[690,480],[620,470],[560,500],[470,620],[380,700],[300,768]];
-  line(c,river,'#6fa3b455',64);line(c,river,'#8fc2cf',46);line(c,river,'#c2e2e4',20);
+  if(!root.OkaeriTownArt?.water(c,'herbvale',[river],46,true)){line(c,river,'#6fa3b455',64);line(c,river,'#8fc2cf',46);line(c,river,'#c2e2e4',20);}
   road([[2,13],[10,13],[10,7],[19,7],[19,4]]);road([[9,10],[5,10]],64);
   // 小川にかかる丸木
-  for(let i=0;i<4;i++)block(c,P(12)-34+i*18,P(10)-12,15,34,6,'#a58a63','#5f6a58','#d6c39b');
+  if(!root.OkaeriTownArt?.bridge(c,P(12)-34,P(10)-16,70,42)){for(let i=0;i<4;i++)block(c,P(12)-34+i*18,P(10)-12,15,34,6,'#a58a63','#5f6a58','#d6c39b');}
   for(const [x,y,s] of [[70,120,1.3],[170,70,1.1],[300,60,1],[1010,330,1.2],[1090,440,1.3],[930,620,1.2],[760,660,1.1],[110,650,1.25],[1040,90,1]])tree(c,x,y,s);
   // 干し小屋（屋根だけ）
   const hx=P(19),hy=P(3);for(const dx of [-58,52])block(c,hx+dx,hy-70,7,84,6,'#8b7658','#4f625a','#c9b68e');
@@ -31,11 +31,11 @@ function background(c,scene,h){
  }else{
   const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#8ea6c2');sky.addColorStop(.45,'#cdd9de');sky.addColorStop(1,'#b3c6cf');c.fillStyle=sky;c.fillRect(0,0,W,H);
   // 遠い稜線と、足元の谷
-  poly(c,[[0,170],[140,90],[260,150],[420,60],[590,160],[760,70],[940,150],[1090,60],[W,110],[W,H],[0,H]],'#7f98ae');
-  for(const [a,b,d] of [[140,90,60],[420,60,70],[760,70,70],[1090,60,60]])poly(c,[[a-d,b+d*.7],[a,b],[a+d,b+d*.75],[a+d*.3,b+d*.5],[a,b+d*.62],[a-d*.3,b+d*.48]],'#eef1e8');
-  poly(c,[[0,300],[250,260],[520,290],[790,240],[W,270],[W,H],[0,H]],'#a9c0cb');poly(c,[[0,330],[250,292],[520,322],[790,272],[W,300],[W,H],[0,H]],'#e7ede5');
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,170],[140,90],[260,150],[420,60],[590,160],[760,70],[940,150],[1090,60],[W,110],[W,H],[0,H]],'#7f98ae');}if(!root.OkaeriTownArt?.lands(c,'pass1',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);for(const [a,b,d] of [[140,90,60],[420,60,70],[760,70,70],[1090,60,60]])poly(c,[[a-d,b+d*.7],[a,b],[a+d,b+d*.75],[a+d*.3,b+d*.5],[a,b+d*.62],[a-d*.3,b+d*.48]],'#eef1e8');}if(!root.OkaeriTownArt?.lands(c,'pass2',q))for(const [p,col] of q)poly0(c,p,col);}
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,300],[250,260],[520,290],[790,240],[W,270],[W,H],[0,H]],'#a9c0cb');poly(c,[[0,330],[250,292],[520,322],[790,272],[W,300],[W,H],[0,H]],'#e7ede5');}if(!root.OkaeriTownArt?.lands(c,'pass3',q))for(const [p,col] of q)poly0(c,p,col);}
   // 崖の縁（右下は谷へ落ちる）
-  poly(c,[[560,H],[700,560],[900,470],[W,440],[W,H]],'#8fa8b6');poly(c,[[600,H],[725,585],[915,495],[W,468],[W,H]],'#6f8c9f');
+  {const q=[],poly0=poly;{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[560,H],[700,560],[900,470],[W,440],[W,H]],'#8fa8b6');poly(c,[[600,H],[725,585],[915,495],[W,468],[W,H]],'#6f8c9f');}if(!root.OkaeriTownArt?.lands(c,'pass4',q))for(const [p,col] of q)poly0(c,p,col);}
   for(let i=0;i<9;i++)line(c,[[640+i*58,H],[720+i*52,610-i*14]],'#ffffff18',2);
   road([[2,13],[8,13],[8,8],[16,8],[16,4],[21,4]]);
   // 雪に埋もれた轍の跡

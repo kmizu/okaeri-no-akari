@@ -86,6 +86,7 @@ function draw(c,name,x,y,scale=1){const s=sprites[name];if(!s?.canvas)return fal
  if(scale===1&&s.res===1)c.drawImage(s.canvas,Math.round(x+s.x),Math.round(y+s.y));else c.drawImage(s.canvas,x+s.x*scale,y+s.y*scale,s.w*scale,s.h*scale);return true;}
 // 必要になったときに登録する絵。まだ描けなければ false を返し、missed を進める（呼び出し側は従来の絵で埋めて、あとで描き直す）。
 function want(name,box,make,res=1){if(failed)return false;if(!sprites[name])define(name,box,make(),res);if(sprites[name].canvas)return true;missed++;return false;}
-root.OkaeriDraw={rect,ell,path,stroke,line,g,text,wood,cloth,plaster,stone,shadow,contact,light,sheen,box,cyl,ball,drawer,doc,define,draw,has,sprites,want,missed:()=>missed,
+const release=name=>{delete sprites[name];}; // 一度きりの大きな絵は、背景に焼いたら手放す
+root.OkaeriDraw={rect,release,ell,path,stroke,line,g,text,wood,cloth,plaster,stone,shadow,contact,light,sheen,box,cyl,ball,drawer,doc,define,draw,has,sprites,want,missed:()=>missed,
  rng,mix,dark,lite,n,ready:()=>!failed&&pending===0,failed:()=>failed};
 })(globalThis);

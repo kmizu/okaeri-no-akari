@@ -145,17 +145,17 @@ function groundBody(scene,paths,lift){
  const bank=scene==='hill'?'#7894a6':'#93b2c2',st=(col,w,a)=>paths.map(([p,pw])=>S('M'+p.map(q=>q.join(',')).join('L'),col,Math.max(2,pw+w),a)).join('');
  const plaza=scene==='town'?E(600,475,165,112,'#eef2ea'):'',plazaIn=scene==='town'?E(600,475,150,99,'#e7ebe1'):'';
  let s=GROUND;
- if(scene!=='hill')s+=R(0,0,1152,768,'#fff',0,{filter:'url(#drift)'});
+ if(scene!=='hill'&&scene!=='trail')s+=R(0,0,1152,768,'#fff',0,{filter:'url(#drift)'});
  s+=G(G(st('#2f536c',16)+(plaza&&E(600,475,173,120,'#2f536c')),{transform:`translate(9,${lift})`,opacity:.26,filter:'url(#b4)'})
    +G(st(bank,8)+(plaza&&E(600,475,169,116,bank)),{transform:`translate(3,${n(lift*.6)})`})
    +st('#cfe0e6',7)+(plaza&&E(600,475,168,115,'#cfe0e6'))+st('#f1f4ee',0)+plaza,{filter:'url(#wob)'});
  s+=G(G(st('#e7ebe1',-26)+plazaIn,{filter:'url(#wob)'}),{filter:'url(#pack)'})+G(st('#ffffff',-70),{filter:'url(#b8)',opacity:.35});
  // 足あと（道の中心線の左右に、点々と）
  for(const [dx,dy,off] of [[-9,-6,0],[10,7,9]])s+=G(G(st('#9fb9c6',-1e3,{'stroke-dasharray':'4 21','stroke-dashoffset':off,'stroke-width':3,opacity:.32}),{transform:`translate(${dx},${dy})`}),{filter:'url(#wob)'});
- s+=R(0,0,1152,768,'#fff',0,{filter:'url(#glint)',opacity:.8});
+ if(scene!=='trail')s+=R(0,0,1152,768,'#fff',0,{filter:'url(#glint)',opacity:.8});
  return s;
 }
-function ground(c,scene,paths,lift){const name='ground/'+scene;return D.want(name,[0,0,1152,768],()=>groundBody(scene,paths,lift))&&D.draw(c,name,0,0);}
+function ground(c,scene,paths,lift){return once(c,'ground/'+scene,()=>groundBody(scene,paths,lift));}
 
 // ---------------------------------------------------------------- 町の小物（井戸・粉の荷車・薪の山とそり・柵・旗）
 function logPile(x,y,cols,rows,seed){let s='';const r=rng(seed);for(let j=0;j<rows;j++)for(let i=0;i<cols-j;i++){const cx=x+i*11.4+j*5.7,cy=y-j*9.6,rr=5.2+r();
@@ -192,7 +192,7 @@ function propsBody(){
  s+=S('M360,208Q600,300 817,198','#6d7a70',1.6);for(let i=0;i<9;i++){const t=(i+.5)/9,px=360+457*t,py=208+(1-Math.pow(2*t-1,2))*46-(t-.5)*10;s+=cloth(P(`M${n(px-7)},${n(py)}h14l-7,20z`,['#c8896a','#648c89','#d9b56a'][i%3]));}
  return s;
 }
-function props(c){return D.want('town/props',[0,0,1152,768],propsBody)&&D.draw(c,'town/props',0,0);}
+function props(c){return once(c,'town/props',propsBody);}
 
 // ---------------------------------------------------------------- 灯台（森の石造り／丘の白塗り）
 function towerBody(kind,lit){
@@ -262,5 +262,46 @@ function object(c,o,x,y,s,t,st){
  }
  return false;
 }
-root.OkaeriTownArt={house,tree,lantern,ground,props,object};
+// ---------------------------------------------------------------- 水・橋・地形（一度だけ背景に焼き込む大きな絵）
+function once(c,name,make){if(!D.want(name,[0,0,1152,768],make))return false;D.draw(c,name,0,0);D.release(name);return true;}
+const WATER=`<filter id="rip" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".03 .09" numOctaves="2" seed="12" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="9" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="wtex" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012 .07" numOctaves="3" seed="31" result="t"/><feColorMatrix in="t" values="0 0 0 0 .92  0 0 0 0 .98  0 0 0 0 1  -2.6 0 0 0 1.25" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="m"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="m"/></feMerge></filter>
+<filter id="rockn" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".008 .022" numOctaves="4" seed="19" result="t"/><feColorMatrix in="t" values="0 0 0 0 .12  0 0 0 0 .20  0 0 0 0 .30  -1.9 0 0 0 1.0" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="m"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="m"/></feMerge></filter>
+<filter id="snown" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .016" numOctaves="3" seed="27" result="t"/><feColorMatrix in="t" values="0 0 0 0 .40  0 0 0 0 .55  0 0 0 0 .68  -1.2 0 0 0 .62" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="m"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="m"/></feMerge></filter>
+<linearGradient id="landsh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1f3a4a" stop-opacity=".16"/></linearGradient>`;
+const poly2=p=>'M'+p.map(q=>n(q[0])+','+n(q[1])).join('L');
+// 流れ：岸の影、氷の縁、深み、流れに沿った光の筋。warm は湯気の立つ温い川。
+function waterBody(lines,w,warm){
+ const st=(col,ww,a)=>lines.map(p=>S(poly2(p),col,Math.max(1.5,ww),a)).join(''),[c1,c2,c3]=warm?['#6fa7b4','#8fc6cf','#c9e9e6']:['#4f86a0','#77aec2','#b9dde6'];
+ let s=GROUND+WATER;
+ s+=G(G(st('#27485c',w+26),{opacity:.3,filter:'url(#b4)',transform:'translate(0,5)'})+st('#eef5f4',w+12)+st('#a9c8d4',w+5)+st(c1,w),{filter:'url(#wob)'});
+ s+=G(G(st(c2,w-10),{filter:'url(#wob)'}),{filter:'url(#wtex)'})+G(st(c1,w*.36),{filter:'url(#b4)',opacity:.55});
+ for(const [d,dash,off,o] of [[-.26,'22 30',0,.7],[.2,'14 34',11,.6],[0,'8 44',25,.5]])s+=G(G(st(c3,-1e3,{'stroke-width':1.8,'stroke-dasharray':dash,'stroke-dashoffset':off,opacity:o}),{transform:`translate(${n(w*d*.4)},${n(w*d)})`}),{filter:'url(#rip)'});
+ if(warm)s+=G(st('#ffffff',w*.5,{'stroke-dasharray':'30 60',opacity:.5}),{filter:'url(#b8)',transform:'translate(4,-14)'});
+ return s;
+}
+const water=(c,key,lines,w,warm)=>once(c,'water/'+key,()=>waterBody(lines,w,warm));
+// 広い水面（湖）：奥が明るく手前が深い。さざ波の筋ときらめき。
+function sheetBody(p,c1,c2){
+ const r=rng(p.length*31+p[0][1]),xs=p.map(q=>q[0]),ys=p.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+ let rip='';for(let i=0;i<150;i++){const t=r(),y=y0+(y1-y0)*t*t*.2+(y1-y0)*t*.8,x=x0+r()*(x1-x0),len=14+r()*60*(0.4+t);rip+=L(x,y,x+len,y+(r()-.5)*3,r()<.3?'#f2fbfb':'#cfe9ee',1+t*1.4,{opacity:n(.18+r()*.4)});}
+ return GROUND+WATER+`<linearGradient id="lk" x1="0" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient><clipPath id="lkc"><path d="${poly2(p)}Z"/></clipPath>`
+  +G(G(P(poly2(p)+'Z','url(#lk)'),{filter:'url(#wtex)'})+G(rip,{filter:'url(#rip)'})+P(poly2(p)+'Z','none',{stroke:'#eef6f6','stroke-width':9,'stroke-opacity':.55,filter:'url(#b2)'})+R(x0,y0,x1-x0,y1-y0,'#fff',0,{filter:'url(#glint)',opacity:.7}),{'clip-path':'url(#lkc)'});
+}
+const sheet=(c,key,p,c1,c2)=>once(c,'sheet/'+key,()=>sheetBody(p,c1,c2));
+// 山・斜面・崖：色面に岩肌のむらと、上からの光。
+function landsBody(list){return GROUND+WATER+list.map(([p,col])=>G(P(poly2(p)+'Z',col.slice(0,7),col.length>7?{opacity:n(parseInt(col.slice(7),16)/255)}:null),{filter:`url(#${parseInt(col.slice(3,5),16)>205?'snown':'rockn'})`})+P(poly2(p)+'Z','url(#landsh)')+P(poly2(p)+'Z','none',{stroke:'#fff','stroke-width':1.2,'stroke-opacity':.22,'stroke-linejoin':'round'})).join('');}
+const lands=(c,key,list)=>list.length>0&&once(c,'land/'+key,()=>landsBody(list));
+const trail=(c,key,p,w,lift=13)=>once(c,'trail/'+key,()=>groundBody('trail',[[p,w]],lift));
+// 板の橋：欄干つき、雪が乗っている。
+function bridgeBody(w,h){
+ let s=EXTRA+R(6,h-4,w+6,14,SHADE,5,{opacity:.3,filter:'url(#b4)'})+R(-3,3,w+6,h,'#2f4a58',2,{opacity:.5});
+ let pl='';const r=rng(w+h);for(let y=0;y<h;y+=9.5)pl+=R(0,y,w,Math.min(9,h-y),mix('#a8926f','#8a765a',r()),1);
+ s+=wood(pl)+R(0,0,w,h,'url(#tsh)')+E(w*.5,h*.5,w*.34,h*.42,'#fff',{opacity:.28,filter:'url(#b4)'});
+ for(const x of [-4,w-3]){s+=R(x+3,6,5,h,SHADE,2,{opacity:.25,filter:'url(#b2)'})+cyl(x,-12,7,h+14,'#5f7068',2);for(let y=-8;y<h;y+=Math.max(26,h/3))s+=cyl(x-1.5,y-10,10,20,'#4f6058',2)+P(`M${x-4},${y-9}Q${x+3.5},${y-18} ${x+11},${y-9}Q${x+3.5},${y-6} ${x-4},${y-9}Z`,'url(#snowsh)');
+  s+=R(x+1,-12,3,h+14,'#fff',1,{opacity:.55});}
+ return s;
+}
+function bridge(c,x,y,w,h){const name=`out/bridge-${w}x${h}`;return D.want(name,[-26,-36,w+60,h+70],()=>bridgeBody(w,h))&&D.draw(c,name,x,y);}
+root.OkaeriTownArt={house,tree,lantern,ground,props,object,water,sheet,lands,trail,bridge};
 })(globalThis);

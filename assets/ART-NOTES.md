@@ -56,3 +56,24 @@ residents-atlas.png：新住人二名。上段エルナ、下段オルフ、各�
 ## リツ・ユラ（2026-09-08）
 Built-in image_gen を使用。既存 residents-atlas.png を絵柄と3列2行の配置参照として、新しい素材シート ritsu-yura-atlas.png を生成。上段：リツ（栗色短髪、青灰色の防寒着、水番の工具）。下段：ユラ（銀髪の低いまとめ髪、くすんだ赤紫の防寒着、薬草の鞄）。各段は全身チップ／通常顔／笑顔。左列のマゼンタ背景は実行時に透過し、顔グラは中央・右列を表示。住人は既存住人と同じ静止チップ方式。
 Prompt: Match the existing cozy watercolor RPG atlas, exact 3x2 grid, 1536x1024. Ritsu is a clean-shaven 28-year-old waterworks keeper with chestnut hair, slate-blue padded coat, oatmeal scarf, wrench and notebook. Yura is a mature 52-year-old clinician with silver-gray bun, dusty cranberry padded coat, cream scarf and medicinal-leaf satchel. Each row: full-body chibi on #FF00FF, normal bust, smiling bust on cream parchment. Preserve identical identity and clothing between sprite and faces. No text or borders.
+
+## コハル（未制作・生成の指示）
+
+三人目の仲間。薬草屋の見習いで、トウマとニナより半年遅く生まれた**同い年の成人**。二人のあとをついて歩いてきた妹分。背は二人より少し低いが、子どもには描かないこと。
+
+- 髪：明るい亜麻色。肩につかない長さの二つ結び（低い位置）、前髪は眉の上。
+- 目：若草色。少し丸く、表情が顔に出やすい。
+- 服：**ニナのお古の赤茶の外套**（袖が少し長く、手の甲にかかる）。首元に若草色の首巻き。腰に薬草の小袋を三つ、肩から薬草の籠。手袋は生成り。
+- 持ち物：温め草の袋（布の小袋から湯気）。火やランタンは持たない。
+- 性格が出る仕草：頬をふくらませる、袖口を握る、二人の間に割って入る。
+
+参照：cover.png と faces.png。画風（水彩と繊細な線画）と冬服の質感を合わせる。
+
+### 必要な画像
+
+1. **顔**（faces.png と同じ作り）：512角のセルを横に、通常／笑顔／照れ／**ふくれ顔（やきもち）**／**泣きそう**の5つ。背景は淡い生成り、頭と肩がセルに収まる同じ縮尺。最低でも通常・笑顔・照れの3つ。
+2. **歩行**（walk-atlas.png と同じ作り）：下・左・右・上の4方向 × 左足・静止・右足の3ポーズ、計12枚。約三頭身、トウマとニナと同じ縮尺、背景は単色の緑（透過処理用）。
+3. **戦闘**（battle-party-quarter.png と同じ作り）：右手前から左奥を向く斜め見下ろし。待機／行動（温め草の袋を掲げる）／防御の3つ。
+4. **町に立つ姿**（residents-atlas.png と同じ作り）：全身の静止画1枚。薬草屋の前に立つ用。
+
+台本での表情の指定は、通常=neutral、笑顔=happy/joy、照れ=shy/fluster、ふくれ顔=angry、泣きそう=sad。ふくれ顔と泣きそうの絵が来るまでは、通常の顔に記号を重ねて表示する。

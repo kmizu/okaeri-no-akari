@@ -352,7 +352,7 @@ function chapterSelect(){
  if(globalThis.OkaeriEpisodes){
   const enter=(n,r=null)=>{start(OkaeriEpisodes.create(n,r),n!==1,chapterSaveKey);save();};
   const buttons=OkaeriEpisodesData.titles.map((t,i)=>['第'+(i+1)+'話 · '+t,()=>{
-   if(i===9)openModal('<h2>第10話の関係を選ぶ</h2><p>章選択用です。通常の旅の選択は変わりません。</p>',[['トウマから告白して恋人',()=>enter(10,'touma'),true],['ニナから告白して恋人',()=>enter(10,'nina')],['今の二人のまま',()=>enter(10,'friends')],['戻る',chapterSelect]],'title');
+   if(i===9)openModal('<h2>第10話の関係を選ぶ</h2><p>章選択用です。通常の旅の選択は変わりません。</p>',[['トウマから告白して恋人',()=>enter(10,'touma'),true],['ニナから告白して恋人',()=>enter(10,'nina')],['今の二人のまま',()=>enter(10,'friends')],['コハルと：三人で仲良く',()=>enter(10,'koharu')],['コハルと：コハルのことも選ぶ',()=>enter(10,'both')],['戻る',chapterSelect]],'title');
    else enter(i+1);
   }]);
   if(globalThis.OkaeriJourney)buttons.push(['第6話の小旅行から',()=>{enter(6);state.episode.step=2;OkaeriJourney.begin(episodeApi());}]);

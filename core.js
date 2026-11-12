@@ -97,7 +97,7 @@ function restoreSave(raw){try{
  let memories;
  if(s.memories!==undefined){if(!s.memories||typeof s.memories!=='object'||Array.isArray(s.memories))return null;const allowed={gift:['tea','bookmark'],sled:['aligned'],window:['sealed'],signal:['waited'],ritsuReturn:['read'],yuraRounds:['read'],unsentLetter:['read'],stormThanks:['read']};memories={};for(const [k,v] of Object.entries(s.memories)){if(!allowed[k]?.includes(v))return null;memories[k]=v;}}
  let episode;
- if(s.episode!==undefined){const e=s.episode,counts=[0,0,4,6,4,4,4,4,5,4,4];if(!e||!Number.isInteger(e.chapter)||e.chapter<1||e.chapter>10||!Number.isInteger(e.step)||e.step<0||e.step>counts[e.chapter]||typeof e.complete!=='boolean'||![null,'touma','nina','friends'].includes(e.route)||((e.chapter<9)&&e.route!==null)||(e.chapter===10&&!e.route)||(e.chapter===9&&((e.step>=3)!==!!e.route))||(e.chapter>1&&e.complete!==(e.step===counts[e.chapter])))return null;episode={chapter:e.chapter,step:e.step,route:e.route,complete:e.complete};}
+ if(s.episode!==undefined){const e=s.episode,counts=[0,0,4,6,4,4,4,4,5,4,4];if(!e||!Number.isInteger(e.chapter)||e.chapter<1||e.chapter>10||!Number.isInteger(e.step)||e.step<0||e.step>counts[e.chapter]||typeof e.complete!=='boolean'||![null,'touma','nina','friends','koharu','both'].includes(e.route)||((e.chapter<9)&&e.route!==null)||(e.chapter===10&&!e.route)||(e.chapter===9&&((e.step>=3)!==!!e.route))||(e.chapter>1&&e.complete!==(e.step===counts[e.chapter])))return null;episode={chapter:e.chapter,step:e.step,route:e.route,complete:e.complete};}
  let journey;
  if(s.journey!==undefined){
   const j=s.journey,keys=['mirror','prism','shutter','reply'];

@@ -11,6 +11,7 @@ function slots(s){
  if(chapter===6&&s.journey?.step===9)out.journey=D.journeyEcho;
  if(chapter===9){out.festival=Object.entries(D.festivalEchoes||{}).flatMap(([key,extra])=>key==='journey'?(s.journey?.step===9?extra:[]):m[key]==='read'?extra:[]);}
  if(chapter===10&&m.unsentLetter==='read')out.letter=D.finalEchoes[s.episode.route];
+ if(chapter===9)out.night=D.night9[['koharu','both'].includes(s.episode.route)?s.episode.route:'pair'];
  return out;
 }
 function events(s){
@@ -35,7 +36,13 @@ function next(a){const s=a.state,nextState=create(s.episode.chapter+1,s.episode.
 function endDay(a){const s=a.state,ep=s.episode;const buttons=[['家で過ごす',a.closeModal,true]];const night=events(s).at(-1);if(night)buttons.push(['今夜の会話を振り返る',()=>{a.closeModal();a.talk(night.lines);}]);if(ep.chapter<10)buttons.push(['翌日の話へ',()=>{a.closeModal();next(a);}]);else buttons.push(['この一日をもう一度',()=>{a.closeModal();ep.step=0;ep.complete=false;a.save();go(a,current(s));}]);a.openModal((ep.chapter===10?'<div class="ending-art"></div>':'')+'<span class="tag">'+(ep.chapter===10?'おかえりの灯 · END':'第'+ep.chapter+'話 · おしまい')+'</span><h2>'+D.titles[ep.chapter-1]+'</h2><p>'+(ep.chapter===10?'春になれば、ニナは南へ発ちます。そして三週間後、この家の戸口には帰り灯がともっているはずです。<br>遊んでくれて、ありがとうございました。':D.closings?.[ep.chapter]||'今日の出来事を家に置いて、明日へ。')+'</p>',buttons,'explore');}
 function choose(a){
  const pick=r=>{a.closeModal();a.talk(D.confessions[r],()=>{setRoute(a.state,r);finishEvent(a);});};
- a.openModal('<h2>ニナに、伝えたいこと</h2><p>第10話は、この選択で過ごし方が変わります。</p>',[['自分から好きだと伝える',()=>pick('touma'),true],['ニナの告白を受け止める',()=>pick('nina')],['今の二人の関係を選ぶ',()=>pick('friends')],['もう少し考える',a.closeModal]],'explore');
+ // コハルの話を聞いたあと、もう一度選ぶ。
+ const answer=()=>a.openModal('<h2>コハルに、どう答える</h2><p>どちらを選んでも、三人の仲は壊れません。</p>',[
+  ['三人でいる今を選ぶ',()=>{a.closeModal();a.talk(D.koharuAnswers.koharu,()=>{setRoute(a.state,'koharu');finishEvent(a);});},true],
+  ['聞いたままにはしない。ニナにも全部話す',()=>{a.closeModal();a.talk(D.koharuAnswers.both,()=>{setRoute(a.state,'both');finishEvent(a);});}]
+ ],'explore');
+ const seek=()=>{a.closeModal();a.talk(D.confessions.koharu,answer);};
+ a.openModal('<h2>ニナに、伝えたいこと</h2><p>第10話は、この選択で過ごし方が変わります。</p>',[['自分から好きだと伝える',()=>pick('touma'),true],['ニナの告白を受け止める',()=>pick('nina')],['今の二人の関係を選ぶ',()=>pick('friends')],['先に、姿の見えないコハルを探しに行く',seek],['もう少し考える',a.closeModal]],'explore');
 }
 function detour(s){return D.detours?.[s.episode.chapter+':'+s.episode.step];}
 function offerDetour(a,done){

@@ -1,13 +1,13 @@
 (function(root){
 'use strict';
 class CommandFlow{
- constructor(heroes){this.ids=['touma','nina'].filter(id=>heroes[id].hp>0);this.index=0;this.commands={};for(const id of ['touma','nina'])if(heroes[id].hp<=0)this.commands[id]={skill:'skip'};}
+ constructor(heroes){const all=['touma','nina','koharu'].filter(id=>heroes[id]);this.ids=all.filter(id=>heroes[id].hp>0);this.index=0;this.commands={};for(const id of all)if(heroes[id].hp<=0)this.commands[id]={skill:'skip'};}
  get actor(){return this.ids[this.index];}
  choose(command){this.commands[this.actor]={...command};if(this.index===this.ids.length-1)return true;this.index++;return false;}
  back(){if(this.index===0)return false;delete this.commands[this.actor];this.index--;delete this.commands[this.actor];return true;}
 }
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nm=id=>id==='touma'?'トウマ':'ニナ';
+const nm=id=>id==='touma'?'トウマ':id==='koharu'?'コハル':'ニナ';
 function buildBeats(outcome,commands={}){
  const legacy=!outcome.events?.length,events=legacy?(outcome.logs||[]).map(message=>({message})):outcome.events,groups=[];
  for(const event of events){
@@ -70,35 +70,35 @@ class BattleUI{
    return slot(x,y,Math.round(y),'<button type="button" data-enemy="'+i+'" data-field-enemy="'+i+'" class="battle-combatant foe foe-'+e.type+(e.tint?' tint-'+e.tint:'')+(e.hp<=0?' fallen-enemy':'')+(e.ice?' has-ice':'')+(e.broken?' has-broken':'')+'" aria-label="'+esc(label)+'、HP '+e.hp+' / '+e.max+'" '+(canPick?'':'disabled')+'><span class="combatant-shadow"></span><span class="combatant-body">'+OkaeriWorld.enemySvg(e.type)+'<span class="condition-visual" aria-hidden="true"><i></i><i></i><i></i></span></span><span class="combatant-label">'+esc(label)+'</span><span class="foe-health"><i style="width:'+e.hp/e.max*100+'%"></i></span><span class="field-conditions">'+this.conditionMarkup(conditionList(e,'enemy'))+'</span><span class="target-cursor" aria-hidden="true">▽</span></button>');
   }).join('');
   const heroes=Object.entries(b.heroes).map(([id,h],i)=>{
-   const canPick=choosing&&this.selected.target==='ally'&&h.hp>0,active=input&&actor===id;
+   const canPick=choosing&&this.selected.target==='ally'&&(this.selected.id==='rouse'?h.hp<=0&&id!=='koharu':h.hp>0),active=input&&actor===id;
    const command=input?this.flow.commands[id]:null,guard=this.guards[id]||(command&&['guard','protect','counter'].includes(command.skill));
-   return slot(69+i*14,64+i*21,64+i*21,'<button type="button" data-hero="'+id+'" data-field-hero="'+id+'" class="battle-combatant party-actor actor-'+id+(active?' is-active':'')+(h.hp===0?' is-down':'')+(h.chill?' has-chill':'')+(h.buff?' has-buff':'')+(this.guards[id]?' has-guard':'')+(guard?' is-guarding':'')+'" aria-label="'+nm(id)+'、HP '+h.hp+' / '+h.max+'" '+(canPick?'':'disabled')+'><span class="combatant-shadow"></span><span class="combatant-body"><span class="hero-battle-sprite" aria-hidden="true"></span><span class="condition-visual" aria-hidden="true"><i></i><i></i><i></i></span></span><span class="field-conditions">'+this.conditionMarkup(conditionList(h,'hero',this.guards[id]))+'</span><span class="combatant-label">'+nm(id)+'</span><span class="actor-command">'+(active?'入力中':command&&h.hp>0?esc(OkaeriCore.actions(id).find(a=>a.id===command.skill)?.name||''):'')+'</span><span class="target-cursor" aria-hidden="true">▽</span></button>');
+   return slot(...(id==='koharu'?[57,90,90]:[69+i*14,64+i*21,64+i*21]),'<button type="button" data-hero="'+id+'" data-field-hero="'+id+'" class="battle-combatant party-actor actor-'+id+(active?' is-active':'')+(h.hp===0?' is-down':'')+(h.chill?' has-chill':'')+(h.buff?' has-buff':'')+(this.guards[id]?' has-guard':'')+(guard?' is-guarding':'')+'" aria-label="'+nm(id)+'、HP '+h.hp+' / '+h.max+'" '+(canPick?'':'disabled')+'><span class="combatant-shadow"></span><span class="combatant-body"><span class="hero-battle-sprite" aria-hidden="true"></span><span class="condition-visual" aria-hidden="true"><i></i><i></i><i></i></span></span><span class="field-conditions">'+this.conditionMarkup(conditionList(h,'hero',this.guards[id]))+'</span><span class="combatant-label">'+nm(id)+'</span><span class="actor-command">'+(active?'入力中':command&&h.hp>0?esc(OkaeriCore.actions(id).find(a=>a.id===command.skill)?.name||''):'')+'</span><span class="target-cursor" aria-hidden="true">▽</span></button>');
   }).join('');
-  return '<div class="classic-arena" aria-label="雪道の戦場。右手前にトウマとニナ、左奥に精霊たち"><div class="battle-terrain" aria-hidden="true"></div><div class="battle-scene-heading"><span class="battle-place">雪の帰り道</span><div class="classic-battle-info">TURN '+(['result','outcome'].includes(this.phase)?this.outcome.turn-1:b.turn)+'<span>息ぴったり <b>'+('●'.repeat(b.gauge)+'○'.repeat(3-b.gauge))+'</b></span></div></div>'+enemies+heroes+(b.support?slot(57,90,90,'<button type="button" data-hero="koharu" class="battle-combatant party-actor actor-koharu is-support" aria-label="コハル（支え役）" disabled><span class="combatant-shadow"></span><span class="combatant-body"><span class="hero-battle-sprite" aria-hidden="true"></span></span><span class="combatant-label">コハル</span></button>'):'')+'<div class="battle-fx-layer" aria-hidden="true"></div></div>';
+  return '<div class="classic-arena" aria-label="雪道の戦場。右手前にトウマとニナ、左奥に精霊たち"><div class="battle-terrain" aria-hidden="true"></div><div class="battle-scene-heading"><span class="battle-place">雪の帰り道</span><div class="classic-battle-info">TURN '+(['result','outcome'].includes(this.phase)?this.outcome.turn-1:b.turn)+'<span>息ぴったり <b>'+('●'.repeat(b.gauge)+'○'.repeat(3-b.gauge))+'</b></span></div></div>'+enemies+heroes+'<div class="battle-fx-layer" aria-hidden="true"></div></div>';
  }
  highlight(type,id){for(const n of this.el.querySelectorAll('.battle-combatant'))n.classList.remove('is-targeted');this.el.querySelector(type==='hero'?'[data-hero="'+id+'"]':'[data-enemy="'+id+'"]')?.classList.add('is-targeted');}
  render(){
   const b=this.b,actor=this.flow.actor,forecast=OkaeriCore.intentions(b);
   this.el.className='battle-screen classic-battle quarter-battle';
   const input=['actor','skills','items','target'].includes(this.phase);
-  this.el.innerHTML=this.battlefield()+'<div class="classic-lower"><div class="classic-window classic-menu"><div class="classic-menu-title"></div><div class="classic-options"></div></div><div class="classic-window classic-text"><p class="classic-message" aria-live="polite"></p><p class="battle-live" aria-live="polite"></p><div class="classic-forecast"></div><p class="classic-description"></p><div class="classic-text-actions"></div></div><div class="classic-window classic-status">'+Object.entries(b.heroes).map(([id,h])=>this.heroStatus(id,h,input&&actor===id)).join('')+'</div></div><div class="classic-help">↑ ↓ 選択　Enter / Z 決定　Esc / X 戻る<span>二人のコマンドを決めると、ターンが進みます</span></div>';
+  this.el.innerHTML=this.battlefield()+'<div class="classic-lower"><div class="classic-window classic-menu"><div class="classic-menu-title"></div><div class="classic-options"></div></div><div class="classic-window classic-text"><p class="classic-message" aria-live="polite"></p><p class="battle-live" aria-live="polite"></p><div class="classic-forecast"></div><p class="classic-description"></p><div class="classic-text-actions"></div></div><div class="classic-window classic-status">'+Object.entries(b.heroes).map(([id,h])=>this.heroStatus(id,h,input&&actor===id)).join('')+'</div></div><div class="classic-help">↑ ↓ 選択　Enter / Z 決定　Esc / X 戻る<span>全員のコマンドを決めると、ターンが進みます</span></div>';
   const title=this.el.querySelector('.classic-menu-title'),options=this.el.querySelector('.classic-options'),message=this.el.querySelector('.classic-message'),tips=this.el.querySelector('.classic-forecast');
   message.textContent=this.message||'';
   if(!['result','outcome'].includes(this.phase))tips.innerHTML=forecast.filter(Boolean).map(f=>'<div>'+esc(f.label)+'</div>').join('');
   const add=(label,fn,disabled,desc,target)=>options.append(this.button(label,fn,disabled,desc,target));
   if(this.phase==='root'){
    title.textContent='コマンド';add('たたかう',()=>{this.phase='actor';this.message=nm(actor)+'は どうする？';this.render();});
-   add('れんけい',()=>this.callbacks.onTurn({},true),b.gauge<3||Object.values(b.heroes).some(h=>h.hp===0),'二人の行動で「灯火の一閃」。灯り三つを使う。');
+   add('れんけい',()=>this.callbacks.onTurn({},true),b.gauge<3||[b.heroes.touma,b.heroes.nina].some(h=>h.hp===0),'二人の行動で「灯火の一閃」。灯り三つを使う。');
    add('にげる',()=>{if(b.kind==='beast'){this.message='背を向ければ、灯喰いは小屋へ向かう。ここで押し返すしかない！';this.render();}else if(b.kind==='guardian'){this.message='番人を落ち着かせなければ 灯台へ進めない！';this.render();}else this.callbacks.onEscape();},false,'通常の戦闘からは確実に離脱できます。');
   }else if(this.phase==='actor'){
-   title.textContent=nm(actor);add('こうげき',()=>this.selectSkill('attack'));
-   add(actor==='nina'?'じゅもん':'とくぎ',()=>{this.phase='skills';this.render();});
+   title.textContent=nm(actor);add(actor==='koharu'?'てあて':'こうげき',()=>this.selectSkill(actor==='koharu'?'tend':'attack'));
+   add(actor==='nina'?'じゅもん':actor==='koharu'?'やくそう':'とくぎ',()=>{this.phase='skills';this.render();});
    add('どうぐ',()=>{this.phase='items';this.render();});add('ぼうぎょ',()=>this.commit({skill:'guard'}));
    add('もどる',()=>this.back());
   }else if(this.phase==='skills'){
-   title.textContent=nm(actor)+' · '+(actor==='nina'?'じゅもん':'とくぎ');
-   for(const a of OkaeriCore.actions(actor).filter(a=>!['attack','guard','herb'].includes(a.id))){
-    const unavailable=this.b.heroes[actor].sp<a.cost||(a.id==='rescue'&&this.b.heroes[actor==='touma'?'nina':'touma'].hp>0);
+   title.textContent=nm(actor)+' · '+(actor==='nina'?'じゅもん':actor==='koharu'?'やくそう':'とくぎ');
+   for(const a of OkaeriCore.actions(actor).filter(a=>!['attack','tend','guard','herb'].includes(a.id))){
+    const unavailable=this.b.heroes[actor].sp<a.cost||(a.id==='rescue'&&this.b.heroes[actor==='touma'?'nina':'touma'].hp>0)||(a.id==='rouse'&&[this.b.heroes.touma,this.b.heroes.nina].every(h=>h.hp>0));
     add(a.name+'　'+a.cost+' MP',()=>this.selectSkill(a.id),unavailable,a.desc);
    }add('もどる',()=>this.back());
   }else if(this.phase==='items'){
@@ -107,7 +107,7 @@ class BattleUI{
   }else if(this.phase==='target'){
    title.textContent=this.selected.name;message.textContent=this.selected.target==='enemy'?'だれを ねらう？':'だれに つかう？';
    if(this.selected.target==='enemy')b.enemies.forEach((e,i)=>{if(e.hp>0)add(e.name+(b.enemies.length>1?' '+String.fromCharCode(65+i):''),()=>this.commit({skill:this.selected.id,target:i}),false,'',['enemy',i]);});
-   else for(const [id,h] of Object.entries(b.heroes))add(nm(id)+'　HP '+h.hp,()=>this.commit({skill:this.selected.id,target:id}),h.hp<=0,'',['hero',id]);
+   else for(const [id,h] of Object.entries(b.heroes))add(nm(id)+'　HP '+h.hp,()=>this.commit({skill:this.selected.id,target:id}),this.selected.id==='rouse'?!(h.hp<=0&&id!=='koharu'):h.hp<=0,'',['hero',id]);
    add('もどる',()=>this.back());
   }else if(this.phase==='result'){
    title.textContent='行動中';add('早送り ▸',()=>this.nextMessage());tips.textContent='';
@@ -123,7 +123,7 @@ class BattleUI{
   const enabled=[...options.querySelectorAll('button:not(:disabled)')];if(enabled[0])enabled[0].focus({preventScroll:true});
  }
  selectSkill(id){this.selected=OkaeriCore.actions(this.flow.actor).find(a=>a.id===id);this.previous=this.phase;if(this.selected.target){this.phase='target';this.render();}else this.commit({skill:id});}
- commit(command){if(this.flow.choose(command)){this.phase='busy';this.callbacks.onTurn(this.flow.commands,false);}else{this.phase='actor';this.message='トウマの行動を決めた。\n'+nm(this.flow.actor)+'は どうする？';this.render();}}
+ commit(command){if(this.flow.choose(command)){this.phase='busy';this.callbacks.onTurn(this.flow.commands,false);}else{this.phase='actor';this.message=nm(this.flow.ids[this.flow.index-1])+'の行動を決めた。\n'+nm(this.flow.actor)+'は どうする？';this.render();}}
  back(){if(this.phase==='target'){this.phase=this.previous;}else if(['skills','items'].includes(this.phase)){this.phase='actor';}else if(this.phase==='actor'){if(!this.flow.back()){this.flow=new CommandFlow(this.b.heroes);this.phase='root';}}else return;this.message=this.phase==='root'?'どうする？':nm(this.flow.actor)+'は どうする？';this.render();}
  showResult(b){
   this.playback.stop();this.outcome=b;this.guards={};this.phase='result';this.message='';this.render();this.playback.play(b,this.flow.commands);

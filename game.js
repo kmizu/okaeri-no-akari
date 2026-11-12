@@ -278,7 +278,7 @@ function handle(id){const f=state.flags;if(globalThis.OkaeriField?.handle(id,epi
 let classicBattle=null;
 let fieldWin=null; // 寄り道の精霊を落ち着かせたあとに呼ぶ
 function startBattle(kind,onWin=null){fieldWin=onWin;setMusic('battle');
- battleOrigin=kind;battle=C.newBattle(kind,D.companion(state)?{support:'koharu'}:{});order=['touma','nina'];commands={};mode='battle';held={};route=[];$('battleScreen').hidden=false;
+ battleOrigin=kind;battle=C.newBattle(kind,D.companion(state)?{support:'koharu'}:{});order=battle.heroes.koharu?['touma','nina','koharu']:['touma','nina'];commands={};mode='battle';held={};route=[];$('battleScreen').hidden=false;
  if(!classicBattle)classicBattle=new OkaeriBattle.BattleUI($('battleScreen'),{
   onTurn:(selected,team)=>{commands=selected;resolve(team);},
   onVictory:victory,onRetry:()=>startBattle(battleOrigin,fieldWin),

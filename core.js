@@ -3,6 +3,8 @@
 const skills={
  touma:[{id:'attack',name:'斬る',cost:0,desc:'一体に20ダメージ。',target:'enemy'},{id:'break',name:'崩し斬り',cost:2,desc:'14ダメージ。次の一撃が1.5倍に。',target:'enemy'},{id:'protect',name:'かばう',cost:0,desc:'ニナへの単体攻撃を引き受け、半減。'},{id:'counter',name:'灯返し',cost:2,desc:'防御し、攻撃を受けると24で反撃。'},{id:'cheer',name:'励ます',cost:2,desc:'ニナを27回復。冷えも解除。'}],
  nina:[{id:'attack',name:'灯杖で打つ',cost:0,desc:'一体に14ダメージ。',target:'enemy'},{id:'fire',name:'火花',cost:2,desc:'氷殻を溶かし、22ダメージ。',target:'enemy'},{id:'ring',name:'灯の輪',cost:3,desc:'敵全体に14ダメージ。'},{id:'heal',name:'ぬくもり',cost:2,desc:'味方一人のHPを45％回復。冷え解除。',target:'ally'},{id:'buff',name:'灯を託す',cost:2,desc:'トウマの次の一撃を1.5倍に。氷殻も溶かす。'}]
+ ,// コハルは剣も火も持たない。後ろから、薬草で二人を支える。
+ koharu:[{id:'tend',name:'手当て',cost:0,desc:'味方一人のHPを12回復。冷えも解除。',target:'ally'},{id:'warm',name:'温め草',cost:2,desc:'味方一人のHPを40％回復。冷えも解除。',target:'ally'},{id:'tea',name:'薬草茶',cost:3,desc:'立っている全員のHPを18回復。冷えも解除。'},{id:'salve',name:'守りの軟膏',cost:1,desc:'味方一人がこのターン受けるダメージを半減。',target:'ally'},{id:'mint',name:'薄荷の息',cost:2,desc:'味方一人のMPを3回復。',target:'ally'},{id:'rouse',name:'気つけ草',cost:4,desc:'倒れた仲間をHP40％で起こす。',target:'ally'}]
 };
 const common=[{id:'guard',name:'防御',cost:0,desc:'このターン受けるダメージを半減。'},{id:'rescue',name:'手を貸す',cost:0,desc:'倒れた相手をHP30％で起こす。'},{id:'herb',name:'薬草',cost:0,desc:'味方一人のHPを45回復。冷えも解除。',target:'ally'}];
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -17,7 +19,7 @@ function newBattle(kind,options={}){
   // 魔獣。精霊と違って、温めても落ち着かない。灯りを持つニナを狙う。
   beast:[{...enemy('灯喰い',170,'guardian'),tint:'beast',beast:true}],guardian:[enemy('枝角の番人',230,'guardian')]};
  if(!groups[kind])throw Error('Unknown encounter');
- return {kind,turn:1,gauge:0,items:3,status:'active',logs:[],...(options.support?{support:options.support}:{}),enemies:groups[kind],heroes:{touma:{name:'トウマ',hp:120,max:120,sp:6,maxSp:6,chill:0,buff:0},nina:{name:'ニナ',hp:90,max:90,sp:8,maxSp:8,chill:0,buff:0}}};
+ return {kind,turn:1,gauge:0,items:3,status:'active',logs:[],...(options.support?{support:options.support}:{}),enemies:groups[kind],heroes:{touma:{name:'トウマ',hp:120,max:120,sp:6,maxSp:6,chill:0,buff:0},nina:{name:'ニナ',hp:90,max:90,sp:8,maxSp:8,chill:0,buff:0},...(options.support==='koharu'?{koharu:{name:'コハル',hp:70,max:70,sp:10,maxSp:10,chill:0,buff:0}}:{})}};
 }
 function intentions(b){return b.enemies.map((e,i)=>{
  if(e.hp<=0)return null;const k=n=>Math.round(n*(e.scale||1));
@@ -29,18 +31,20 @@ function intentions(b){return b.enemies.map((e,i)=>{
  if(e.type==='crab')return {target:b.turn%2?'touma':'nina',damage:16,chill:true,label:'冷たいしぶき → '+(b.turn%2?'トウマ':'ニナ')+' 16・冷え'};
  const target=(b.turn+i)%2?'touma':'nina';return {target,damage:k(12),label:'ぽよん体当たり → '+(target==='touma'?'トウマ':'ニナ')+' '+k(12)};
 });}
-function actions(actor){return [...skills[actor],...common];}
+function actions(actor){return actor==='koharu'?[...skills.koharu,...common.filter(a=>a.id!=='rescue')]:[...skills[actor],...common];}
 function resolveTurn(input,commands,order){
  if(input.status!=='active')throw Error('戦闘は終了しています');
- if(!Array.isArray(order)||order.length!==2||new Set(order).size!==2||!order.every(x=>x==='touma'||x==='nina'))throw Error('行動順が不正です');
- if(commands.team){if(commands.team!=='flare'||input.gauge<3||Object.values(input.heroes).some(h=>h.hp<=0))throw Error('連携には二人と灯り三つが必要です');}
+ if(!Array.isArray(order)||new Set(order).size!==order.length||!['touma','nina'].every(x=>order.includes(x))||!order.every(x=>x==='touma'||x==='nina'||(x==='koharu'&&input.heroes.koharu)))throw Error('行動順が不正です');
+ const pair=h=>[h.touma,h.nina];
+ if(commands.team){if(commands.team!=='flare'||input.gauge<3||pair(input.heroes).some(h=>h.hp<=0))throw Error('連携には二人と灯り三つが必要です');}
  else for(const id of order){
   const h=input.heroes[id];if(h.hp<=0)continue;
   const a=actions(id).find(a=>a.id===commands[id]?.skill);if(!a)throw Error('技を選んでください');
   if(h.sp<a.cost)throw Error('SPが足りません');
   if(a.target==='enemy'&&(!Number.isInteger(commands[id].target)||!input.enemies[commands[id].target]||input.enemies[commands[id].target].hp<=0))throw Error('相手を選んでください');
-  if(a.target==='ally'&&!['touma','nina'].includes(commands[id].target))throw Error('味方を選んでください');
-  if(a.id==='rescue'&&input.heroes[id==='touma'?'nina':'touma'].hp>0)throw Error('二人とも立っています');
+  if(a.target==='ally'&&!input.heroes[commands[id].target])throw Error('味方を選んでください');
+  if(a.id==='rouse'&&!(['touma','nina'].includes(commands[id].target)&&input.heroes[commands[id].target].hp<=0))throw Error('倒れている仲間はいません');
+  if(a.id==='rescue'&&(id==='koharu'||input.heroes[id==='touma'?'nina':'touma'].hp>0))throw Error('二人とも立っています');
  }
  if(!commands.team&&order.filter(id=>input.heroes[id].hp>0&&commands[id]?.skill==='herb').length>(input.items||0))throw Error('薬草が足りません');
  const b=clone(input),forecast=intentions(b),log=b.logs=[];let cooperation=false,protect=false;
@@ -53,7 +57,7 @@ function resolveTurn(input,commands,order){
   if(e.ice)n*=.5;
   n=Math.round(n);e.hp=Math.max(0,e.hp-n);if(afterDamage)afterDamage();emit(e.name+'に '+n+'。'+(e.hp===0?(e.beast?'山の方へ退いていった。':'落ち着きを取り戻した。'):''),{type:who==='team'?'team':fire?'fire':style,enemy:b.enemies.indexOf(e),amount:n},who);
  }
- function heal(id,amount,actor){const h=b.heroes[id];if(h.hp<=0){emit('倒れている相手には「手を貸す」を使おう。');return;}const before=h.hp;cooperation ||=h.hp<h.max||h.chill>0;h.hp=Math.min(h.max,h.hp+amount);h.chill=0;emit(h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before},actor);}
+ function heal(id,amount,actor){const h=b.heroes[id];if(h.hp<=0){emit('倒れている相手には「手を貸す」を使おう。');return;}const before=h.hp;if(actor!=='koharu')cooperation ||=h.hp<h.max||h.chill>0;h.hp=Math.min(h.max,h.hp+amount);h.chill=0;emit(h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before},actor);}
  if(commands.team){b.gauge=0;emit('「合わせるぞ！」「うん！」── 灯火の一閃！',null,'team');hit(b.enemies.find(e=>e.hp>0),75,true,'team');}
  else for(const id of order){
   if(fallen.has(id))continue;
@@ -70,6 +74,12 @@ function resolveTurn(input,commands,order){
   if(c.skill==='herb'){b.items--;heal(c.target,45,id);}
   if(c.skill==='cheer')heal('nina',27,id);
   if(c.skill==='buff'){b.heroes.touma.buff=2;emit('トウマの剣に灯りが宿った。',{type:'heal',hero:'touma'},id);}
+  if(c.skill==='tend')heal(c.target,12,id);
+  if(c.skill==='warm')heal(c.target,Math.round(b.heroes[c.target].max*.4),id);
+  if(c.skill==='tea')for(const t of Object.keys(b.heroes))if(b.heroes[t].hp>0)heal(t,18,id);
+  if(c.skill==='salve'){defending.add(c.target);emit(b.heroes[c.target].name+'に軟膏を塗った。このターンの傷は半分で済む。',{type:'shield',hero:c.target},id);}
+  if(c.skill==='mint'){const t=b.heroes[c.target],before=t.sp;t.sp=Math.min(t.maxSp,t.sp+3);emit(t.name+'のMPが '+(t.sp-before)+' 戻った。',{type:'heal',hero:c.target},id);}
+  if(c.skill==='rouse'){const t=b.heroes[c.target];t.hp=Math.round(t.max*.4);emit('「起きて、お兄ちゃんたちの番だよ」── '+t.name+'が立ち上がった。',{type:'heal',hero:c.target,amount:t.hp},id);}
   if(c.skill==='rescue'){b.heroes[other].hp=Math.round(b.heroes[other].max*.3);emit('「大丈夫。手、貸して」── '+b.heroes[other].name+'が立ち上がった。',{type:'heal',hero:other,amount:b.heroes[other].hp},id);}
  }
  if(b.enemies.every(e=>e.hp<=0))b.status='victory';
@@ -82,18 +92,14 @@ function resolveTurn(input,commands,order){
    emit((covered?'トウマがニナをかばった！ ':'')+h.name+'に '+n+' ダメージ。',{type:'hurt',hero:target,source:i,amount:n,covered},'enemy:'+i);
    if(counters.has(target)&&h.hp>0){hit(e,24,false,target);counters.delete(target);}
   }
- }
- // 支え役（コハル）は命令を受けない。毎ターンの終わりに、いちばん冷えている一人の手を温める。
- if(b.support&&b.enemies.some(e=>e.hp>0)){
-  const need=Object.entries(b.heroes).filter(([,h])=>h.hp>0&&(h.hp<h.max||h.chill>0)).sort((x,y)=>x[1].hp/x[1].max-y[1].hp/y[1].max)[0];
-  if(need){const [id,h]=need,before=h.hp;h.hp=Math.min(h.max,h.hp+12);h.chill=0;emit('コハルの温め草。'+h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before},'koharu');}
+  const k=b.heroes.koharu;if(f.target==='all'&&k&&k.hp>0){const n=Math.round(f.damage*.5*(defending.has('koharu')?.5:1));k.hp=Math.max(0,k.hp-n);emit('後ろのコハルにも '+n+' ダメージ。'+(k.hp===0?'コハルは下がって、息を整える。':''),{type:'hurt',hero:'koharu',source:i,amount:n},'enemy:'+i);}
  }
  if(cooperation)b.gauge=Math.min(3,b.gauge+1);
  for(const h of Object.values(b.heroes)){h.chill=Math.max(0,h.chill-1);h.buff=Math.max(0,h.buff-1);}
  for(const e of b.enemies)e.broken=Math.max(0,e.broken-1);
  // みぞれヤドカリは、溶かした殻が三ターンごとに凍り直す。
  for(const e of b.enemies)if(e.refreeze&&e.hp>0&&!e.ice&&b.turn%3===0){e.ice=true;emit(e.name+'の殻が、また凍りついた。');}
- if(Object.values(b.heroes).every(h=>h.hp<=0))b.status='defeat';else if(b.enemies.every(e=>e.hp<=0))b.status='victory';
+ if(pair(b.heroes).every(h=>h.hp<=0))b.status='defeat';else if(b.enemies.every(e=>e.hp<=0))b.status='victory';
  if(cooperation)emit('二人の息が合った。灯りが一つ、ともった。');
  b.events=events;b.turn++;return b;
 }

@@ -1,0 +1,163 @@
+{
+  "status": "complete-assets",
+  "generator": "built-in image_gen",
+  "gameIntegration": false,
+  "promptFile": "production.json",
+  "referenceHashes": {
+    "assets/cover.png": "23a679fa8211f96d09a951ac81ecda92e3013e8f2e6175b809bf67656101f881",
+    "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+    "assets/koharu-faces.png": "8d0f74738f0f14a1980c3cf83c3c2c6c324821e1641715a3e5e70bb716ef2cc4"
+  },
+  "files": [
+    {
+      "id": "chapter-01",
+      "title": "第1話：ふたりで灯りをともす",
+      "chapter": 1,
+      "route": null,
+      "file": "chapter-01.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "0a16ab78059475c435a100ee4f4b1b51ce1b144b341b0846e66e2f373f536bb3"
+    },
+    {
+      "id": "chapter-02",
+      "title": "第2話：小箱の二つの石",
+      "chapter": 2,
+      "route": null,
+      "file": "chapter-02.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "6887039e7d651da107e84b2e03f724828c036c29115be1544b289957eb7ad58c"
+    },
+    {
+      "id": "chapter-03",
+      "title": "第3話：岸へ帰ってきたニナ",
+      "chapter": 3,
+      "route": null,
+      "file": "chapter-03.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "7cf265cbd274abd109f809f64b580ac8136f0872b6a5463edae2440e79781c40"
+    },
+    {
+      "id": "chapter-04",
+      "title": "第4話：三日ぶりの仲直り",
+      "chapter": 4,
+      "route": null,
+      "file": "chapter-04.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "6ce2d64a8d28cbb7afbee9e5805d47a9383cbec3c758d422f445e0ff26b10f78"
+    },
+    {
+      "id": "chapter-05",
+      "title": "第5話：三人乗りのそり",
+      "chapter": 5,
+      "route": null,
+      "file": "chapter-05.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "14679f99d1b612f70f10511e6776b7ed5d90fc932a4306753da7dc9747583043"
+    },
+    {
+      "id": "chapter-06",
+      "title": "第6話：白い石を鞄に",
+      "chapter": 6,
+      "route": null,
+      "file": "chapter-06.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "8b889feb86ac0ade170b6662cc1f7679bcb96aae43b05c027847cf4ae9663100"
+    },
+    {
+      "id": "chapter-07",
+      "title": "第7話：この家の二脚の椅子",
+      "chapter": 7,
+      "route": null,
+      "file": "chapter-07.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "3e39bebc3ba3673c07d591990ec242e91f4a174e8ebc262c5fcefcc66da5cd4f"
+    },
+    {
+      "id": "chapter-08",
+      "title": "第8話：温め草と帰り灯",
+      "chapter": 8,
+      "route": null,
+      "file": "chapter-08.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "30cee8853f26b67a4ba96a9db97759831aceca1e6154734979a0731e3a0db182"
+    },
+    {
+      "id": "chapter-09",
+      "title": "第9話：三人の帰り結び",
+      "chapter": 9,
+      "route": null,
+      "file": "chapter-09.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "bcde70824c68bbb680c609d933bd5a140af1c5176d5e63389323bcc75f03f51e"
+    },
+    {
+      "id": "chapter-10",
+      "title": "第10話：選んだ翌朝",
+      "chapter": 10,
+      "route": null,
+      "file": "chapter-10.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "6ce62d13b45ef6fabfc211cc6671f4099a6c5a710675480102ea2e82a37c5065"
+    },
+    {
+      "id": "ending-touma",
+      "title": "結末：トウマから告白",
+      "chapter": 10,
+      "route": "touma",
+      "file": "ending-touma.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "ad8c5c46d29f59d9ede98b51cbd015b0c1968bb4a8c24be56c9b1b0d705d676a"
+    },
+    {
+      "id": "ending-nina",
+      "title": "結末：ニナから告白",
+      "chapter": 10,
+      "route": "nina",
+      "file": "ending-nina.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "63d2558d05dd86b66c2064335f9ec5e66bae43b88d0fd10bdba72ecfa5508823"
+    },
+    {
+      "id": "ending-friends",
+      "title": "結末：名前はまだつけない",
+      "chapter": 10,
+      "route": "friends",
+      "file": "ending-friends.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "66e8838f14722b902a6efad7bfcbcb7b82947634291a810563ceb894394fcf12"
+    },
+    {
+      "id": "ending-koharu",
+      "title": "結末：三人で仲良く",
+      "chapter": 10,
+      "route": "koharu",
+      "file": "ending-koharu.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "f1541967f9928dea1ee14e8d945c7b622274a49da64a66377e1adece9901bbaa"
+    },
+    {
+      "id": "ending-both",
+      "title": "結末：三人とも大事にする",
+      "chapter": 10,
+      "route": "both",
+      "file": "ending-both.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab"
+    }
+  ]
+}

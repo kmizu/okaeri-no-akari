@@ -1,0 +1,298 @@
+{
+  "status": "complete-assets",
+  "generator": "built-in image_gen",
+  "gameIntegration": false,
+  "commonPrompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.",
+  "items": [
+    {
+      "id": "chapter-01",
+      "title": "第1話：ふたりで灯りをともす",
+      "chapter": 1,
+      "route": null,
+      "source": "story.js / game.js：森の灯台の点灯",
+      "anchor": "森の灯台をともす瞬間",
+      "file": "chapter-01.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA, both standing together at the small forest roadside beacon at dusk. Nina carefully opens her brass lantern to transfer its tiny seed flame to the beacon while Touma steadies its old iron latch with his gloved hand; their hands share the work without touching romantically. The beacon blooms amber, lighting their hopeful relieved faces; snowy conifers and the faint descending trail to a warm village beyond. Three-quarter medium-wide view from beside the lantern, shared achievement on their first independent duty. Not a giant tower or a fantasy battle.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "0a16ab78059475c435a100ee4f4b1b51ce1b144b341b0846e66e2f373f536bb3",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-02",
+      "title": "第2話：小箱の二つの石",
+      "chapter": 2,
+      "route": null,
+      "source": "episodes-data.js episodes[2][3]",
+      "anchor": "ニナは石を一つずつ、二人のカップの横に置いた。",
+      "file": "chapter-02.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA seated close across the corner of their small rustic kitchen table at night. An opened small rusty tin box contains an old folded paper with NO readable writing, a smooth WHITE pebble beside Nina ivory cup, smooth BLACK pebble beside Touma blue cup; warm soup bowls pushed aside. Nina tenderly places her white pebble beside her cup, Touma looking from her hand to her smiling face with quiet wonder. Hearth glow, snowy blue window, small lived-in cabin. Keep winter outerwear recognizable but scarves loose. The paper must not contain legible text.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "6887039e7d651da107e84b2e03f724828c036c29115be1544b289957eb7ad58c",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-03",
+      "title": "第3話：岸へ帰ってきたニナ",
+      "chapter": 3,
+      "route": null,
+      "source": "episodes-data.js episodes[3][3]",
+      "anchor": "靴が岸の石に触れた瞬間、トウマは外套ごと彼女を抱き寄せていた。",
+      "file": "chapter-03.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA in foreground at a snow-edged STONE CANAL BANK immediately after rescue, fully safely on bank, not in water. Touma tightly embraces Nina outside her rust-red coat, both visibly shaken; his eyes wide with relief and fear, she softly relieved, no happy romantic confession yet. Nina boots wet and coat hem damp, rescue rope and simple harness slack beside them, muddy surging water below behind them and broken wooden crossing in distance. Embrace is protective after danger, before a disagreement; no injury gore, no drowning. Cold daylight with small warm lantern nearby. Side-on medium-wide composition, expressive faces visible.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "7cf265cbd274abd109f809f64b580ac8136f0872b6a5463edae2440e79781c40",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-04",
+      "title": "第4話：三日ぶりの仲直り",
+      "chapter": 4,
+      "route": null,
+      "source": "episodes-data.js episodes[4][3]",
+      "anchor": "ニナの手が、食卓の上でトウマの袖をつかんだ。",
+      "file": "chapter-04.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA facing each other at their small kitchen table at night. Nina reaches across and grips the long cuff of Touma teal sleeve on the tabletop; Touma places one bare hand gently over her hand. Her eyes moist, his apologetic and earnest, two small relieved almost-smiles. Warm hearth, kettle steaming neglected on small stove behind, wrapped shop parcel on table. A reconciliation conversation after three days of silence, not a confession or a kissing scene. Frame hands and faces as emotional center; humble cozy home, blue snow outside.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "6ce2d64a8d28cbb7afbee9e5805d47a9383cbec3c758d422f445e0ff26b10f78",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-05",
+      "title": "第5話：三人乗りのそり",
+      "chapter": 5,
+      "route": null,
+      "source": "episodes-data.js episodes[5][2]",
+      "anchor": "真ん中のコハルが、いちばん大きな声で笑った。",
+      "file": "chapter-05.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png",
+        "assets/koharu-faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly THREE adults TOUMA, KOHARU and NINA riding ONE old wooden sled SLOWLY down a gentle snowy hill, cramped together laughing. Koharu is physically seated IN THE MIDDLE between Touma at rear and Nina at front, her rounded cheeks and flax low pigtails lively, laughing loudest. Touma braces one boot to slow the sled and holds side rail, Nina looks over shoulder smiling. All fully clothed in matching winter designs, Koharu green scarf distinct from Nina ivory. Nearby a slightly crooked completed snowman with two snowballs and twig arms, small wooden hill hut distant. Playful side three-quarter medium-wide view, powder snow spray modest, not steep cliff or high speed. Exactly three bodies, separate natural hands, no lantern or flame.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "14679f99d1b612f70f10511e6776b7ed5d90fc932a4306753da7dc9747583043",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-06",
+      "title": "第6話：白い石を鞄に",
+      "chapter": 6,
+      "route": null,
+      "source": "episodes-data.js episodes[6][3]",
+      "anchor": "ニナは小箱の石を一つ、鞄の内袋に入れた。",
+      "file": "chapter-06.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA in their warm house at night, a half-packed old travel bag open on the floor between them. Nina kneels and slips a small smooth WHITE pebble into the inner cloth pocket; Touma beside her has lowered a packing-list paper, looking at her tenderly with mixed support and loneliness. A smooth BLACK pebble remains on their nearby wooden table beside his blue mug. Folded winter clothes, plain sealed invitation without writing near bag, amber stove and cool snowy window. Leaving for a three-week workshop, not permanent departure; intimate quiet pause, not crying farewell at a station. Face and hands clearly visible.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "8b889feb86ac0ade170b6662cc1f7679bcb96aae43b05c027847cf4ae9663100",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-07",
+      "title": "第7話：この家の二脚の椅子",
+      "chapter": 7,
+      "route": null,
+      "source": "episodes-data.js episodes[7][3]",
+      "anchor": "食卓の椅子は、色の違う木でできた二脚。",
+      "file": "chapter-07.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA in their small cabin beside a newly repaired wooden dining window at night. TWO mismatched wooden chairs, one light wood and one darker, pulled close to the table. Nina rests both hands tenderly on the back of her chair, Touma sits sideways on the other looking at her warmly. Tiny terracotta pot with bare soil, NO sprout yet, on freshly sealed windowsill; small repair tools and folded old photograph nearby, no readable text. Snow outside glass but curtain hangs still without a draught. Warm hearth light, quiet realization that both wanted a home together; no wedding rings or overt kiss. Compose window and both chairs prominently.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "3e39bebc3ba3673c07d591990ec242e91f4a174e8ebc262c5fcefcc66da5cd4f",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-08",
+      "title": "第8話：温め草と帰り灯",
+      "chapter": 8,
+      "route": null,
+      "source": "episodes-data.js episodes[8][3]",
+      "anchor": "コハルが、温め草の袋をニナの手に押しあてた。",
+      "file": "chapter-08.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png",
+        "assets/koharu-faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly THREE adults TOUMA, NINA and KOHARU on the sheltered side of a hill beacon in a BLIZZARD at night. Koharu cups Nina cold gloved hands around a small CLOTH WARMING-HERB BAG, thin white STEAM rising, her round face focused and caring. Nina meets her eyes with grateful determined smile, ready to work. Touma at their side steadies the ice-covered metal lens retaining ring, glances at Koharu respectful and moved. Nina brass seed-flame lantern rests safely near beacon, warm amber beacon glow and blue-white swirling snow. Koharu never holds lantern or flame. Hands-and-faces composition, visible full identities, coherent three pairs of arms, no extra rescuer or weapons.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "30cee8853f26b67a4ba96a9db97759831aceca1e6154734979a0731e3a0db182",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-09",
+      "title": "第9話：三人の帰り結び",
+      "chapter": 9,
+      "route": null,
+      "source": "episodes-data.js episodes[9][1]",
+      "anchor": "コハルの鞄の帯も、二本になった。",
+      "file": "chapter-09.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png",
+        "assets/koharu-faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly THREE adults TOUMA, NINA and KOHARU at a snowy village festival ribbon stall at night. Koharu centered with herb satchel/basket held forward, cheeks round and pink, delighted watery-eyed smile while Touma and Nina each carefully tie one small woven fabric ribbon to her bag strap. Her bag now has TWO different small ribbons, a rust-red ribbon and a teal ribbon. Touma bag already has rust-red and smaller sage-green knots; Nina travel bag teal and smaller sage-green knots. Emphasize faces and one clear knotting gesture per protagonist, natural separate hands. A basket of narrow woven cloth strips on stall, warm hanging lanterns and soft distant stalls, blurred villagers only as distant silhouettes. A moment of all three belonging before the route choice, no romantic exclusivity or kiss.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "bcde70824c68bbb680c609d933bd5a140af1c5176d5e63389323bcc75f03f51e",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "chapter-10",
+      "title": "第10話：選んだ翌朝",
+      "chapter": 10,
+      "route": null,
+      "source": "episodes-data.js contexts[10] / routes各冒頭",
+      "anchor": "祭りの翌日。ゆうべ選んだことを受けて過ごす、最初の一日です。",
+      "file": "chapter-10.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA in a route-NEUTRAL opening image of the morning after the winter festival, inside their cabin at the open front doorway. Gentle winter morning sun on snow outside; quiet paperless festival decorations and lantern posts seen across village lane, hearth behind. Touma holds the door open as Nina adjusts her travel bag shoulder strap, they exchange calm slightly bashful smiles before heading into a new day. No handholding, kissing, commitment symbol or claim of exclusivity; no count of bowls or chairs shown. Nina is NOT departing for the south yet. A linking visual adaptation of the chapter opening, not a specific romantic ending event. Cozy intimate medium-wide scene, all facial traits recognizable.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "6ce62d13b45ef6fabfc211cc6671f4099a6c5a710675480102ea2e82a37c5065",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "ending-touma",
+      "title": "結末：トウマから告白",
+      "chapter": 10,
+      "route": "touma",
+      "source": "episodes-data.js routes.touma[3]",
+      "anchor": "少し背伸びをして、トウマの頬に短く触れる。",
+      "file": "ending-touma.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA at night in their warm home, outside the doorway to Nina separate bedroom. Nina rises slightly onto toes and gives Touma one brief tender KISS ON HIS CHEEK, her eyes softly closed and blushing; Touma stunned happy red-faced, a little rigid with surprise, both hands naturally down. Fully clothed rust coat and teal coat loose, scarves loosened, no hats. A folded unmarked date itinerary rests on nearby repair desk, tiny ONE sprout in terracotta pot by snowy window. Hearth glow, delicate romantic anime watercolor, medium shot with cheek kiss clear, no lip kiss or embrace on bed. Their first night as lovers after Touma confession.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "ad8c5c46d29f59d9ede98b51cbd015b0c1968bb4a8c24be56c9b1b0d705d676a",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "ending-nina",
+      "title": "結末：ニナから告白",
+      "chapter": 10,
+      "route": "nina",
+      "source": "episodes-data.js routes.nina[2]",
+      "anchor": "ニナは指先を重ねて、それからしっかり握り直した。",
+      "file": "ending-nina.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA sitting side by side on an old bench beneath white birch trees by a snowy forest entrance in soft winter daylight. Touma has offered one bare hand palm up on the bench BETWEEN them; Nina places her bare hand over it and gently intertwines fingers, smiling with relieved shy joy. He looks at their joined hands then toward her, tender blush. Snow just dropping from a birch twig in background, quiet sun, Nina brass lantern set down beside bench unused. Teal vs rust winter coats and ivory scarf. Her confession route, emotional center is the deliberately offered and accepted hand. Medium-wide three-quarter view, no kiss, no crowd, no blanket over faces.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "63d2558d05dd86b66c2064335f9ec5e66bae43b88d0fd10bdba72ecfa5508823",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "ending-friends",
+      "title": "結末：名前はまだつけない",
+      "chapter": 10,
+      "route": "friends",
+      "source": "episodes-data.js routes.friends[3]",
+      "anchor": "ニナは残ったお茶を、二つのカップに分けた。",
+      "file": "ending-friends.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly TOUMA and NINA at their familiar kitchen table at night, relaxed unforced friendship and affectionate shared life, no romantic physical contact. Nina pours remaining tea from a small teapot into TWO differently shaped cups, Touma beside table smiles at her with a pencil in hand over an unmarked home-repairs list. A freshly hung LEAF-PATTERN curtain frames the repaired snowy window, still air and amber hearth. Cozy comfortably close but distinct seats, no wedding rings, heart symbols or kiss. A patient open future, not a sad rejected romance. Paper has no legible text. Show faces clearly and tea steam glowing.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "66e8838f14722b902a6efad7bfcbcb7b82947634291a810563ceb894394fcf12",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "ending-koharu",
+      "title": "結末：三人で仲良く",
+      "chapter": 10,
+      "route": "koharu",
+      "source": "episodes-data.js routes.koharu[2]",
+      "anchor": "次に吹雪で泊まる時は、三人だ。",
+      "file": "ending-koharu.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png",
+        "assets/koharu-faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly THREE adults TOUMA, NINA and KOHARU having a cheerful lunch in a modest snowy forest rest hut in daylight. Koharu at center in sage-green scarf holds a mismatched mug with BLUE handle at chest level, her round cheeks rosy and she playfully pouts at a teasing remark, eyes still bright; Nina beside her laughs, Touma at other side smiles warmly. Three distinct mugs and simple bread on rustic table, old shelf with mismatched cups, closed hut door and window showing peaceful snow. All three included equally in friendship and new working partnership, no dating gesture, no sleeves tugged or kisses. Preserve approved Koharu face and lower pigtails; no child proportions.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "f1541967f9928dea1ee14e8d945c7b622274a49da64a66377e1adece9901bbaa",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    },
+    {
+      "id": "ending-both",
+      "title": "結末：三人とも大事にする",
+      "chapter": 10,
+      "route": "both",
+      "source": "episodes-data.js routes.both[3]",
+      "anchor": "ニナが右の袖を、コハルが左の袖を、同時に引いた。",
+      "file": "ending-both.png",
+      "references": [
+        "assets/cover.png",
+        "assets/faces.png",
+        "assets/koharu-faces.png"
+      ],
+      "prompt": "Use case: illustration-story. A finished event CG still for the cozy Japanese snow-country visual-novel RPG Okaeri no Akari. ONE uninterrupted cinematic landscape illustration, 16:9 framing, preferably 1536x864; no collage, inset, interface, text, letters, captions, watermark or border. Leave the bottom 18 percent visually quiet for a dialogue overlay while keeping important faces/hands above it. Beautiful warm fine-line anime illustration with luminous soft watercolor shading, rich winter fabrics, cool snow and amber light. Full illustrated scenery, correct anatomy, five fingers when visible. Natural adult anime proportions, not chibi sprites. Same character identity as supplied references.\nReference image 1 cover is the protagonists' identity, winter palette and world; reference image 2 faces locks their faces. TOUMA: 18-year-old young adult man, short tousled dark chestnut hair, warm brown eyes, dark TEAL winter coat with cream fleece collar, short RUST RED scarf, brown gloves, boots and satchel. NINA: 18-year-old young adult woman, short CHESTNUT BOB with side braid and small red ribbon, amber-brown eyes, RUST RED winter coat with ivory fleece collar/hood and IVORY scarf, brown winter boots. Her hair is NOT blonde or long. Preserve individual faces and hair; intimate readable facial acting.\nIf Koharu is explicitly present, image 3 is her APPROVED identity reference: same age18 petite adult, slightly shorter, rounded full rosy cheeks, soft rounded small chin and tiny mouth, large luminous GRASS GREEN eyes with gentle corners, fluffy FLAX-BLONDE short LOW TWIN PIGTAILS with sage ties and short bangs. Her scarf is SAGE GREEN, coat rust-red hand-me-down with slightly long cream-fleece cuffs, cream gloves, herb basket and three small herb pouches at belt. Keep her approved rounded moe appeal while matching the illustration, not a child. Koharu NEVER carries fire or a lantern. No extra main-character duplicates.\nSCENE: Exactly THREE young adults TOUMA center, NINA on his anatomical RIGHT (viewer LEFT), KOHARU on his anatomical LEFT (viewer RIGHT), standing in their warm home at night. Nina gently tugs Touma RIGHT teal sleeve while Koharu simultaneously tugs his LEFT teal sleeve; the two women look across him at each other and burst into happy blushing laughter, he smiles bashfully at being caught between them. NOT rivalry, equal affection after all three chose this relationship. A table behind with THREE mismatched wooden chairs and THREE equal soup bowls, large pot, terracotta pot with THREE tiny sprouts on window. Koharu approved rounded moe face, green scarf, flax low twin pigtails; Nina chestnut bob/braid and ivory scarf. Fully clothed, wholesome emotional resolution, no sexual pose. Medium-wide with all faces and the two sleeve tugs clear.",
+      "status": "generated-reviewed",
+      "width": 1672,
+      "height": 941,
+      "sha256": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab",
+      "visualReview": "人物・髪型・場面・関係の描写を生成結果で目視確認"
+    }
+  ]
+}

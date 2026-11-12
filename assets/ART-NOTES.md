@@ -1,5 +1,9 @@
 # 画像・キャラクター基準
 
+## イベントスチル
+
+全10章に各1枚、5エンディング（touma／nina／friends／koharu／both）に各1枚、計15枚。`assets/stills/` に完成PNG、生成指示、寸法・ハッシュ、台本の表示候補を保存。[画像一覧](stills/index.html)・[制作記録](stills/README.md)。主役はcover.pngとfaces.png、コハルは正式版koharu-faces.pngを参照。組み込みimage_genで生成。ゲームへの表示組み込みは未実施。
+
 生成方法：組み込み画像生成ツール。外部CLIは使用していません。
 
 ## cover.png

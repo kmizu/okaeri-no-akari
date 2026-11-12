@@ -25,3 +25,7 @@
 @keyframes filmTextB{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @media(max-width:600px){.film-topline{top:7%;font-size:8px}.film-copy{left:6%;right:6%;bottom:24%}#filmText{font-size:clamp(11px,2.7vw,15px);line-height:1.9;letter-spacing:.04em}#filmTitle{font-size:clamp(30px,8vw,48px);margin-bottom:9px}.film-actions{bottom:7%;left:4%;right:4%;gap:5px}.film-actions>div{gap:4px}.film-actions button{font-size:9px;padding:6px 7px}.film-shade,.opening-film[data-view=title] .film-shade{box-shadow:inset 0 22px #06121bd9,inset 0 -22px #06121bd9}}
 @media(prefers-reduced-motion:reduce){.film-art{transition:none}.film-snow{animation:none}.opening-film[data-beat] .film-copy{animation:none}}
+
+/* 操作はスキップだけ。目立たせず、右下に置く。 */
+.film-actions{justify-content:flex-end}.film-actions button{opacity:.6}.film-actions button:hover,.film-actions button:focus-visible{opacity:1}
+#filmText,#filmTitle,.film-topline{animation:film-in 1.4s ease both}@keyframes film-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}

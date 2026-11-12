@@ -10,16 +10,15 @@ const shots=[
  {view:'home',label:'二人の帰る場所',text:'幼馴染のふたりは、町はずれの古い家を直して暮らしている。\n恋人ではない。たぶん、まだ。',duration:7500},
  {view:'title',label:'おかえりの灯',text:'きみと灯して、ふたりで帰ろう。',title:'おかえりの灯',duration:8500}
 ];
+// 映像は自動で最後まで流れる。操作は「スキップ」だけ。
 class OpeningFilm {
  static shots=shots;
- constructor(){this.active=false;this.paused=false;this.timer=null;}
+ constructor(){this.active=false;this.timer=null;}
  play(done){
-  this.stopTimer();this.active=true;this.paused=false;this.index=0;this.done=done;
+  this.stopTimer();this.active=true;this.index=0;this.done=done;
   document.getElementById('openingFilm').hidden=false;
-  document.getElementById('nextOpening').onclick=()=>this.next();
   document.getElementById('skipOpening').onclick=()=>this.finish();
-  document.getElementById('pauseOpening').onclick=()=>this.togglePause();
-  this.show();document.getElementById('nextOpening').focus({preventScroll:true});
+  this.show();
  }
  stopTimer(){clearTimeout(this.timer);this.timer=null;}
  show(){
@@ -27,14 +26,9 @@ class OpeningFilm {
   $('openingFilm').setAttribute('data-view',shot.view);$('openingFilm').setAttribute('data-beat',this.index%2);
   $('filmScene').textContent=shot.label;$('filmText').textContent=shot.text;
   $('filmTitle').textContent=shot.title||'';$('filmTitle').hidden=!shot.title;
-  $('filmCount').textContent=String(this.index+1).padStart(2,'0')+' / '+String(shots.length).padStart(2,'0');
-  $('nextOpening').textContent=shot.title?'物語をはじめる →':'次へ →';
-  $('pauseOpening').textContent=this.paused?'自動送りを再開':'一時停止';
-  $('pauseOpening').setAttribute('aria-pressed',String(this.paused));
-  if(!this.paused)this.timer=setTimeout(()=>this.next(),shot.duration);
+  this.timer=setTimeout(()=>this.next(),shot.duration);
  }
  next(){if(!this.active)return;if(this.index+1<shots.length){this.index++;this.show();}else this.finish();}
- togglePause(){if(!this.active)return;this.paused=!this.paused;this.show();}
  finish(){
   if(!this.active)return;this.active=false;this.stopTimer();document.getElementById('openingFilm').hidden=true;
   const done=this.done;this.done=null;if(done)done();

@@ -28,22 +28,24 @@ test('closing either opening scene resumes that scene without skipping the brief
  }
 });
 
-test('the opening film and title call precede the first morning, and finish only once',()=>{
+// 映像は自動で進む。テストでは、溜まっているタイマーを一つ進めて次の場面へ送る。
+const tick=b=>{const [id,fn]=b.timers.entries().next().value;b.timers.delete(id);fn();};
+test('the opening film plays by itself to the title call, then the first morning begins once',()=>{
  const b=boot();b.el('startButton').onclick();
  assert.equal(b.saved().openingPrelude,true);assert.equal(b.el('openingFilm').hidden,false);assert.equal(b.el('dialogue').hidden,true);
  assert.equal(b.el('hud').hidden,true);assert.equal(b.music.at(-1),'opening');
  const shots=b.ctx.OkaeriOpeningFilm.shots;
- for(let i=1;i<shots.length;i++)b.el('nextOpening').onclick();
+ for(let i=1;i<shots.length;i++)tick(b);
  assert.equal(b.el('filmTitle').hidden,false);assert.equal(b.el('filmTitle').textContent,'おかえりの灯');
  assert.equal(b.saved().openingPrelude,true,'title call must finish before the first scene');
- b.el('nextOpening').onclick();
+ tick(b);
  assert.equal(b.saved().openingPrelude,undefined);assert.equal(b.el('openingFilm').hidden,true);assert.equal(b.el('dialogue').hidden,false);
  assert.equal(b.el('dialogueText').textContent,b.ctx.OkaeriStory.opening[0].lines[0][1]);
  b.el('skipOpening').onclick();assert.equal(b.el('dialogueText').textContent,b.ctx.OkaeriStory.opening[0].lines[0][1]);
 });
 
 test('an interrupted film replays before home; old opening saves do not acquire a film',()=>{
- const first=boot();first.el('startButton').onclick();first.el('nextOpening').onclick();
+ const first=boot();first.el('startButton').onclick();tick(first);
  const resumed=boot(first.data.get('okaeri-forest-v1'));resumed.el('continueButton').onclick();
  assert.equal(resumed.el('openingFilm').hidden,false);assert.equal(resumed.el('dialogue').hidden,true);
  resumed.el('skipOpening').onclick();
@@ -62,10 +64,9 @@ test('automatic film timing reaches the title and home without leaving a pending
  assert.equal(b.el('openingFilm').hidden,true);assert.equal(b.saved().openingPrelude,undefined);assert.equal(b.timers.size,0);
 });
 
-test('pause and skip cancel automatic advance without skipping the home dialogue',()=>{
- const b=boot();b.el('startButton').onclick();b.el('pauseOpening').onclick();assert.equal(b.timers.size,0);
- b.el('nextOpening').onclick();assert.equal(b.timers.size,0,'manual advance keeps the film paused');
- b.el('pauseOpening').onclick();assert.equal(b.timers.size,1);
+test('skip is the only control: it cancels the automatic advance and lands on the home dialogue',()=>{
+ const b=boot();b.el('startButton').onclick();assert.equal(b.timers.size,1);
+ assert.equal(b.el('nextOpening').onclick,undefined);assert.equal(b.el('pauseOpening').onclick,undefined);
  b.el('skipOpening').onclick();assert.equal(b.timers.size,0);assert.equal(b.el('dialogue').hidden,false);
  assert.equal(b.saved().openingStage,0);assert.equal(b.el('controls').hidden,false);assert.equal(b.el('menuButton').disabled,false);
 });

@@ -380,7 +380,7 @@ $('nextDialogue').onclick=nextDialogue;$('leadButton').onclick=switchLead;$('int
 
 const dirs={ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0],ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1]};
 document.addEventListener('keydown',e=>{const key=e.key.length===1?e.key.toLowerCase():e.key;
- if(mode==='opening'){if(!e.repeat){if(['Enter',' ','e'].includes(key)&&e.target.tagName!=='BUTTON'){e.preventDefault();openingFilm.next();}else if(key==='Escape'){e.preventDefault();openingFilm.finish();}}return;}
+ if(mode==='opening'){if(!e.repeat&&key==='Escape'){e.preventDefault();openingFilm.finish();}return;}
  if(mode==='battle'){if(!e.repeat||key.startsWith('Arrow'))classicBattle.key(e);return;}
  if(dirs[key]&&mode==='explore'){e.preventDefault();held[key]=true;route=[];return;}
  if(e.repeat)return;

@@ -37,3 +37,7 @@
 @media(max-width:600px){.portrait-wrap{align-self:flex-start}.portrait-mark{width:28px;height:28px;top:-8px;right:-8px;padding:3px}}
 .objective,.lead,#interactPrompt{transition:opacity .35s}
 #stage:has(#dialogue:not([hidden])) .objective,#stage:has(#dialogue:not([hidden])) .lead{opacity:0;pointer-events:none}
+/* 文字色と書体は body にも明示する。埋め込み先のページが body の色を上書きしても、暗い地に暗い字にならないように。 */
+html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
+#toast,.masthead nav button,.lead,.objective,.location,.modal-card,#controls button{color:var(--ink)}
+#controls{color:#91aeb1}

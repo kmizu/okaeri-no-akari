@@ -519,6 +519,208 @@
       "referenceHashes": {
         "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
       }
+    },
+    {
+      "file": "assets/stills/epilogue-pair-gate.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-b96d59a5-b5f7-48e6-b87d-6a9355506ad5.png",
+      "prompt": "Use case: illustration-story. NEW landscape epilogue-pair-gate.png for cozy RPG Okaeri no Akari. Intended final 1672x941. Reference1 faces.png strictly fixes young ADULT Touma (dark-brown tousled hair, warm brown eyes, teal winter coat, rust scarf) and young ADULT Nina (chestnut SHORT bob, side braid, amber-brown eyes, red-brown winter coat, cream scarf). Reference2 ending-touma.png fixes fine watercolor anime rendering and recognizable faces. Spring dusk in front of their snow-country town's timber gate, lingering patches of snow and early thaw. Nina just returned from a little trip. Touma warmly cups Nina's cheeks with BOTH bare hands and looks into her eyes as if quietly saying welcome home, Nina's eyes glisten with happy relieved smile, both gently blushing. Whole scene fully clothed and modest. Travel bags set down by their feet. The gate's homecoming lamp glows amber behind them and casts their TWO joined shadows into ONE connected silhouette on the damp path. Medium-wide shot including gate lamp, coherent hands/arms, travel luggage, silhouettes and subtle mountain-town roofs. Warm domestic return rather than grand adventure. Same coat details and hair lengths as refs. Sunset blue and amber palette, lovingly textured wood/wool, no other people, NO text including dialogue/captions/sign lettering, no watermark/borders/collage.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/stills/ending-touma.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3472615,
+      "sha256": "cf82a4101266b474ea19203901864cc270c317ae009d77096b7df2898e083074",
+      "title": "後日譚 — 門の帰り灯",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/epilogue-pair-gate.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 306360,
+          "sha256": "0da69995694c9c7f3f519f2ed2bee40ec8f9d5c3ddd66e7fe3cc5a4c21da1267"
+        },
+        {
+          "file": "assets/stills/web/epilogue-pair-gate-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 28518,
+          "sha256": "1c438691911ae62968552685cfd6aa29237b39b8b0ae78410b9fa2665a1a9a4e"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/stills/ending-touma.png": "ad8c5c46d29f59d9ede98b51cbd015b0c1968bb4a8c24be56c9b1b0d705d676a"
+      }
+    },
+    {
+      "file": "assets/stills/epilogue-pair-lamp.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-c63146c4-300a-4ca3-97c2-cf96c1eb2ffe.png",
+      "prompt": "Use case: illustration-story. NEW landscape epilogue-pair-lamp.png, intended final 1672x941. Cozy snow-country RPG Okaeri no Akari, both characters young adults. Reference1 faces.png strict identity and clothes for Touma top-row dark tousled brown hair/teal coat/rust scarf and Nina bottom-row chestnut SHORT bob/side braid/rust coat/cream scarf. Reference2 ending-touma.png strict watercolor anime finish, recognizable face shapes and wood/wool texture. NIGHT at the doorway of their small timber home. Nina has just rushed happily into Touma's arms; he catches her in a warm secure embrace, one foot of hers just lifting with momentum, both smiling in relief. Correct coherent standing two-person anatomy, modest and fully clothed. Above the door a custom small entry lantern shaped like a MINIATURE FOREST LIGHTHOUSE: a tiny timber tower housing with a little peaked snowy roof and amber light window, hand-made rather than modern electric fixture. Its amber light bathes their faces and creates a warm pool over the doorstep; cool blue night snow beyond, warm cozy room through half-open door, tiny pot sprout on sill. Medium-wide composition showing unique overhead lamp, doorway and full upper-body embrace clearly. Tender welcome-home everyday moment, no grand drama. Fine soft lines and layered watercolor painting matching reference. No extra people, no text/labels/dialogue, no watermarks or borders.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/stills/ending-touma.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3269907,
+      "sha256": "68a4d55db1e9b84374a519dd4538ff7a9be919bd536b9216fd48cc2350fb5aff",
+      "title": "後日譚 — 手作りの玄関灯",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/epilogue-pair-lamp.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 271372,
+          "sha256": "3844a3e7d5bd4f15d4c500bdc9ab8fa4ce5c2aefa72130761c1b32062bf225e0"
+        },
+        {
+          "file": "assets/stills/web/epilogue-pair-lamp-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 26206,
+          "sha256": "8dd543c9fda70f6d42c2d7d9293dc134d5a85c81d32d516c5c159354725087d2"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/stills/ending-touma.png": "ad8c5c46d29f59d9ede98b51cbd015b0c1968bb4a8c24be56c9b1b0d705d676a"
+      }
+    },
+    {
+      "file": "assets/stills/epilogue-koharu-kitchen.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-334fd894-4afc-4041-83ee-77a8cfc133c0.png",
+      "prompt": "Use case: illustration-story. NEW landscape epilogue-koharu-kitchen.png, cozy winter RPG Okaeri no Akari, intended final 1672x941. Strict identity refs: image1 faces.png fixes young ADULT Touma, top-row man with short tousled dark brown hair, warm brown eyes; image2 koharu-faces.png fixes young ADULT Koharu with flaxen low short twin-tails, round expressive face, green eyes, green hair ties and green scarf; she is a slightly shorter young adult woman, not a child. Image3 ending-both.png fixes watercolor anime rendering, warm timber kitchen and clothes. Morning in their little wooden kitchen, soft daylight and stove glow. Koharu wears a slightly oversized cream cooking APRON over her rust-red clothes; she holds a wooden ladle over a simmering soup pot. Touma stands close behind, gently supports her ladle hand with his hand to guide stirring; other hand rests safely at her upper arm. Koharu is bright red with shy happiness, glancing back toward him; Touma smiles quietly, slightly flushed. Coherent two adults standing, anatomically clear natural hands holding the same ladle, no extra hands, modest fully clothed. Old wooden counter, hanging herbs, ceramic bowls, steam from soup, peaceful shared breakfast preparations, no broad slapstick. Intimate medium-wide framing enough to see ladle/pot/apron and both faces. Warm soft watercolor with detailed wool and timber, recognizable mature faces from refs. No other people, no text/labels/watermarks/borders.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/koharu-faces.png",
+        "assets/stills/ending-both.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3542121,
+      "sha256": "7f37b433d3c4c58eaa3f28fc1292cc93ffc65af4166f466398c23ea1cf616dd3",
+      "title": "後日譚 — コハルと朝の台所",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/epilogue-koharu-kitchen.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 323492,
+          "sha256": "0fbbadae8c78809dc799016f7c2ad09b41fc7f9ddfd87b7c7682e2db50eda440"
+        },
+        {
+          "file": "assets/stills/web/epilogue-koharu-kitchen-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 32014,
+          "sha256": "353782cc55187d4896cfae673684486ef7e34123ca4629b932c88acd6ecdf390"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/koharu-faces.png": "8d0f74738f0f14a1980c3cf83c3c2c6c324821e1641715a3e5e70bb716ef2cc4",
+        "assets/stills/ending-both.png": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab"
+      }
+    },
+    {
+      "file": "assets/stills/epilogue-koharu-coat.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-f36600e4-fb7f-4d78-b621-c441fa6ac6b1.png",
+      "prompt": "Use case: illustration-story. NEW landscape epilogue-koharu-coat.png, intended final 1672x941, cozy snow-country watercolor anime RPG. Image1 faces.png strictly fixes young ADULT Touma, dark tousled short hair, warm brown eyes, deep teal coat and rust scarf. Image2 koharu-faces.png strictly fixes Koharu, a young ADULT woman, slightly shorter than Touma, flaxen low short twin-tails with green ties, green eyes, warm round expressive face, rust-red hand-me-down coat and light green scarf. Image3 ending-both.png establishes fine warm watercolor anime lines and fabric texture. Scene quiet snowy forest path, pale winter daylight. Touma opens the front of his teal winter coat and wraps it around Koharu who has stepped INSIDE the open coat for warmth. She presses BOTH chilled hands flat against his clothed upper chest over his cream knitted sweater, shyly smiling up at him with flushed cheeks; he holds coat edges around her upper back, affectionate embarrassed smile. Both fully clothed, safe tender domestic romance, no undressing. Their faces and hands unobscured, coherent standing two-person anatomy. A wicker basket of warming medicinal herbs sits on snow at their side. Medium-wide framing includes basket, boots and snow-coated trees. Soft breath in cool air, warmth of shared coat, winter-blue background and warm faces. No other people, no text/labels/watermarks/borders. Preserve recognizable exact identities and hair lengths.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/koharu-faces.png",
+        "assets/stills/ending-both.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3659077,
+      "sha256": "18c4773bdf362ca95edc13da2ebfed224e084de6768dd14afea09fbf0b29713f",
+      "title": "後日譚 — 雪の森で分ける外套",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/epilogue-koharu-coat.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 326884,
+          "sha256": "326803a2848d6e568413a260688c094071ea03582833a71136c559a0ee40a05e"
+        },
+        {
+          "file": "assets/stills/web/epilogue-koharu-coat-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 33562,
+          "sha256": "25275ced5c72e6d47be615ba22b0bf7544df0b9f3093ad9835623bc26cce81a7"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/koharu-faces.png": "8d0f74738f0f14a1980c3cf83c3c2c6c324821e1641715a3e5e70bb716ef2cc4",
+        "assets/stills/ending-both.png": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab"
+      }
+    },
+    {
+      "file": "assets/stills/epilogue-both-blanket.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-e32926a4-c871-4c40-ae2f-22aae0dcc9bd.png",
+      "prompt": "Use case: illustration-story. NEW landscape epilogue-both-blanket.png intended final 1672x941. Cozy winter RPG Okaeri no Akari. Input1 faces.png strictly establishes young ADULT Touma top-row dark tousled brown hair and young ADULT Nina bottom-row chestnut short bob with side braid, amber eyes. Input2 koharu-faces.png strictly establishes young ADULT Koharu, slightly shorter woman, flaxen low short twin-tails with green ties, green eyes and round expressive face. Input3 ending-both.png is STRICT all-three identity/clothes and fine watercolor anime warmth reference. Draw EXACTLY these THREE young adults sitting together on the woven rug in front of the home's closed wood-burning stove at night. Touma CENTER, Nina at HIS RIGHT shoulder (viewer's LEFT), Koharu at HIS LEFT shoulder (viewer's RIGHT). Under one wide blanket made by joining TWO different knitted wool blankets, a visible hand-sewn seam in middle. Both women lean in at the SAME time and each kisses ONE of Touma's cheeks, one on either side. Touma blushes with surprised happy eyes and small smile, the women happy and affectionate. Modest fully clothed, no suggestive posing. Warm firelight, soft cozy trio, natural coherent shoulders and hands, visible distinction Nina rust coat/cream scarf and Koharu rust coat/light-green scarf. Show rug, iron stove, patched joined blanket, background timber room and three ceramic cups on low table. Intimate medium-wide balanced composition keeping all three faces clear, no extra people or duplicate limbs. Preserve reference hair lengths and colors, softly textured watercolor and delicate fine lines. No text, labels, watermarks, borders or collage.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/koharu-faces.png",
+        "assets/stills/ending-both.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3681767,
+      "sha256": "93f35e4b138e4850381365a686cfdcdc88e8e1b774d4381aa12b7073db738c94",
+      "title": "後日譚 — 二枚つないだ毛布",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/epilogue-both-blanket.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 343852,
+          "sha256": "bb4f5141311ddd924d560e08cdd6b2a7b008d3de613378b9b57567c7e988c2f5"
+        },
+        {
+          "file": "assets/stills/web/epilogue-both-blanket-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 32632,
+          "sha256": "cb6cc967545e1beb3f9b2b4bf267873692b5059abbdefdd7e175c7851e5ab396"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/koharu-faces.png": "8d0f74738f0f14a1980c3cf83c3c2c6c324821e1641715a3e5e70bb716ef2cc4",
+        "assets/stills/ending-both.png": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab"
+      }
     }
-  ]
+  ],
+  "additionalBaseCommit": "39f783a"
 }

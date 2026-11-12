@@ -1,8 +1,9 @@
 # 追加グラフィックの制作記録（2026-11-12）
 
 GitHub `main` の `ad60004` を取り込んだあと、`ART-NOTES.md` と関連する `ART-REQUESTS.md`・`MONSTER-ART-NOTES.md` の不足分を制作した。
+制作中に追加された `39f783a` までの台本整理・後日譚も取り込み、その依頼の後日譚スチル5枚を追加制作した。
 
-[画像一覧](art-delivery.html) / [全14点の生成指示・参照画像・寸法・SHA-256](art-generation-20261112.json)
+[画像一覧](art-delivery.html) / [全19点の生成指示・参照画像・寸法・SHA-256](art-generation-20261112.json)
 
 ## 作った素材
 
@@ -13,6 +14,11 @@ GitHub `main` の `ad60004` を取り込んだあと、`ART-NOTES.md` と関連�
 | コハルとの結末 | `stills/ending-koharu-love.png` | `stills/web/ending-koharu-love.webp` とサムネイル | 台本への表示指定は未追加 |
 | ニナから告白した結末の口づけ | `stills/ending-nina-kiss.png` | `stills/web/ending-nina-kiss.webp` とサムネイル | 同上 |
 | トウマから告白した結末の夜 | `stills/ending-touma-hearth.png` | `stills/web/ending-touma-hearth.webp` とサムネイル | 同上 |
+| 後日譚・門の帰り灯 | `stills/epilogue-pair-gate.png` | 同名の `web/*.webp` とサムネイル | 台本への表示指定は未追加 |
+| 後日譚・玄関灯 | `stills/epilogue-pair-lamp.png` | 同上 | 同上 |
+| 後日譚・コハルと台所 | `stills/epilogue-koharu-kitchen.png` | 同上 | 同上 |
+| 後日譚・コハルと外套 | `stills/epilogue-koharu-coat.png` | 同上 | 同上 |
+| 後日譚・つないだ毛布 | `stills/epilogue-both-blanket.png` | 同上 | 同上 |
 | 灯喰い | `monsters/higui.png` | `monsters/higui-cut.png` | フィールド・戦闘への割り当ては未追加 |
 | あられモチ | `monsters/arare-mochi.png` | 同名の `-cut.png` | 同上 |
 | あられモチ三匹組 | `monsters/arare-mochi-trio.png` | 同名の `-cut.png` | 同上 |
@@ -42,9 +48,10 @@ GitHub `main` の `ad60004` を取り込んだあと、`ART-NOTES.md` と関連�
 
 ## 確認
 
-全14点の原本と表示用17ファイルを開いて、寸法・SHA-256・透過PNGの四隅と実画像領域を確認。
-ブラウザの一覧で14枚すべての読み込みと、マゼンタが残らないことを確認した。
+全19点の原本と表示用27ファイルを開いて、寸法・SHA-256・透過PNGの四隅と実画像領域を確認。
+ブラウザの一覧で先に制作した14枚の読み込みと、マゼンタが残らないことを確認した。
+あとから追加した後日譚5枚は生成結果を目視し、原本・軽量版の寸法とハッシュを照合した。一覧への追加後のブラウザ再確認は未実施。
 本編は新しい確認用の保存領域で「はじめから」→OPスキップ→導入会話を進め、トウマとニナの人物紹介が両方とも全身絵に切り替わることを確認。警告・エラーはなし。
-`node --test tests/*.test.cjs` は106件成功、失敗0件。
+取り込んだ台本整理に従い `node tools/build-script.cjs` で再生成後、`node --test tests/*.test.cjs` は108件成功、失敗0件。
 
 追加スチルを実際の結末で表示する確認と、専用精霊を戦闘に出す確認は、まだ割り当てていないため未実施。今回の画面確認はデスクトップのアプリ内ブラウザで行った。

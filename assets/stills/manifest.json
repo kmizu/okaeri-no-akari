@@ -194,6 +194,72 @@
       "sha256": "3b493f347f99b466fcb6b5df4cb6fdda42ed11863452190ca2a33ac5a518c396",
       "gameIntegration": false,
       "promptFile": "../art-generation-20261112.json"
+    },
+    {
+      "id": "epilogue-pair-gate",
+      "title": "後日譚 — 門の帰り灯",
+      "chapter": 10,
+      "route": [
+        "touma",
+        "nina"
+      ],
+      "file": "epilogue-pair-gate.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "cf82a4101266b474ea19203901864cc270c317ae009d77096b7df2898e083074",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
+    },
+    {
+      "id": "epilogue-pair-lamp",
+      "title": "後日譚 — 手作りの玄関灯",
+      "chapter": 10,
+      "route": [
+        "touma",
+        "nina"
+      ],
+      "file": "epilogue-pair-lamp.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "68a4d55db1e9b84374a519dd4538ff7a9be919bd536b9216fd48cc2350fb5aff",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
+    },
+    {
+      "id": "epilogue-koharu-kitchen",
+      "title": "後日譚 — コハルと朝の台所",
+      "chapter": 10,
+      "route": "koharuLove",
+      "file": "epilogue-koharu-kitchen.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "7f37b433d3c4c58eaa3f28fc1292cc93ffc65af4166f466398c23ea1cf616dd3",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
+    },
+    {
+      "id": "epilogue-koharu-coat",
+      "title": "後日譚 — 雪の森で分ける外套",
+      "chapter": 10,
+      "route": "koharuLove",
+      "file": "epilogue-koharu-coat.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "18c4773bdf362ca95edc13da2ebfed224e084de6768dd14afea09fbf0b29713f",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
+    },
+    {
+      "id": "epilogue-both-blanket",
+      "title": "後日譚 — 二枚つないだ毛布",
+      "chapter": 10,
+      "route": "both",
+      "file": "epilogue-both-blanket.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "93f35e4b138e4850381365a686cfdcdc88e8e1b774d4381aa12b7073db738c94",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
     }
   ]
 }

@@ -265,7 +265,7 @@ function object(c,o,x,y,s,t,st){
 // ---------------------------------------------------------------- 水・橋・地形（一度だけ背景に焼き込む大きな絵）
 function once(c,name,make){if(!D.want(name,[0,0,1152,768],make))return false;D.draw(c,name,0,0);D.release(name);return true;}
 const WATER=`<filter id="rip" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".03 .09" numOctaves="2" seed="12" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="9" xChannelSelector="R" yChannelSelector="G"/></filter>
-<filter id="wtex" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012 .07" numOctaves="3" seed="31" result="t"/><feColorMatrix in="t" values="0 0 0 0 .92  0 0 0 0 .98  0 0 0 0 1  -2.6 0 0 0 1.25" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="m"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="m"/></feMerge></filter>
+<filter id="wtex" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012 .07" numOctaves="3" seed="31" result="t"/><feColorMatrix in="t" values="0 0 0 0 .92  0 0 0 0 .98  0 0 0 0 1  -1.3 0 0 0 .58" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="m"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="m"/></feMerge></filter>
 <filter id="rockn" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".008 .022" numOctaves="4" seed="19" result="t"/><feColorMatrix in="t" values="0 0 0 0 .12  0 0 0 0 .20  0 0 0 0 .30  -1.9 0 0 0 1.0" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="m"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="m"/></feMerge></filter>
 <filter id="snown" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .016" numOctaves="3" seed="27" result="t"/><feColorMatrix in="t" values="0 0 0 0 .40  0 0 0 0 .55  0 0 0 0 .68  -1.2 0 0 0 .62" result="c"/><feComposite in="c" in2="SourceAlpha" operator="in" result="m"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="m"/></feMerge></filter>
 <linearGradient id="landsh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1f3a4a" stop-opacity=".16"/></linearGradient>`;
@@ -286,7 +286,7 @@ function sheetBody(p,c1,c2){
  const r=rng(p.length*31+p[0][1]),xs=p.map(q=>q[0]),ys=p.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
  let rip='';for(let i=0;i<150;i++){const t=r(),y=y0+(y1-y0)*t*t*.2+(y1-y0)*t*.8,x=x0+r()*(x1-x0),len=14+r()*60*(0.4+t);rip+=L(x,y,x+len,y+(r()-.5)*3,r()<.3?'#f2fbfb':'#cfe9ee',1+t*1.4,{opacity:n(.18+r()*.4)});}
  return GROUND+WATER+`<linearGradient id="lk" x1="0" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient><clipPath id="lkc"><path d="${poly2(p)}Z"/></clipPath>`
-  +G(G(P(poly2(p)+'Z','url(#lk)'),{filter:'url(#wtex)'})+G(rip,{filter:'url(#rip)'})+P(poly2(p)+'Z','none',{stroke:'#eef6f6','stroke-width':9,'stroke-opacity':.55,filter:'url(#b2)'})+R(x0,y0,x1-x0,y1-y0,'#fff',0,{filter:'url(#glint)',opacity:.7}),{'clip-path':'url(#lkc)'});
+  +G(G(P(poly2(p)+'Z','url(#lk)'),{filter:'url(#wtex)'})+G(rip,{filter:'url(#rip)'})+R(x0,y0,x1-x0,y1-y0,'#fff',0,{filter:'url(#glint)',opacity:.7}),{'clip-path':'url(#lkc)'});
 }
 const sheet=(c,key,p,c1,c2)=>once(c,'sheet/'+key,()=>sheetBody(p,c1,c2));
 // 山・斜面・崖：色面に岩肌のむらと、上からの光。

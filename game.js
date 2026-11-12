@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-const C=OkaeriCore,S=OkaeriStory,W=OkaeriWorld,$=id=>document.getElementById(id);
+const C=OkaeriCore,S=OkaeriStory,W=OkaeriWorld,D=OkaeriDirector,Sfx=globalThis.OkaeriSfx,$=id=>document.getElementById(id);
 const normalSaveKey='okaeri-forest-v1',chapterSaveKey='okaeri-chapter-v1';let saveKey=normalSaveKey;const canvas=$('world'),renderer=new W.Renderer(canvas);
 const fresh=()=>globalThis.OkaeriEpisodes?OkaeriEpisodes.create(1):({version:1,scene:'town',x:12,y:10,lead:'touma',flags:{},courage:0});
 let state=fresh(),mode='title',queue=[],afterTalk=null,queueIndex=0,battle=null,commands={},order=['touma','nina'],battleOrigin=null,modalReturn='explore',route=[],routeTarget=null,lastMove=0,held={},sound=false,audio=null,bgm=new OkaeriMusic();
-let openingFilm=null;
+let openingFilm=null,typing=null,talkSerial=0;
 const name=id=>id==='touma'?'トウマ':id==='nina'?'ニナ':id;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let saved=null;try{saved=C.restoreSave(localStorage.getItem(saveKey));}catch{}$('continueButton').hidden=!saved;
@@ -19,17 +19,49 @@ function updateHud(){
  if(globalThis.OkaeriJourney?.active(state)){$('objectiveText').textContent=OkaeriJourney.objective(state);if(OkaeriJourney.split(state))$('leadText').textContent=name(state.lead)+'を操作中';}
  if(state.openingStage!==undefined)$('objectiveText').textContent=S.opening[state.openingStage].objective;
  const o=nearest();$('interactPrompt').hidden=!o||mode!=='explore';if(o)$('interactPrompt').textContent='E　'+o.label;
+ refreshStage();
 }
-function openModal(html,buttons,returnMode=mode){modalReturn=returnMode;mode='modal';held={};route=[];$('modalContent').innerHTML=html+'<div class="actions" id="modalActions"></div>';
- for(const [label,fn,primary] of buttons){const b=document.createElement('button');b.textContent=label;if(primary)b.className='primary';b.onclick=fn;$('modalActions').append(b);}$('modal').hidden=false;
+// 時間帯・天気・環境音・場面の曲を、いまの進行から決め直す。
+function refreshStage(){const a=D.ambient(state);D.setBase(a);Sfx?.ambient(mode==='title'?null:mode==='battle'?null:a.bed);if(mode==='explore'&&state.openingStage===undefined)travelMusic();}
+function openModal(html,buttons,returnMode=mode){Sfx?.play('page');modalReturn=returnMode;mode='modal';held={};route=[];$('modalContent').innerHTML=html+'<div class="actions" id="modalActions"></div>';
+ for(const [label,fn,primary] of buttons){const b=document.createElement('button');b.textContent=label;if(primary)b.className='primary';b.onclick=()=>{Sfx?.play('confirm');fn();};$('modalActions').append(b);}$('modal').hidden=false;
 }
 function closeModal(){ $('modal').hidden=true;mode=modalReturn;canvas.focus();updateHud(); }
-function talk(lines,done){held={};route=[];queue=lines;queueIndex=0;afterTalk=done;mode='dialogue';$('dialogue').hidden=false;showLine();updateHud();}
+function talk(lines,done){held={};route=[];queue=lines.map(D.normalize);queueIndex=0;afterTalk=done;talkSerial++;mode='dialogue';$('dialogue').hidden=false;showLine();updateHud();}
+const faceIds={touma:'touma',nina:'nina','サエ':'sae','マロ':'maro','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'};
 function showLine(){
- const q=queue[queueIndex],speaker=q[0],mood=q[3]||S.faceCues[q[1]]||'neutral';$('speaker').textContent=speaker?name(speaker):'おかえりの灯';$('dialogueText').textContent=q[1];const faceId={touma:'touma',nina:'nina','サエ':'sae','マロ':'maro','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'}[speaker];$('portrait').className='portrait '+(faceId?faceId+' '+mood:'other');$('portrait').setAttribute('aria-label',name(speaker)+'の表情：'+({neutral:'通常',happy:'笑顔',shy:'照れ'}[mood]));$('portrait').textContent=faceId?'':speaker==='リツ'?'リツ':speaker==='ユラ'?'ユラ':'❄';$('choices').replaceChildren();$('nextDialogue').hidden=!!q[2];
- if(q[2])for(const [label,action] of q[2]){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{if(action)action();nextDialogue();};$('choices').append(b);}
+ const q=queue[queueIndex],speaker=q.speaker,moodName=q.mood||S.faceCues[q.text]||'neutral',m=D.mood(moodName),faceId=faceIds[speaker],cue=q.cue||{};
+ $('dialogue').className='dialogue'+(speaker?'':' narration')+(m.tone?' tone-'+m.tone:'');
+ $('speaker').textContent=speaker?name(speaker):'';$('dialogueText').textContent=q.text;
+ $('portrait').className='portrait '+(faceId?faceId+' '+m.face:'other');$('portrait').setAttribute('aria-label',speaker?name(speaker)+'の表情：'+({neutral:'通常',happy:'笑顔',shy:'照れ'}[m.face]):'語り');$('portrait').textContent=faceId?'':speaker?speaker.slice(0,2):'';
+ $('portraitMark').innerHTML=speaker&&m.mark?D.markSvg(m.mark):'';$('portraitMark').hidden=!(speaker&&m.mark);
+ $('choices').replaceChildren();$('nextDialogue').hidden=!!q.choices;
+ if(q.choices)for(const [label,action] of q.choices){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{finishTyping();Sfx?.play('confirm');if(action)action();nextDialogue();};$('choices').append(b);}
+ // きっかけ: 画面は Director、音はここで鳴らす。
+ D.apply(cue,speaker);if(m.mark&&speaker&&!cue.emote)D.emote(speaker,m.mark);
+ if(cue.bgm!==undefined)musicCue(cue.bgm);
+ if(cue.jingle)bgm.jingle(cue.jingle);
+ for(const se of [].concat(cue.se||[]))Sfx?.play(se);
+ if(m.mark&&speaker)Sfx?.play('pop');
+ typing={text:q.text,shown:0,acc:-(cue.wait||0),started:false,done:false,slow:cue.slow||1,voice:!speaker?null:speaker==='touma'?'blipTouma':speaker==='nina'?'blipNina':'blipOther'};
 }
-function nextDialogue(){if(mode!=='dialogue')return;queueIndex++;if(queueIndex<queue.length){showLine();return;}$('dialogue').hidden=true;mode='explore';let done=afterTalk;afterTalk=null;if(done)done();updateHud();}
+// 文字送り。描画ループから呼ばれる（描画が回らない環境では、最初から全文が出ている）。
+function typeTick(t){
+ const ty=typing;if(!ty||ty.done||mode!=='dialogue')return;
+ if(!ty.started){ty.started=true;ty.last=t;if(D.reduced()||!ty.text){finishTyping();return;}ty.a=document.createElement('span');ty.b=document.createElement('span');ty.b.className='untyped';ty.b.textContent=ty.text;$('dialogueText').replaceChildren(ty.a,ty.b);$('dialogue').classList.add('typing');}
+ ty.acc+=Math.min(120,t-ty.last);ty.last=t;let changed=false;
+ while(ty.shown<ty.text.length){const cost=ty.shown?D.charCost(ty.text[ty.shown-1],ty.slow):0;if(ty.acc<cost)break;ty.acc-=cost;ty.shown++;changed=true;if(ty.voice&&ty.shown%3===1&&!' 　…、。！？\n'.includes(ty.text[ty.shown-1]))Sfx?.play(ty.voice);}
+ if(changed){ty.a.textContent=ty.text.slice(0,ty.shown);ty.b.textContent=ty.text.slice(ty.shown);}
+ if(ty.shown>=ty.text.length)finishTyping();
+}
+function finishTyping(){if(!typing||typing.done)return;typing.done=true;if(typing.started){$('dialogueText').textContent=typing.text;$('dialogue').classList.remove('typing');}}
+function nextDialogue(){if(mode!=='dialogue')return;
+ if(typing&&typing.started&&!typing.done){finishTyping();return;}
+ queueIndex++;if(queueIndex<queue.length){showLine();return;}
+ $('dialogue').hidden=true;mode='explore';typing=null;const serial=talkSerial;let done=afterTalk;afterTalk=null;if(done)done();
+ // 続けて次の会話が始まっていなければ、会話中だけの演出（時間帯・曲の指定）を解く。
+ if(serial===talkSerial){D.clearOverrides();updateHud();musicCue(null);}
+}
 function playOpening(step=0){
  const part=S.opening[step];state.openingStage=step;scene(part.scene,part.x,part.y);setMusic('opening');
  talk(part.lines,()=>{if(step+1<S.opening.length)playOpening(step+1);else{delete state.openingStage;save();travelMusic();updateHud();toast('まずは広場の出発札へ。マロの店ではお弁当も受け取れます。');}});
@@ -44,10 +76,10 @@ function playPrelude(){
 }
 function start(s,fromSave,key=normalSaveKey){saveKey=key;state=s;mode='explore';$('titleScreen').hidden=true;$('hud').hidden=false;$('modal').hidden=true;$('battleScreen').hidden=true;$('dialogue').hidden=true;$('openingFilm').hidden=true;renderer.reset(state);updateHud();canvas.focus();if(state.openingPrelude)playPrelude();else if(state.openingStage!==undefined)playOpening(state.openingStage);else if(!fromSave){if(globalThis.OkaeriOpeningFilm)playPrelude();else if(S.opening)playOpening();else{setMusic('opening');talk(S.intro,()=>{save();setMusic('village');});}}else{travelMusic();if(state.pendingEvening)evening(state.pendingEvening);else toast('二人の旅を再開しました');}}
 function nearest(){return S.activeObjects(state).map(o=>({o,d:Math.hypot(o.x-state.x,o.y-state.y)})).filter(p=>p.d<1.65).sort((a,b)=>a.d-b.d)[0]?.o;}
-function switchLead(){if(mode!=='explore')return;if(globalThis.OkaeriJourney?.switchActor(episodeApi()))return;if(state.episode&&OkaeriEpisodes.current(state)?.solo){toast('今は'+(state.lead==='nina'?'避難棚にいるニナ':'岸にいるトウマ')+'を操作しています。画面の目的を進めよう。');return;}state.lead=state.lead==='touma'?'nina':'touma';updateHud();save();tone(state.lead==='nina'?523:392,.12);}
-function scene(next,x,y){state.scene=next;travelMusic();state.x=x;state.y=y;renderer.reset(state);route=[];save();updateHud();}
-function interact(){if(mode==='dialogue'){if(!queue[queueIndex][2])nextDialogue();return;}if(mode!=='explore')return;const o=nearest();if(!o){toast('気になるものに近づいて、調べてみよう');return;}handle(o.id);}
-function episodeApi(){return {state,talk,save,updateHud,toast,scene,openModal,closeModal,startBattle};}
+function switchLead(){if(mode!=='explore')return;if(globalThis.OkaeriJourney?.switchActor(episodeApi()))return;if(state.episode&&OkaeriEpisodes.current(state)?.solo){toast('今は'+(state.lead==='nina'?'避難棚にいるニナ':'岸にいるトウマ')+'を操作しています。画面の目的を進めよう。');return;}state.lead=state.lead==='touma'?'nina':'touma';updateHud();save();Sfx?.play('swap');}
+function scene(next,x,y){const door=(next==='house')!==(state.scene==='house')||(next==='lampworkshop')!==(state.scene==='lampworkshop');if(next!==state.scene){D.fade('black');if(door)Sfx?.play('door');}state.scene=next;travelMusic();state.x=x;state.y=y;renderer.reset(state);route=[];save();updateHud();}
+function interact(){if(mode==='dialogue'){if(!queue[queueIndex].choices)nextDialogue();return;}if(mode!=='explore')return;const o=nearest();if(!o){toast('気になるものに近づいて、調べてみよう');return;}handle(o.id);}
+function episodeApi(){return {state,talk,save,updateHud,toast,scene,openModal,closeModal,startBattle,jingle:n=>bgm.jingle(n),sfx:n=>Sfx?.play(n)};}
 function handle(id){const f=state.flags;if(state.episode&&OkaeriEpisodes.handle(id,episodeApi()))return;if(handleHouse(id))return;if(OkaeriSideStories.handle(id,{state,talk,save,updateHud,toast,openModal,closeModal}))return;if(['elna','orlf'].includes(id)){talk(S.residentLines(state,id));return;}if(OkaeriHill.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;if(OkaeriCanal.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;
  if(id==='board'){
   if(f.returned){talk([['','二枚の出発札は、並んで町の欄に戻っている。'],['nina',f.waterReturned?'今日も、二人で帰ってこられたね。':'今度は東の水路だね。帰ったらまた、ここに寄ろう。']]);return;}
@@ -127,22 +159,23 @@ function handleHouse(id){
  const lines={"toumaDesk":[["","磨いた修理机。小箱には「ニナの外套」と書かれた予備の留め金。工具の柄には、滑り止めの布が巻いてある。"],["nina","この布、まだ使ってくれてるんだ。"],["touma","手に馴染んでるから。"],["nina","……そっか。新しいのも、同じ色にするね。"]],"toumaBooks":[["","雪道の地図、家具の直し方、料理の本。スープのページだけ、何度も開いた跡がある。"],["nina","これ、私の好きなやつ。"],["touma","次は、焦がさない。"],["nina","この前のも、おいしかったよ。最後のところ以外。"]],"ninaMirror":[["","小さな鏡台。手作りの鏡枠に、青いリボンが掛かっている。引き出しの上には、書きかけのお礼のカード。"],["touma","鏡の高さ、これでいい？"],["nina","うん。毎朝、ちゃんと見える。"],["touma","何が？"],["nina","……直してくれた人が、丁寧だったってこと。"]],"ninaWardrobe":[["","畳んだ冬服と、色順に並んだ毛糸。二人分の手袋が、同じ籠に収まっている。"],["touma","俺のも、ここに？"],["nina","片方なくす人がいるので。"],["touma","助かります。"],["nina","出かけるときは、私に声かけてね。手袋、渡すから。"]],homeStove:[['','町から分けてもらった小さな薪ストーブ。脚のがたつきは、トウマが直した。'],['nina','火の番、今日は私ね。'],['touma','寝る前に、一緒に見よう。']],toumaRoom:[['','トウマの部屋。整えた寝床の脇に、修理道具と読みかけの本がある。'],['nina','入るときは、ノックするね。'],['touma','俺も、そうする。']],ninaRoom:[['','ニナの部屋。寝床には繕った毛布。小さな棚に、お気に入りの糸が並んでいる。'],['touma','窓、冷気は入らない？'],['nina','大丈夫。トウマが直してくれたから。']],homeShelf:[['','古い家の鍵と、町の人たちと写った一枚の写真。血のつながりはなくても、二人を育ててくれた顔が並ぶ。'],['nina','この家の掃除、みんな来てくれたね。'],['touma','マロさんは、掃除よりパンを配ってた。'],['nina','それも、大事なお仕事。']],homeSewing:[['','繕い机には、ニナの針箱と、トウマの予備の留め金。互いの道具が少しずつ隣り合っている。'],['nina','ここ、半分使っていいよ。'],['touma','もう半分、借りてる。'],['nina','うん。知ってる。']]};
  if(lines[id]){talk(lines[id]);return true;}return false;
 }
-function move(dx,dy){if(mode!=='explore')return false;const x=state.x+dx,y=state.y+dy;if(!S.walkable(state,x,y))return false;state.x=x;state.y=y;updateHud();return true;}
+function move(dx,dy){if(mode!=='explore')return false;const x=state.x+dx,y=state.y+dy;if(!S.walkable(state,x,y))return false;state.x=x;state.y=y;Sfx?.play(['house','lampworkshop'].includes(state.scene)?'stepWood':'step');updateHud();return true;}
 function pathTo(tx,ty){
  if(mode!=='explore')return;const o=S.activeObjects(state).find(o=>Math.hypot(o.x-tx,o.y-ty)<1);const goal=(x,y)=>o?Math.hypot(o.x-x,o.y-y)<1.5:x===tx&&y===ty;
  const seen=new Set([state.x+','+state.y]),q=[[state.x,state.y,[]]];let found=null;
  while(q.length){const [x,y,p]=q.shift();if(goal(x,y)){found=p;break;}for(const [dx,dy] of [[0,1],[1,0],[0,-1],[-1,0]]){let nx=x+dx,ny=y+dy,key=nx+','+ny;if(!seen.has(key)&&S.walkable(state,nx,ny)){seen.add(key);q.push([nx,ny,[...p,[dx,dy]]]);}}}
  if(found){route=found;routeTarget=o?.id||null;if(!route.length&&o){routeTarget=null;handle(o.id);}}else toast('まだ通れない道です。近くの仕掛けを調べよう');
 }
-function tone(freq,duration){if(!sound)return;try{audio ||=new(window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.0001,audio.currentTime);g.gain.exponentialRampToValueAtTime(.055,audio.currentTime+.03);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+duration);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+duration);}catch{}}
-function musicFailure(){sound=false;bgm.stop();$('soundButton').textContent='音 OFF';toast('音楽を再生できませんでした。もう一度「音 OFF」を押してください。');}
-function travelMusic(){setMusic(OkaeriMusic.sceneFor?OkaeriMusic.sceneFor(state.scene):['town','house','lakeside','lampworkshop'].includes(state.scene)?'village':'journey');}
-function setMusic(scene){bgm.select(scene).catch(musicFailure);$('soundButton').title={opening:'OP「雪明かりの約束」',village:'村「窓辺の帰り灯」',journey:'探索「雪道の二重奏」',battle:'戦闘「灯りのステップ」',lake:'氷湖「湖面に届く手紙」',hearth:'家と小屋「同じ灯りのそばで」'}[scene];}
+function tone(){}
+function musicFailure(){sound=false;bgm.stop();Sfx?.enable(false);$('soundButton').textContent='音 OFF';toast('音楽を再生できませんでした。もう一度「音 OFF」を押してください。');}
+function travelMusic(){setMusic(D.ambient(state).bgm||(OkaeriMusic.sceneFor?OkaeriMusic.sceneFor(state.scene):['town','house','lakeside','lampworkshop'].includes(state.scene)?'village':'journey'));}
+function setMusic(scene){bgm.select(scene).catch(musicFailure);$('soundButton').title=OkaeriMusic.title?OkaeriMusic.title(scene):'';}
+function musicCue(name){if(!bgm.cue)return;bgm.cue(name==='scene'?null:name).catch(musicFailure);}
 async function toggleSound(){
  const button=$('soundButton');if(button.disabled)return;
- if(sound){sound=false;bgm.stop();audio?.suspend();button.textContent='音 OFF';return;}
+ if(sound){sound=false;bgm.stop();Sfx?.enable(false);button.textContent='音 OFF';return;}
  button.disabled=true;
- try{await bgm.play();if(audio)await audio.resume();sound=true;button.textContent='音 ON';}
+ try{await bgm.play();sound=true;Sfx?.enable(true);refreshStage();button.textContent='音 ON';}
  catch{musicFailure();}finally{button.disabled=false;}
 }
 setMusic('opening');
@@ -177,7 +210,7 @@ document.addEventListener('keydown',e=>{const key=e.key.length===1?e.key.toLower
  if(mode==='battle'){if(!e.repeat||key.startsWith('Arrow'))classicBattle.key(e);return;}
  if(dirs[key]&&mode==='explore'){e.preventDefault();held[key]=true;route=[];return;}
  if(e.repeat)return;
- if((key==='Enter'||key===' '||key==='e')&&mode==='dialogue'){e.preventDefault();if(!queue[queueIndex][2])nextDialogue();return;}
+ if((key==='Enter'||key===' '||key==='e')&&mode==='dialogue'){e.preventDefault();if(!queue[queueIndex].choices)nextDialogue();return;}
  if(e.target.tagName==='BUTTON'&&key==='Enter')return;
  if(key==='e'||key==='Enter'){if(mode==='explore'){e.preventDefault();interact();}}
  if(key==='q')switchLead();if(key==='j')journal();if(key==='Escape'){if(mode==='modal'){if(modalReturn==='battle')toast('下のボタンから戦闘を進めてください');else closeModal();}else menu();}
@@ -186,6 +219,6 @@ document.addEventListener('keyup',e=>{const k=e.key.length===1?e.key.toLowerCase
 for(const btn of document.querySelectorAll('[data-move]')){const key={left:'a',right:'d',up:'w',down:'s'}[btn.dataset.move];btn.addEventListener('pointerdown',e=>{e.preventDefault();held[key]=true;route=[];btn.setPointerCapture(e.pointerId);});for(const event of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(event,()=>{delete held[key];if(mode==='explore')save();});}
 canvas.addEventListener('pointerdown',e=>{if(mode!=='explore')return;const r=canvas.getBoundingClientRect();const tx=Math.floor((e.clientX-r.left)/r.width*24),ty=Math.floor((e.clientY-r.top)/r.height*16);pathTo(tx,ty);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){held={};route=[];if(mode!=='title')save();}});
-function frame(t){if(mode==='explore'&&t-lastMove>155){const key=Object.keys(held).find(k=>dirs[k]);if(key){move(...dirs[key]);lastMove=t;}else if(route.length){const [dx,dy]=route.shift();move(dx,dy);lastMove=t;if(!route.length){save();if(routeTarget){const id=routeTarget;routeTarget=null;handle(id);}}}}renderer.draw(state,t,mode);requestAnimationFrame(frame);}
+function frame(t){typeTick(t);if(mode==='explore'&&t-lastMove>155){const key=Object.keys(held).find(k=>dirs[k]);if(key){move(...dirs[key]);lastMove=t;}else if(route.length){const [dx,dy]=route.shift();move(dx,dy);lastMove=t;if(!route.length){save();if(routeTarget){const id=routeTarget;routeTarget=null;handle(id);}}}}renderer.draw(state,t,mode);requestAnimationFrame(frame);}
 updateHud();Promise.all([OkaeriSprites.load(),OkaeriCast.ready,OkaeriResidentsArt.ready]).then(()=>requestAnimationFrame(frame)).catch(()=>toast("キャラクター画像を読み込めませんでした。ページを再読み込みしてください。"));
 })();

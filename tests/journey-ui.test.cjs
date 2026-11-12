@@ -7,7 +7,7 @@ function boot(saved){
  };
  const ctx=vm.createContext({OkaeriWorld:{Renderer:class{reset(){}draw(){}}},OkaeriMusic:class{select(){return Promise.resolve();}stop(){}},OkaeriSprites:{load:()=>Promise.resolve()},OkaeriCast:{ready:Promise.resolve()},OkaeriResidentsArt:{ready:Promise.resolve()},
   document:{getElementById:el,createElement:()=>({}),addEventListener(n,fn){handlers[n]=fn;},querySelectorAll:()=>[]},window:{addEventListener(){}},localStorage:{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)},setTimeout:()=>0,clearTimeout(){},requestAnimationFrame(){},console});
- for(const f of ['core.js','story.js','chapters.js','canal.js','hill.js','side-stories.js','episodes-data.js','episode-activities.js','episodes.js','journey.js','game.js'])vm.runInContext(fs.readFileSync(require.resolve('../'+f),'utf8'),ctx);
+ for(const f of ['core.js','story.js','chapters.js','canal.js','hill.js','side-stories.js','episodes-data.js','episode-activities.js','episodes.js','journey.js','direction.js','game.js'])vm.runInContext(fs.readFileSync(require.resolve('../'+f),'utf8'),ctx);
  return {data,el,ctx,handlers};
 }
 test('the trip preview is playable and uses only the chapter-select save slot',()=>{

@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const W=1152,H=768,T=48;
+let lightLog=null; // 背景を描く間、ともっている灯りの位置を控える（夜の光に使う）
 function Renderer(canvas){this.c=canvas.getContext('2d');this.t=0;this.p={x:600,y:504,dir:'down'};this.f={x:600,y:552,dir:'down'};this.target={x:600,y:504};this.follow={x:600,y:552};this.cache={};}
 Renderer.prototype.reset=function(s){const x=s.x*48+24,y=s.y*48+24;this.p={x,y,dir:'down'};this.f={x:x-24,y:y+28,dir:'down'};this.target={x,y};this.follow={x:x-24,y:y+28};};
 const ellipse=(c,x,y,rx,ry,color)=>{c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();};
@@ -168,6 +169,7 @@ function house(c,x,y,w,h,roof='#617b88',signKind='rest'){
  }
 }
 function lantern(c,x,y,lit=true){
+ if(lit&&lightLog)lightLog.push([x+20,y-16,150]);
  ellipse(c,x+11,y+8,21,7,'#35526826');block(c,x-5,y-39,7,45,5,'#647267','#405956','#94a092');
  line(c,[[x,y-37],[x+20,y-37],[x+20,y-29]],'#4b605a',3);
  if(lit)glow(c,x+20,y-16,57);
@@ -179,7 +181,8 @@ function lantern(c,x,y,lit=true){
 
 Renderer.prototype.background=function(scene){
  if(this.cache[scene])return this.cache[scene];const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
- if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){this.cache[scene]=cv;return cv;}
+ this.lights=this.lights||{};lightLog=this.lights[scene]=[];
+ if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){lightLog=null;this.cache[scene]=cv;return cv;}
  if(scene==='house'){
   rect(c,0,0,W,H,'#243c46');shadow(c,585,682,480,55);
   block(c,133,112,884,560,20,'#755b46','#35484a','#d5c6a5');
@@ -258,11 +261,11 @@ Renderer.prototype.background=function(scene){
   for(const [x,y] of [[321,600],[750,257],[906,269]])lantern(c,x,y,false);
  }
  let seed=491;for(let i=0;i<1600;i++){seed=(seed*16807)%2147483647;let x=seed%W;seed=(seed*16807)%2147483647;let y=seed%H;ellipse(c,x,y,1+(i%3),.65,i%2?'#ffffff20':'#345a7012');}
- this.cache[scene]=cv;return cv;
+ lightLog=null;this.cache[scene]=cv;return cv;
 };
 Renderer.prototype.draw=function(s,time,mode){
- const c=this.c,t=time*.001;this.t=t;c.clearRect(0,0,W,H);c.drawImage(this.background(s.scene),0,0);
- if(s.scene==='town'&&s.flags.festivalStarted){
+ const c=this.c,t=time*.001,D=root.OkaeriDirector;this.t=t;c.clearRect(0,0,W,H);c.save();D?.pre(c,time);c.drawImage(this.background(s.scene),0,0);
+ if(s.scene==='town'&&s.flags.festivalStarted&&(!s.episode||s.episode.chapter===9)){
   rect(c,0,0,W,H,'#1a244957');
   for(const [x,y] of [[300,440],[510,360],[760,420],[875,470],[600,560]])glow(c,x,y,120);
   for(let row=0;row<2;row++){
@@ -352,12 +355,24 @@ Renderer.prototype.draw=function(s,time,mode){
  this.f.dir=OkaeriSprites.facing(fx,fy,this.f.dir);this.f.x+=fx*.22;this.f.y+=fy*.22;
  const followersMoving=Math.hypot(fx,fy)>1;
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
- for(const actor of party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||root.OkaeriJourney?.split(s))||actor.id===s.lead))drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
+ const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
+ for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
  if(s.episode?.chapter===3&&s.scene==='canal'&&s.episode.step>=1&&s.episode.step<=3){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
  if(!['house','lampworkshop'].includes(s.scene))for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
+ D?.light(c,s,time,this.lights?.[s.scene]||[]);D?.weatherLayer(c,s,time);
  const vign=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);vign.addColorStop(0,'#071d3000');vign.addColorStop(1,'#071d3077');c.fillStyle=vign;c.fillRect(0,0,W,H);
+ c.restore();
+ // 感情の吹き出しは、話している人の頭上へ。同行者が画面にいない時は先頭の人に出す。
+ const follower=s.lead==='touma'?'nina':'touma',objects=OkaeriStory.activeObjects(s);
+ D?.post(c,time,who=>{
+  if(who===s.lead)return {x:this.p.x,y:this.p.y-82};
+  if(who===follower)return party.some(a=>a.id===who)&&drawnParty.includes(who)?{x:this.f.x,y:this.f.y-82}:null;
+  const id=D.speakerIds[who];if(!id)return null;
+  const o=objects.find(o=>o.id===id||o.base?.id===id||(o.person===who)||(o.type==='journeyProp'&&o.kind===id));
+  return o?{x:o.x*T+24,y:o.y*T+24-96}:null;
+ });
 };
 function enemySvg(type){return OkaeriCast.battleArt(type);}
 root.OkaeriWorld={Renderer,enemySvg};

@@ -7,7 +7,7 @@ function boot(raw){
  }
  const ctx=vm.createContext({OkaeriWorld:{Renderer:class{reset(){}draw(){}}},OkaeriMusic:class{select(s){music.push(s);return Promise.resolve();}stop(){}},OkaeriSprites:{load:()=>Promise.resolve()},OkaeriCast:{ready:Promise.resolve()},OkaeriResidentsArt:{ready:Promise.resolve()},
   document:{getElementById:el,createElement:()=>({}),addEventListener(){},querySelectorAll:()=>[]},window:{addEventListener(){}},localStorage:{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)},setTimeout:(fn)=>{timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id),requestAnimationFrame(){},console});
- for(const f of ['core.js','story.js','chapters.js','episodes-data.js','episode-activities.js','episodes.js','opening-film.js','game.js'])vm.runInContext(fs.readFileSync(require.resolve('../'+f),'utf8'),ctx);
+ for(const f of ['core.js','story.js','chapters.js','episodes-data.js','episode-activities.js','episodes.js','opening-film.js','direction.js','game.js'])vm.runInContext(fs.readFileSync(require.resolve('../'+f),'utf8'),ctx);
  return {ctx,el,data,music,timers,saved:()=>ctx.OkaeriCore.restoreSave(data.get('okaeri-forest-v1'))};
 }
 test('a new journey starts at home, then receives the town briefing before exploration',()=>{

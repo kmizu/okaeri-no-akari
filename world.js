@@ -182,7 +182,7 @@ function lantern(c,x,y,lit=true){
 Renderer.prototype.background=function(scene){
  if(this.cache[scene])return this.cache[scene];const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
  this.lights=this.lights||{};lightLog=this.lights[scene]=[];
- if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){lightLog=null;this.cache[scene]=cv;return cv;}
+ if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})||root.OkaeriFieldArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){lightLog=null;this.cache[scene]=cv;return cv;}
  if(scene==='house'){
   rect(c,0,0,W,H,'#243c46');shadow(c,585,682,480,55);
   block(c,133,112,884,560,20,'#755b46','#35484a','#d5c6a5');
@@ -282,8 +282,9 @@ Renderer.prototype.draw=function(s,time,mode){
   const o=source.base||source;
   const x=o.x*T+24,y=o.y*T+24;drawables.push({y,draw:()=>{
   if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
-  if(!['exit','npc','mochi','crab','guardian','camp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
+  if(!['exit','npc','mochi','crab','guardian','camp','fieldSpirit','fieldProp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
   root.OkaeriJourneyArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
+  root.OkaeriFieldArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
   if(o.type==='homeTable'){
    for(const dx of [-43,43]){block(c,x+dx-12,y+7,25,9,5,'#aa8a61','#5e6755','#d9bc8e');for(const leg of [-9,8])rect(c,x+dx+leg,y+16,4,12,'#685943');}
    for(const dx of [-54,45])block(c,x+dx,y-27,8,48,5,'#665442','#3b4c46','#b4a07c');
@@ -364,6 +365,14 @@ Renderer.prototype.draw=function(s,time,mode){
  if(third)shown.push({...this.g,id:'koharu',moving:Math.hypot(gx,gy)>1});
  for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
+ // 次の目的地の目印。歩ける時だけ、足元の輪と、上下に揺れる矢印で示す。
+ const guide=mode==='explore'?D?.guide(s):null;
+ if(guide){
+  const gx=guide.x*T+24,gy=guide.y*T+24,pulse=(t*1.2)%1,bob=Math.sin(t*4)*5,top=gy-(guide.via?58:104)+bob;
+  c.save();c.strokeStyle='rgba(255,214,130,'+(.85*(1-pulse))+')';c.lineWidth=3;c.beginPath();c.ellipse(gx,gy+6,16+pulse*22,6+pulse*8,0,0,Math.PI*2);c.stroke();
+  c.fillStyle='#ffd27a';c.strokeStyle='#7a5a22';c.lineWidth=2;c.beginPath();c.moveTo(gx-13,top-16);c.lineTo(gx+13,top-16);c.lineTo(gx,top+4);c.closePath();c.fill();c.stroke();
+  c.restore();
+ }
  if(s.scene==='canal'&&((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||D?.stage.over.flood)){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
  if(!['house','lampworkshop'].includes(s.scene))for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}

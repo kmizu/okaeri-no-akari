@@ -60,12 +60,32 @@ function ambient(s){
 // コハルが三人目として一緒に歩く場面。
 function companion(s){
  const ep=s.episode;if(!ep||ep.complete||['house','lampworkshop'].includes(s.scene)||root.OkaeriJourney?.active(s))return false;
+ if(root.OkaeriField?.names[s.scene])return ep.chapter>=2&&!(ep.chapter===2&&ep.step===0)&&ep.chapter!==4;
  if(ep.chapter===2)return ep.step>=1&&s.scene==='canal';
  if(ep.chapter===3)return ep.step===0&&s.scene==='canal';
  if(ep.chapter===5)return ep.step===2&&s.scene==='hill';
  if(ep.chapter===8)return ep.step>=1&&s.scene==='hill';
  if(ep.chapter===10)return (ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=1);
  return false;
+}
+// 次の目的地。いまの地図にあればその場所を、別の地図ならそこへ向かう出口を指す。
+const WAY={town:{forest:[12,2],canal:[22,9],hill:[1,9],house:[3,13],lake:[22,12],lakeside:[22,12],lampworkshop:[22,12]},forest:{'*':[5,14]},canal:{'*':[3,13]},hill:{'*':[4,14]},house:{'*':[12,13]},herbvale:{'*':[2,13]},oldpass:{'*':[2,13]}};
+function goal(s){
+ const ep=s.episode,f=s.flags||{},at=(scene,x,y)=>({scene,x,y});
+ if(!ep||s.openingStage!==undefined)return null;
+ if(root.OkaeriJourney?.active(s))return root.OkaeriJourney.target?.(s)||null;
+ if(ep.complete)return at('house',11,9);
+ if(ep.chapter>1){const e=root.OkaeriEpisodes.current(s);return e?at(e.scene,e.x,e.y):null;}
+ if(s.pendingEvening)return null;
+ if(!f.board||f.lit)return at('town',10,8);
+ return !f.mochi?at('forest',5,11):!f.log?at('forest',9,9):!f.repair?at('forest',12,7):!f.crab?at('forest',15,4):!f.guardian?at('forest',19,4):at('forest',20,2);
+}
+function guide(s){
+ const g=goal(s);if(!g)return null;
+ if(g.scene===s.scene)return {x:g.x,y:g.y,via:null};
+ const w=WAY[s.scene],p=w&&(w[g.scene]||w['*']||(s.scene==='town'?null:null));if(!p)return null;
+ const exit=root.OkaeriStory.activeObjects(s).find(o=>o.x===p[0]&&o.y===p[1]);
+ return {x:p[0],y:p[1],via:exit?.label||'出口'};
 }
 function setBase(a){stage.time=a.time;stage.weather=a.weather;}
 function time(){return stage.over.time||stage.time;}
@@ -98,7 +118,7 @@ function pre(c,t){
  const a=(1-p)*7*s.power;c.translate(Math.sin(t*.09)*a,Math.cos(t*.13)*a*.7);
 }
 function lightsFor(s,fixed){
- const out=fixed.map(([x,y,r])=>[x,y,r||150,1]),f=s.flags||{};
+ const out=[...fixed.map(([x,y,r])=>[x,y,r||150,1]),...(root.OkaeriFieldArt?.lights(s)||[])],f=s.flags||{};
  for(const src of root.OkaeriStory.activeObjects(s)){
   const o=src.base||src,x=o.x*48+24,y=o.y*48+24;
   if(o.type==='homeStove')out.push([x-8,y-31,330,1.25]);
@@ -182,6 +202,6 @@ function charCost(ch,slow=1){
  return base*slow;
 }
 const speakerIds={'コハル':'koharu','サエ':'sae','マロ':'bakery','エルナ':'elna','オルフ':'orlf','リツ':'ritsu','ユラ':'yura'};
-root.OkaeriDirector={companion,MOODS,MARKS,markSvg,normalize,mood,stage,ambient,setBase,time,weather,apply,fade,emote,clearOverrides,pre,light,weatherLayer,post,charCost,reduced,speakerIds,now};
+root.OkaeriDirector={goal,guide,companion,MOODS,MARKS,markSvg,normalize,mood,stage,ambient,setBase,time,weather,apply,fade,emote,clearOverrides,pre,light,weatherLayer,post,charCost,reduced,speakerIds,now};
 if(typeof module!=='undefined')module.exports=root.OkaeriDirector;
 })(typeof globalThis!=='undefined'?globalThis:this);

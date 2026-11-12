@@ -8,18 +8,22 @@ const common=[{id:'guard',name:'防御',cost:0,desc:'このターン受けるダ
 const clone=x=>JSON.parse(JSON.stringify(x));
 const enemy=(name,hp,type,ice=false)=>({name,hp,max:hp,type,ice,broken:0});
 function newBattle(kind,options={}){
- const groups={mochi:[enemy('こごえモチ',38,'mochi'),enemy('こごえモチ',38,'mochi')],crab:[enemy('こおりヤドカリ',65,'crab',true)],guardian:[enemy('枝角の番人',230,'guardian')]};
+ const groups={mochi:[enemy('こごえモチ',38,'mochi'),enemy('こごえモチ',38,'mochi')],crab:[enemy('こおりヤドカリ',65,'crab',true)],
+  hail:[0,1,2].map(()=>({...enemy('あられモチ',30,'mochi'),tint:'hail',scale:.85})),
+  sleet:[{...enemy('みぞれヤドカリ',85,'crab',true),tint:'sleet',refreeze:true}],
+  mix:[enemy('こごえモチ',38,'mochi'),enemy('こおりヤドカリ',65,'crab',true)],
+  echo:[{...enemy('こだま番人',125,'guardian'),tint:'echo',scale:.6}],guardian:[enemy('枝角の番人',230,'guardian')]};
  if(!groups[kind])throw Error('Unknown encounter');
  return {kind,turn:1,gauge:0,items:3,status:'active',logs:[],...(options.support?{support:options.support}:{}),enemies:groups[kind],heroes:{touma:{name:'トウマ',hp:120,max:120,sp:6,maxSp:6,chill:0,buff:0},nina:{name:'ニナ',hp:90,max:90,sp:8,maxSp:8,chill:0,buff:0}}};
 }
 function intentions(b){return b.enemies.map((e,i)=>{
- if(e.hp<=0)return null;
+ if(e.hp<=0)return null;const k=n=>Math.round(n*(e.scale||1));
  if(e.type==='guardian'){
   const phase=(b.turn-1)%3;
-  return phase===0?{target:'touma',damage:18,label:'枝の腕 → トウマ 18'}:phase===1?{target:'nina',damage:32,label:'大きな踏み込み → ニナ 32'}:{target:'all',damage:16,label:'木の葉の嵐 → 二人に16'};
+  return phase===0?{target:'touma',damage:k(18),label:'枝の腕 → トウマ '+k(18)}:phase===1?{target:'nina',damage:k(32),label:'大きな踏み込み → ニナ '+k(32)}:{target:'all',damage:k(16),label:'木の葉の嵐 → 二人に'+k(16)};
  }
  if(e.type==='crab')return {target:b.turn%2?'touma':'nina',damage:16,chill:true,label:'冷たいしぶき → '+(b.turn%2?'トウマ':'ニナ')+' 16・冷え'};
- const target=(b.turn+i)%2?'touma':'nina';return {target,damage:12,label:'ぽよん体当たり → '+(target==='touma'?'トウマ':'ニナ')+' 12'};
+ const target=(b.turn+i)%2?'touma':'nina';return {target,damage:k(12),label:'ぽよん体当たり → '+(target==='touma'?'トウマ':'ニナ')+' '+k(12)};
 });}
 function actions(actor){return [...skills[actor],...common];}
 function resolveTurn(input,commands,order){
@@ -83,6 +87,8 @@ function resolveTurn(input,commands,order){
  if(cooperation)b.gauge=Math.min(3,b.gauge+1);
  for(const h of Object.values(b.heroes)){h.chill=Math.max(0,h.chill-1);h.buff=Math.max(0,h.buff-1);}
  for(const e of b.enemies)e.broken=Math.max(0,e.broken-1);
+ // みぞれヤドカリは、溶かした殻が三ターンごとに凍り直す。
+ for(const e of b.enemies)if(e.refreeze&&e.hp>0&&!e.ice&&b.turn%3===0){e.ice=true;emit(e.name+'の殻が、また凍りついた。');}
  if(Object.values(b.heroes).every(h=>h.hp<=0))b.status='defeat';else if(b.enemies.every(e=>e.hp<=0))b.status='victory';
  if(cooperation)emit('二人の息が合った。灯りが一つ、ともった。');
  b.events=events;b.turn++;return b;
@@ -95,7 +101,7 @@ function journeyTile(scene,x,y){
  return false;
 }
 function restoreSave(raw){try{
- const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill','house','lake','lakeside','lampworkshop'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
+ const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill','house','lake','lakeside','lampworkshop','herbvale','oldpass'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
  let openingStage;
  if(s.openingStage!==undefined){if(!Number.isInteger(s.openingStage)||s.openingStage<0||s.openingStage>1||s.flags.board===true||s.journey||s.pendingEvening||(s.episode&&(s.episode.chapter!==1||s.episode.step!==0||s.episode.complete))||s.scene!==(s.openingStage===0?'house':'town'))return null;openingStage=s.openingStage;}
  if(s.openingPrelude!==undefined&&(s.openingPrelude!==true||openingStage!==0))return null;

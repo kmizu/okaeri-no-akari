@@ -29,6 +29,19 @@ function objective(s){
  return '氷湖の迎え灯｜'+goals[j.step]+(j.step===5?'（ニナを操作して小屋の出口へ）':'');
 }
 function notes(s){if(!s.journey)return [];const j=s.journey;return [j.step>=2?'ユキネの「帰り灯」は、ミナモでは「迎え灯」と呼ばれる。':null,j.reply?'二人でつないだ光に、地図の外から返事が来た。':null,j.step===9?'氷湖の小旅行：二人で合流し、豆スープの作り方を家へ持ち帰った。':null].filter(Boolean);}
+// 小旅行のあいだの目的地（画面の目印に使う）。
+function target(s){
+ const j=s.journey,at=(scene,x,y)=>({scene,x,y});if(!j)return null;
+ if(j.step===0)return at('lake',6,12);if(j.step===1)return at('lake',13,7);
+ if(j.step===2)return s.scene==='lake'?at('lake',21,4):at('lakeside',6,8);
+ if(j.step===3)return s.scene==='lampworkshop'?at('lampworkshop',7,5):at('lakeside',12,6);
+ if(j.step===4){const t=!j.mirror?['lakeside',17,11]:!j.prism?['lampworkshop',10,8]:!j.shutter?['lakeside',19,9]:['lampworkshop',17,5];return t[0]===s.scene?at(...t):null;}
+ if(j.step===5)return s.scene==='lampworkshop'?at('lampworkshop',7,13):null;
+ if(j.step===6)return at('lakeside',6,10);
+ if(j.step===7)return s.scene==='lakeside'?at('lakeside',3,13):at('lake',7,10);
+ if(j.step===8)return s.scene==='lake'?at('lake',2,13):s.scene==='town'?at('town',3,13):at('house',11,9);
+ return null;
+}
 function advance(a,step){a.state.journey.step=step;a.save();a.updateHud();}
 const departure=[
  ['','灯工房への返事を出す前に、もう一つ用事ができた。\nオルフが、湖の向こうの町からの頼まれごとを持ってきたのだ。'],
@@ -219,5 +232,5 @@ S.activeObjects=function(s){
 };
 const previousNotes=root.OkaeriActivities?.notes;
 if(previousNotes)root.OkaeriActivities.notes=s=>[...previousNotes(s),...notes(s)];
-root.OkaeriJourney={names,spawns,maps,active,split,walkable,capture,switchActor,objective,notes,begin,handle,departure};
+root.OkaeriJourney={target,names,spawns,maps,active,split,walkable,capture,switchActor,objective,notes,begin,handle,departure};
 })(globalThis);

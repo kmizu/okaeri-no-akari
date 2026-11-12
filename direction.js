@@ -129,6 +129,7 @@
   function companion(s) {
     const epi = root.OkaeriEpisodes?.playingEpilogue?.();
     if (epi) return !!root.OkaeriCore?.route(epi)?.koharu; // 後日譚：コハルのいる結末では、家の中でも一緒にいる
+    if (s.openingStage !== undefined) return true; // 第1話の朝：同じ家で起きて、広場まで三人で歩く
     const ep = s.episode;
     // 最終話でコハルが食卓を囲む結末は、家の中にもコハルがいる（三脚目の椅子の主）。
     if (ep && !ep.complete && ep.chapter === 10 && s.scene === 'house') return !!root.OkaeriCore?.route(ep.route)?.koharu;

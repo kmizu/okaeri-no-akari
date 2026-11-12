@@ -63,7 +63,7 @@
       return s.episode.chapter === 10 ? '二人の明日へ。食卓で最後の一日を振り返れます。' : '今日の話はおしまい。食卓から翌日へ進めます。';
     const e = current(s);
     return e
-      ? { town: '町', forest: '森', canal: '水路', hill: '丘', house: '二人の家' }[e.scene] +
+      ? { town: '町', forest: '森', canal: '水路', hill: '丘', house: '三人の家' }[e.scene] +
           '：' +
           e.label +
           (e.lead ? (e.solo ? '（操作：' : '（Qで') + (e.lead === 'nina' ? 'ニナ' : 'トウマ') + (e.solo ? '）' : 'に交代）') : '')

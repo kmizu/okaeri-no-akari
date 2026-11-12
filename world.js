@@ -222,18 +222,21 @@ Renderer.prototype.background=function(scene){
  }
  let g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#bdd6df');g.addColorStop(.5,'#dce6df');g.addColorStop(1,'#9bbdc9');c.fillStyle=g;c.fillRect(0,0,W,H);
  const paths=[];const path=(p,w)=>paths.push([p,w]);
- const flushPaths=()=>{const lift=scene==='hill'?23:scene==='canal'?13:8;c.save();c.lineJoin='round';
+ let vground=false;const flushPaths=()=>{const lift=scene==='hill'?23:scene==='canal'?13:8;if(root.OkaeriTownArt?.ground(c,scene,paths,lift)){vground=true;return;}c.save();c.lineJoin='round';
   for(const [dx,dy,extra,color] of [[9,lift,16,'#42657d35'],[3,lift*.6,8,scene==='hill'?'#7894a6':'#9db8c5'],[0,0,7,'#cbdde1'],[0,0,0,'#edf1e7'],[0,0,-26,'#e1e7dc']])for(const [p,w] of paths)line(c,p.map(([x,y])=>[x+dx,y+dy]),color,w+extra);
   c.restore();};
  if(scene==='town'){
-  path([[600,35],[600,730]],108);path([[135,455],[1000,455]],125);flushPaths();ellipse(c,600,475,165,112,'#e6ebdf');
+  path([[600,35],[600,730]],108);path([[135,455],[1000,455]],125);flushPaths();if(!vground)ellipse(c,600,475,165,112,'#e6ebdf');
   for(let i=0;i<25;i++){const x=(i*173+12)%W,y=(i*131)%H;if((x<145||x>1030||y<80)&&Math.abs(x-600)>90)tree(c,x,y,1.1+(i%3)*.1);}
   house(c,150,172,222,187,'#617b88','bread');house(c,779,150,225,170,'#657680','lamp');house(c,884,533,185,150,'#617b88','thread');house(c,68,551,108,95);
-  for(let i=0;i<7;i++){rect(c,415+i*30,604,18,25,'#8c8270');rect(c,413+i*30,600,22,7,'#edf0e2');}line(c,[[420,615],[610,615]],'#7e8270',4);
   for(const [x,y] of [[439,354],[753,378],[867,475],[365,506],[626,182]])lantern(c,x,y);
+  const vprops=root.OkaeriTownArt?.props(c);
+  if(!vprops){
+  for(let i=0;i<7;i++){rect(c,415+i*30,604,18,25,'#8c8270');rect(c,413+i*30,600,22,7,'#edf0e2');}line(c,[[420,615],[610,615]],'#7e8270',4);
   root.OkaeriScenery?.townProps(c,{rect,poly,line,ellipse,block});
-  for(let i=0;i<11;i++){ellipse(c,220+i*14,367,7,5,'#e2d1a7');}
   line(c,[[360,208],[480,248],[610,262],[738,233],[817,198]],'#7c887b',2);for(let i=0;i<8;i++){let x=400+i*51,y=230+Math.sin(i/7*Math.PI)*28;poly(c,[[x,y],[x+14,y+2],[x+7,y+22]],i%2?'#c8896a':'#648c89');}
+  }
+  for(let i=0;i<11;i++){ellipse(c,220+i*14,367,7,5,'#e2d1a7');}
   c.font='14px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f4deb3';c.fillText('マロのパン屋',260,346);c.fillStyle='#5e766f';c.fillText('灯守の共同所',887,338);
  }else if(scene==='hill'){
   const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#768fac');sky.addColorStop(.4,'#b8c7d4');sky.addColorStop(1,'#b7ccce');c.fillStyle=sky;c.fillRect(0,0,W,H);
@@ -297,6 +300,7 @@ Renderer.prototype.draw=function(s,time,mode){
   const x=o.x*T+24,y=o.y*T+24;drawables.push({y,draw:()=>{
   if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
   if(o.type?.startsWith('home')&&root.OkaeriHomeArt?.ready()){root.OkaeriHomeArt.object(c,o,x,y,s,t);return;}
+  if(root.OkaeriTownArt?.object(c,o,x,y,s,t,{towerLit,beaconLit}))return;
   if(!['exit','npc','mochi','crab','guardian','camp','fieldSpirit','fieldProp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
   root.OkaeriJourneyArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
   root.OkaeriFieldArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});

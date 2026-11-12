@@ -7,6 +7,7 @@
   12コマの背景を抜き、足元を下端・中央にそろえた同じ大きさのセルへ並べ直す。
 - assets/{koharu,touma,nina}-town.png（マゼンタ背景）→ assets/*-town-cut.png（ある分だけ）
 - assets/stills/*.png → assets/stills/web/*.webp（幅1280。原本は残す）
+- assets/monsters/*.png → assets/monsters/*-cut.png（マゼンタ背景を透過。原寸・位置は保持）
 
 ブラウザ側で画素を読まずに済むよう、背景抜きはここで済ませる
 （index.html を直接開いた時、画像の画素は読み出せないため）。
@@ -80,5 +81,15 @@ def stills():
     print('stills', len(os.listdir(out)), 'files', sum(os.path.getsize(os.path.join(out, f)) for f in os.listdir(out)) // 1024, 'KB')
 
 
+def monsters():
+    # 凍結／融解などの差分を重ねてもずれないよう、個別のトリミングはしない。
+    for path in sorted(glob.glob(os.path.join(A, 'monsters', '*.png'))):
+        if path.endswith('-cut.png'):
+            continue
+        img = key_out(Image.open(path), 'magenta')
+        img.save(path[:-4] + '-cut.png', optimize=True)
+        print(os.path.basename(path[:-4] + '-cut.png'), img.size)
+
+
 if __name__ == '__main__':
-    walk(); town(); stills()
+    walk(); town(); stills(); monsters()

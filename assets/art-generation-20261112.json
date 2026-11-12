@@ -1,0 +1,524 @@
+{
+  "date": "2026-11-12",
+  "baseCommit": "ad60004",
+  "instructions": [
+    "assets/ART-NOTES.md",
+    "assets/ART-REQUESTS.md",
+    "assets/MONSTER-ART-NOTES.md"
+  ],
+  "method": "Built-in image_gen. Reference-based new illustrations; thawed crab is a condition edit. Originals preserved without manual repainting.",
+  "assets": [
+    {
+      "file": "assets/touma-town.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-9a33a1ac-83a0-437a-90ed-156cdad36050.png",
+      "prompt": "Use case: illustration-story. Asset: touma-town.png, single full-body front-facing character illustration for the cozy snow-country RPG Okaeri no Akari. Image 1 faces.png is the STRICT character identity and outfit reference: Touma is the man on the TOP row. Image 2 koharu-town.png is STRICT style, scale, framing and solid magenta background reference only; do not draw Koharu. Draw only Touma, a young adult man, about three-head-tall stylized proportions, slightly taller/straighter build than Koharu. Short tousled dark brown hair, warm brown eyes, quiet calm face, closed mouth, kind eyes. Deep teal winter coat with cream shearling collar, short rust scarf, gloves, brown winter boots, backpack. Plain practical sheathed one-handed sword on HIS left hip; do not grip its hilt. Stand straight, feet shoulder-width apart, one hand loosely holding a backpack shoulder strap, other naturally down. Body and face FRONT-facing. Warm watercolor anime rendering, soft fine outlines, fabric texture matching the reference. Square image intended for 1254x1254 output. Centered one person, entire hair-to-boot silhouette fully inside frame, generous plain margin, no cropping. BACKGROUND MUST be perfectly uniform solid #FF00FF magenta, no shadow, no ground, no gradients, no scenery, no text, no labels, no borders. Use no magenta anywhere inside character.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/koharu-town.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1680959,
+      "sha256": "127c5667388f3467f9c33cd082ea8e5f3e8a93eac6856391790e3cc69ed0f7cc",
+      "title": "トウマ — 正面の立ち絵",
+      "gameIntegration": "existing-character-intro",
+      "derivatives": [
+        {
+          "file": "assets/touma-town-cut.png",
+          "width": 336,
+          "height": 900,
+          "mode": "RGBA",
+          "bytes": 457855,
+          "sha256": "0262d7c2a2e9e9b4f5c2a9fb773ef0350bb96f009364f9d5a71b74ec423f8a2a",
+          "alphaBounds": [
+            0,
+            0,
+            336,
+            900
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/koharu-town.png": "72346e6e636e7535d74f41d5882e63c1dd4272f8dc4b39d62dbce914b0678d39"
+      }
+    },
+    {
+      "file": "assets/nina-town.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-7459ef38-0250-4d9f-ab3f-f2dec7a14ddd.png",
+      "prompt": "Use case: illustration-story. Asset nina-town.png, ONE FRONT-FACING full-body character on uniform #FF00FF magenta background, square 1254x1254. Input1 faces.png: strict Nina identity, the woman on BOTTOM row; preserve chestnut SHORT BOB and side braid with small rust ribbon, amber brown eyes, friendly bright smile. Input2 koharu-town.png: strict watercolor softness, line thickness, about three-head-tall stylized young-adult proportions and framing. Nina is a young adult woman a little taller and straighter in posture than Koharu, slightly shorter than Touma. Input3 touma-town.png: companion outfit rendering to harmonize with. Red-brown winter coat, cream shearling hood/collar and cream scarf, mittens, brown winter boots, shoulder satchel with narrow homecoming-knot ribbon tied to strap. Holds short lamplighter staff with a SMALL lantern at its tip in one hand, modest warm flame, not bright glow obscuring outline; free hand gently closed in front of chest. Slight head tilt, body facing straight front. Single centered person, warm finely detailed watercolor anime, full silhouette completely in frame, generous blank margin. No ground, NO cast shadow, NO gradients, no scenery, no extra people, no text, no labels/borders/watermark. Background perfectly flat magenta, no magenta in character.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/koharu-town.png",
+        "assets/touma-town.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1662128,
+      "sha256": "e38e8c7ab96fad1f46b838a9e778336f5f5096ecd15073a0f3afee4e55774cd2",
+      "title": "ニナ — 正面の立ち絵",
+      "gameIntegration": "existing-character-intro",
+      "derivatives": [
+        {
+          "file": "assets/nina-town-cut.png",
+          "width": 300,
+          "height": 900,
+          "mode": "RGBA",
+          "bytes": 441683,
+          "sha256": "3ebb8bb241fdcef7658f8d1e2706f264d58b14d4b31fff6cd719e9e3499dcc05",
+          "alphaBounds": [
+            0,
+            0,
+            300,
+            900
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/koharu-town.png": "72346e6e636e7535d74f41d5882e63c1dd4272f8dc4b39d62dbce914b0678d39",
+        "assets/touma-town.png": "127c5667388f3467f9c33cd082ea8e5f3e8a93eac6856391790e3cc69ed0f7cc"
+      }
+    },
+    {
+      "file": "assets/stills/ending-koharu-love.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-6b5a8596-e821-4965-a9db-8c4252b498a0.png",
+      "prompt": "Use case: illustration-story. Create a NEW landscape ending still for cozy snow-country RPG Okaeri no Akari, intended exact final 1672x941. Input1 faces.png strictly establishes Touma (top row, tousled dark-brown hair, warm brown eyes, teal winter coat, rust scarf). Input2 koharu-faces.png strictly establishes Koharu: young ADULT woman, flaxen short low twin-tails, green eyes, round expressive face, red-brown hand-me-down winter coat, light green scarf. Both characters are young adults. Input3 ending-both.png is watercolor anime style, intimate warm timber home, fabric/wood rendering reference only. Draw ONLY Touma and Koharu. Final chapter night, on a woven rug directly before the home's closed iron wood-burning stove. Touma seated, Koharu sits in his arms with her back resting against his chest, then turns back over her shoulder to look into his eyes. Their foreheads almost touch, noses close, one quiet moment BEFORE a tender kiss. Koharu blushes, cannot hide delighted shy smile; Touma blushes all the way to his ears, gently holds her at shoulders/upper arms. One of Koharu's twin-tail ties is Nina's small BLUE ribbon; the other remains green. Fully clothed, gentle romantic domestic tenderness. Stove fire is the ONLY light source, warm orange illuminating both cheeks equally. Background dining table with exactly THREE mismatched chairs, window sill pot with a tiny sprout. Show readable coherent seating anatomy, natural hands, medium-wide composition with stove, rug and three chairs visible, camera at seated eye level. Beautiful finely lined watercolor anime, same faces and clothing as references, no text, no watermark, no collage, no extra people.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/koharu-faces.png",
+        "assets/stills/ending-both.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3358397,
+      "sha256": "14cc2fdc8dcd9daf2e397f12746e814b344dd8971cfd9910df74b3d602c1b5d3",
+      "title": "コハルと、ストーブの前で",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/ending-koharu-love.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 294230,
+          "sha256": "e7da268d1acc36e123f51d5d8f800718a91e40cac8db48b179a679f97dd82994"
+        },
+        {
+          "file": "assets/stills/web/ending-koharu-love-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 28658,
+          "sha256": "2168a0402541d5da9b7d89868c86403617ffa21b5c586e702874a82b9d285f7c"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/koharu-faces.png": "8d0f74738f0f14a1980c3cf83c3c2c6c324821e1641715a3e5e70bb716ef2cc4",
+        "assets/stills/ending-both.png": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab"
+      }
+    },
+    {
+      "file": "assets/stills/ending-nina-kiss.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-31ce2aee-084b-405c-9dc0-a0d8fe5da08c.png",
+      "prompt": "Use case: illustration-story. NEW landscape ending still, intended 1672x941, cozy watercolor anime Okaeri no Akari. Input1 faces.png STRICT identity/outfits for BOTH Touma top-row man and Nina bottom-row woman. Input2 ending-touma.png is STRICT watercolor anime linework/paint, face maturity and winter fabric rendering style. Do NOT copy its room or cheek kiss. Draw only Touma and Nina, both young adults, on an old wooden bench in the snowy birch forest's waiting place in DAYLIGHT. Touma's teal winter coat is opened at the front and Nina has snuggled INSIDE it, the single open coat wrapping around both of them. Nina still wears her own red-brown coat and cream scarf underneath; chestnut short bob, side braid, amber-brown eyes. She looks UP, holds the lapel of his coat, and Touma looks down, his hand naturally around her back. Their lips just gently touch in their FIRST kiss, both blushing, tender trusting joy, modest fully clothed scene. Touma tousled dark-brown hair, rust scarf, warm brown eyes. Clear coherent two-person anatomy, intimate medium shot but bench and birch trunks readable. Soft pale blue winter daylight, warm cheeks, snow clump falling from a birch branch, tiny hopping spirit tracks near their boots in foreground. No actual spirit/extra characters. Natural expressive hands, shy stillness. Preserve the exact recognizable hair length, faces and coat designs from reference. No text, no watermarks, no borders, no collage.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/stills/ending-touma.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3500693,
+      "sha256": "b7ff53e7477aabdffecc47cb717578b728bd4db2a6879ba984ef7bda4f683b6d",
+      "title": "ニナと、白樺の待ち場で",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/ending-nina-kiss.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 285600,
+          "sha256": "ca581f8785257de946d2ac2b726d25ffd19910467c2b380750f0c2c73c23d783"
+        },
+        {
+          "file": "assets/stills/web/ending-nina-kiss-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 28936,
+          "sha256": "59009a5590e0a13b0df01bb0c618af606a56b5441eac9c9df16404cb2ed5835f"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/stills/ending-touma.png": "ad8c5c46d29f59d9ede98b51cbd015b0c1968bb4a8c24be56c9b1b0d705d676a"
+      }
+    },
+    {
+      "file": "assets/stills/ending-touma-hearth.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-2ae0e12b-f66f-46dc-b24e-aed74b14cf54.png",
+      "prompt": "Use case: illustration-story. NEW landscape still ending-touma-hearth.png for cozy winter RPG Okaeri no Akari, intended final 1672x941. Image1 faces.png strict identity: young adult man Touma top row, young adult woman Nina bottom row. Image2 ending-touma.png STRICT rendering and clothes reference, do not copy standing cheek kiss. Image3 ending-both.png home atmosphere reference only. Draw ONLY Touma and Nina. Night in their little timber home, sitting on a woven rug before a closed iron wood-burning stove. Touma sits with his knees apart, Nina rests her back against his chest between his knees; he holds her gently from behind. Nina turns back over her shoulder, both spontaneously lean toward each other, mouths a breath apart BEFORE a kiss, mutual shy smile, tender domestic ease. Correct coherent anatomy, natural arms/hands, fully clothed. Touma's short tousled dark brown hair, warm brown eyes, deep teal coat with cream lining, rust scarf. Nina's chestnut short bob and side braid with tiny rust ribbon, amber brown eyes, red-brown coat with cream scarf. Firelight paints BOTH their cheeks the same orange. Stove/rug and wooden dining table visible, on table a small handwritten planning sheet with two visibly unfilled blank spaces but NO legible text. Quiet warm nighttime room, soft watercolors and fine anime lines, lovingly painted timber and wool, same recognizable faces as refs. No extra people, no labels, no captions, no watermark, no collage.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/faces.png",
+        "assets/stills/ending-touma.png",
+        "assets/stills/ending-both.png"
+      ],
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "bytes": 3211203,
+      "sha256": "3b493f347f99b466fcb6b5df4cb6fdda42ed11863452190ca2a33ac5a518c396",
+      "title": "トウマとニナ — 一日の終わり",
+      "gameIntegration": "pending-scene-cues",
+      "derivatives": [
+        {
+          "file": "assets/stills/web/ending-touma-hearth.webp",
+          "width": 1280,
+          "height": 720,
+          "mode": "RGB",
+          "bytes": 272922,
+          "sha256": "3d3f98c749e77317e9b7912997cd9634bc24c41a055ebc2d583acc33af8bcdcc"
+        },
+        {
+          "file": "assets/stills/web/ending-touma-hearth-thumb.webp",
+          "width": 400,
+          "height": 225,
+          "mode": "RGB",
+          "bytes": 27770,
+          "sha256": "acaaaa6af89c2590c8b7acaf9cb06d116ed819e2e8a48b9d153b7326dfb2815d"
+        }
+      ],
+      "referenceHashes": {
+        "assets/faces.png": "21757f734c106fa6500780c56585565da396a3ff81cf570e83abc71f874f137d",
+        "assets/stills/ending-touma.png": "ad8c5c46d29f59d9ede98b51cbd015b0c1968bb4a8c24be56c9b1b0d705d676a",
+        "assets/stills/ending-both.png": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab"
+      }
+    },
+    {
+      "file": "assets/monsters/higui.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-8a46e922-02d8-4edc-9089-0e55eae20c5b.png",
+      "prompt": "Use case: stylized-concept. Asset higui.png, ONE isolated full-body game beast on perfectly uniform solid #FF00FF magenta, square 1024x1024. Reference cast-atlas.png establishes the cozy richly shaded pixel-art JRPG sprite rendering, small-scale-readable silhouette and 3/4 front view ONLY. Draw a completely NEW animal, not a deer, NO antlers, NO bird nest, NO woodland guardian decorations. HIGUI, a hungry winter mountain beast: quadruped halfway between a wolf and wild mountain cat, shoulder height about a person's waist. Soot-black shaggy fur, very lean belly and subtly visible ribs under fur, pointed ears, long feline tail, narrow cautious face. ONLY its eyes glow orange, staring toward light; lantern-oil soot around muzzle. Convey hunger and fatigue, not malice or horror. Mouth closed, no dripping saliva, no exposed wounds/blood, no demonic flames. Four readable grounded paws, whole tail/ears/paws fully inside image with wide empty margin. Gentle empathetic creature design despite lean silhouette, fine warm hand-pixel illustration and restrained charcoal/gray shading. Pose standing alert, slight front three-quarter facing to viewer-right. No objects/scenery/ground/cast shadow. No extra creatures, no text/labels/borders/watermark. Flat #FF00FF background not used in body.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/cast-atlas.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1568250,
+      "sha256": "b67f0330bbb6f619f39ac951f5019e91de94b84310c21f9181a54b49c72b2723",
+      "title": "灯喰い",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/higui-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 997368,
+          "sha256": "3b4bc0ddf41ebce0b12ba2e52c2f808bc3b99e5b85e2fe5be0e395d50d7d5674",
+          "alphaBounds": [
+            148,
+            226,
+            1116,
+            977
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
+      }
+    },
+    {
+      "file": "assets/monsters/arare-mochi.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-bc5a30fe-5f10-46c0-bfeb-9d52af117b88.png",
+      "prompt": "Use case: stylized-concept. Asset arare-mochi.png. Single small spirit for warm snow-country RPG. Input cast-atlas.png: EXACT richly shaded warm hand-pixel style, rounded gentle spirit silhouette; the TOP RIGHT white snow mochi spirit is the design relative. Create ONE distinct hail mochi spirit: pale blue-white translucent glutinous snow body, a bit smaller and smoother than the original, rounded soft squishy base, tiny round feet, black bead eyes with shy cold expression and soft blush, small hail pellets on head like little frozen rice pearls. NOT a recolor: visible translucent icy edges and distinctive cluster of tiny hail grains, no tall flower tuft. 3/4 front view slight facing right, fully visible centered single creature. Square image. Perfectly flat solid #FF00FF magenta background, no magenta in sprite, no shadow or ground or snow patch or scenery, no text/labels/watermark/borders. Fine coherent pixel-art texture, readable at small map size, gentle and cold, not scary.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/cast-atlas.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1421961,
+      "sha256": "c7f2e6665bd2d7f68eaa259bbccc1a7743edcc72b00b84af081f50f1b14ce153",
+      "title": "あられモチ — 単体",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/arare-mochi-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 818590,
+          "sha256": "ce7970bea146191735d93049dadac8e0d57ac8a1564e2ac446484a21a52acc12",
+          "alphaBounds": [
+            313,
+            291,
+            910,
+            894
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
+      }
+    },
+    {
+      "file": "assets/monsters/arare-mochi-trio.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-dc7f46da-eb23-4fd2-bb4a-db58022cc3b4.png",
+      "prompt": "Use case: stylized-concept. Asset arare-mochi-trio.png: a single isolated cluster of EXACTLY THREE hail-mochi spirits huddling for warmth, square. Reference arare-mochi.png is strict identity/style/color reference; reproduce the same pale blue-white semi-translucent rounded icy mochi bodies, tiny feet, shy black bead eyes, subtle pink cheeks, little hail pearls on their heads. Three smaller spirits pressed shoulder-to-shoulder, two in front and one behind, all three faces readable, irregular cozy triangular silhouette, not three panels. Warm finely shaded pixel-art JRPG sprite. Their expressions vary slightly worried/curious/shivering but gentle, not scary. Entire group inside image with generous blank space, slight three-quarter front view. EXACT perfectly flat #FF00FF background, no ground/no shadows/no scenery/no snow patch, no text/labels/borders/watermark. No fourth creature or other objects.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/monsters/arare-mochi.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1502502,
+      "sha256": "0e7cc823f6fd80df04fc463bd12f50344b3cd949fe9056a17cc2f1f469450212",
+      "title": "あられモチ — 三匹組",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/arare-mochi-trio-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 931479,
+          "sha256": "365aec6ff29f535007e71ebc7e87c2afac9b3aa2d12eddc099f5d9d2bf7e4614",
+          "alphaBounds": [
+            253,
+            283,
+            993,
+            900
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/monsters/arare-mochi.png": "c7f2e6665bd2d7f68eaa259bbccc1a7743edcc72b00b84af081f50f1b14ce153"
+      }
+    },
+    {
+      "file": "assets/monsters/mizore-yadokari-frozen.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-e30b5465-484d-43f1-b924-2b58bfc945d9.png",
+      "prompt": "Use case: stylized-concept. Asset mizore-yadokari-frozen.png, ONE isolated full-body sleet hermit crab spirit on solid #FF00FF magenta background, square. Reference cast-atlas.png determines warm richly detailed pixel-art JRPG creature style, front three-quarter view, gentle readable small silhouette. New creature related to lower-left hermit crab, but its shell is NOT a handled mug: carries a chipped old Japanese handleless yunomi TEACUP, muted weathered celadon glaze and small crack/chip on rim, fine pottery texture. A film of meltwater that refroze covers cup with translucent icy glaze, short soft icicles and frozen droplets. Small cream-tan hermit crab beneath, rusty brown small claws, friendly stalk eyes, slightly chilly anxious expression, all legs/claws readable. Entire creature including cup inside image, generous plain magenta margins. Slight front three-quarter facing right. No shadow/ground/scenery/snow patch, no text/labels/borders/watermark, no magenta inside creature. Rich hand-pixel shading and gentle cozy fantasy, no scary aggression. This is FROZEN state; keep clear cup outline and distinctive chipped rim.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/cast-atlas.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1738321,
+      "sha256": "00bbd5aad656c764279070909aaf8aea774a6f86cd4f023494e4f812cb8660f9",
+      "title": "みぞれヤドカリ — 凍結",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/mizore-yadokari-frozen-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 1199318,
+          "sha256": "7caef9adba640809732baad9b2ad06816c1a21dad0687f153854a94f346ace04",
+          "alphaBounds": [
+            257,
+            224,
+            945,
+            988
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
+      }
+    },
+    {
+      "file": "assets/monsters/mizore-yadokari-thawed.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-1bdce3d5-dafe-496a-a652-abab8d93cd12.png",
+      "prompt": "Use case: precise-object-edit. Edit reference mizore-yadokari-frozen.png into mizore-yadokari-thawed.png. Change ONLY its frozen condition: melt away ALL icicles, frosted white coatings and transparent ice sheets from teacup and claws. The SAME chipped celadon handleless yunomi, SAME floral glaze pattern/chipped rim/cracks, crab identity, exact silhouette, image scale, position, pose and perspective must remain. Replace ice with subtle clear liquid droplets/wet highlights on ceramic, with no hanging ice shapes. Crab expression relaxes into a tiny relieved smile, eyes stay same. Keep warm detailed hand-pixel RPG rendering. Preserve perfectly flat uniform #FF00FF magenta background and square size. No ground/shadow/scenery, no new objects, no extra creatures, no text/labels/borders. This is a matched state-change sprite; do NOT redesign or reposition.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/monsters/mizore-yadokari-frozen.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1666466,
+      "sha256": "77331e6fe03dc348d17f84349a4db6ac59730c1f065f4e35bc448ca0b2a5d0ef",
+      "title": "みぞれヤドカリ — 融解",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/mizore-yadokari-thawed-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 1137741,
+          "sha256": "55ed15e94a08936dd1a4aae7fee77122db00dba01edb39367d1fbad2c80c7bab",
+          "alphaBounds": [
+            258,
+            237,
+            945,
+            988
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/monsters/mizore-yadokari-frozen.png": "00bbd5aad656c764279070909aaf8aea774a6f86cd4f023494e4f812cb8660f9"
+      }
+    },
+    {
+      "file": "assets/monsters/kodama-guardian.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-f7324607-abc2-40ec-b1b0-b68af76ea0a1.png",
+      "prompt": "Use case: stylized-concept. Asset kodama-guardian.png for warm snow-country RPG. Reference cast-atlas.png lower-middle tree-antler deer guardian is strict species/rendering reference. Create its YOUNG small relative, six-tenths of the adult's size, compact gentle four-legged deer body covered in bark and moss, warm amber eyes, slightly worried chilly expression, stubby feet. SHORT antlers with only TWO branches each, between antlers a SMALL mossy weathered stone lantern rests naturally like a carried shrine. Lantern readable with tiny amber ember inside dark aperture. NO bird nest or bird, no giant sprawling antlers. Fine richly shaded warm pixel-art JRPG sprite, front three-quarter view slightly facing right, complete isolated centered figure with generous empty margin. Square image, perfectly solid uniform #FF00FF magenta background, never use magenta inside sprite. No scenery/ground/cast shadow/snow patch, no extra animals, no text/labels/borders/watermark. Small silhouette must distinguish lantern from antlers and keep all paws visible.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/cast-atlas.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1504635,
+      "sha256": "d79c8f7782d1cd458dd51e3f6a5641c263dab0fd47b709367e66106ccd5ae473",
+      "title": "こだま番人",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/kodama-guardian-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 858397,
+          "sha256": "beda6499ac90f12857ca18dbb07fafe5e4eafb8873880156b4fa6a53610adb21",
+          "alphaBounds": [
+            382,
+            239,
+            851,
+            924
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
+      }
+    },
+    {
+      "file": "assets/monsters/tsurara-bat.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-18b918d6-5133-4e2a-96e7-dc1cc09d396e.png",
+      "prompt": "Use case: stylized-concept. Asset tsurara-bat.png for cozy winter RPG. Input cast-atlas.png sets warm finely shaded hand-pixel JRPG spirit style, not horror. Create ONE small ICICLE BAT spirit that disguises itself as an eave icicle. Fully spread two wings, translucent pale ice bones radiate like tapering icicles and delicate frosted blue membranes connect them. Tiny soft white-gray furry bat body in center, round kind black eyes, tiny ears and feet, shy cold expression, wings symmetrical but organic, no sharp fangs. Shape like a winter icicle mobile come alive, silhouette readable small. Front slightly three-quarter view, entire wingtips and feet inside with generous margin, square image. Perfectly uniform solid #FF00FF magenta backdrop, no magenta in creature, no scenery/eaves/ground/shadows, no extra creatures, no text/labels/watermark/borders. Gentle cold-loving mountain spirit whose ice looks slightly chilly, not menacing.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/cast-atlas.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1569096,
+      "sha256": "28a74fb02a4600565379fa4e1bc90716f9f155c1f919e6a93b1201b6b306e1f1",
+      "title": "つららコウモリ",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/tsurara-bat-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 951459,
+          "sha256": "4a2a82f237f4175f37f5d8b02f431dce3d4bb4f10909c2187b4b2c520ce9a1f1",
+          "alphaBounds": [
+            54,
+            363,
+            1198,
+            804
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
+      }
+    },
+    {
+      "file": "assets/monsters/yuki-usagi-light.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-3677934b-01b0-493d-a3e2-aeb0c01bd85b.png",
+      "prompt": "Use case: stylized-concept. Asset yuki-usagi-light.png, ONE snow-rabbit lantern spirit for warm winter JRPG. Input cast-atlas.png gives exact cozy finely shaded pixel-illustration spirit style. A traditional small round Japanese SNOW RABBIT made of soft white snow with two green leaf-shaped ears and glossy red NANTEN BERRY eyes. On its back carries a very small near-extinguished warm amber light cupped within a tiny frost-rimmed lantern cradle, faint flame visible but no huge glow. No human clothing. Rabbit shivers gently, rounded gentle sympathetic form, a little cold and lost rather than scary. Full body front three-quarter slight facing right, little snow paws, complete ears and back-light inside frame with generous empty margin, readable silhouette at small map scale. Square, absolutely uniform solid #FF00FF magenta background, no magenta within spirit. No ground/cast shadow/scenery/snow patch, no extra creatures, no text/labels/borders/watermark. Detailed warm hand-pixel shading.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/cast-atlas.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1505368,
+      "sha256": "2b4767d64865e6b2d4146c634491a8c535b802a59f067f3c884e19c4dc02c4cc",
+      "title": "ゆきうさぎ灯",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/yuki-usagi-light-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 892751,
+          "sha256": "47e10517d411c2da69f94b352eeb509446cf16d5a11388660a0145fb544510e0",
+          "alphaBounds": [
+            300,
+            298,
+            947,
+            885
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
+      }
+    },
+    {
+      "file": "assets/monsters/koke-dama.png",
+      "source": "C:\\Users\\Mizushima\\.codex\\generated_images\\01a07639-7f4d-7493-aabe-2e4870db4c08\\exec-e7c8d176-c24c-4700-ace0-f9a65c4a1613.png",
+      "prompt": "Use case: stylized-concept. Asset koke-dama.png, ONE moss-ball spirit for cozy winter JRPG, reference cast-atlas.png gives richly shaded warm fine pixel-illustration game-art style. Small spherical lively soft moss spirit growing only on warm ground. Round plush moss body, overlapping emerald/olive/pale green moss fronds, two tiny curious amber bead eyes, tiny smiling mouth and very short feet tucked underneath, one tiny new leaf on top. No rocks, no lantern, no antlers, no human outfit. Non-aggressive playful creature, leaning slightly as if about to roll away when approached, the round ball silhouette stays clear at small map scale. Front slight three-quarter view, full body inside generous margins. Square image, perfectly uniform flat solid #FF00FF magenta background, no magenta in sprite, no ground/cast shadow/scenery/plinth/snow, no other creatures, no text/labels/borders/watermark. Charming natural texture, soft little leaf edges but not photorealistic, match reference spirit warmth.",
+      "tool": "built-in image_gen",
+      "references": [
+        "assets/cast-atlas.png"
+      ],
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "bytes": 1514722,
+      "sha256": "77425a5902a58b29f15203a1c894e3e1abaac02b4e4c305fd3cc716dbcc35858",
+      "title": "こけ玉",
+      "gameIntegration": "pending-field-and-battle-mapping",
+      "derivatives": [
+        {
+          "file": "assets/monsters/koke-dama-cut.png",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "bytes": 901694,
+          "sha256": "d4b16296f3d03f8a76987877c6f2e2351a503619a0a3a7af9d813b722a2394d7",
+          "alphaBounds": [
+            326,
+            290,
+            897,
+            910
+          ]
+        }
+      ],
+      "referenceHashes": {
+        "assets/cast-atlas.png": "dc1b426743dfbd1f9e549cadce8e7c088e20e656e64b467d5d0eee8df340fc59"
+      }
+    }
+  ]
+}

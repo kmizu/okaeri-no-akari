@@ -158,6 +158,42 @@
       "width": 1672,
       "height": 941,
       "sha256": "9127980e651285653875042f9932d0db8078296283e1c09320d3f64cf61bbfab"
+    },
+    {
+      "id": "ending-koharu-love",
+      "title": "コハルと、ストーブの前で",
+      "chapter": 10,
+      "route": "koharuLove",
+      "file": "ending-koharu-love.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "14cc2fdc8dcd9daf2e397f12746e814b344dd8971cfd9910df74b3d602c1b5d3",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
+    },
+    {
+      "id": "ending-nina-kiss",
+      "title": "ニナと、白樺の待ち場で",
+      "chapter": 10,
+      "route": "nina",
+      "file": "ending-nina-kiss.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "b7ff53e7477aabdffecc47cb717578b728bd4db2a6879ba984ef7bda4f683b6d",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
+    },
+    {
+      "id": "ending-touma-hearth",
+      "title": "トウマとニナ — 一日の終わり",
+      "chapter": 10,
+      "route": "touma",
+      "file": "ending-touma-hearth.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "3b493f347f99b466fcb6b5df4cb6fdda42ed11863452190ca2a33ac5a518c396",
+      "gameIntegration": false,
+      "promptFile": "../art-generation-20261112.json"
     }
   ]
 }

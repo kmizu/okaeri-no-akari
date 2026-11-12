@@ -59,6 +59,7 @@ function ambient(s){
 }
 // コハルが三人目として一緒に歩く場面。
 function companion(s){
+ const epi=root.OkaeriEpisodes?.playingEpilogue?.();if(epi)return ['koharuLove','both'].includes(epi)&&!['house','lampworkshop'].includes(s.scene); // 後日譚：コハルのいる結末では一緒に歩く
  const ep=s.episode;if(!ep||ep.complete||['house','lampworkshop'].includes(s.scene)||root.OkaeriJourney?.active(s))return false;
  if(root.OkaeriField?.names[s.scene])return ep.chapter>=2&&!(ep.chapter===2&&ep.step===0)&&ep.chapter!==4;
  if(ep.chapter===2)return ep.step>=1&&s.scene==='canal';

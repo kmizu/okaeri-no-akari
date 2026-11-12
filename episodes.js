@@ -33,7 +33,15 @@ function objective(s){if(s.episode.complete)return s.episode.chapter===10?'二�
 function go(a,e){if(e.solo)a.state.lead=e.lead;if(e.arrival){a.scene(...e.arrival);}else if(a.state.scene!==e.scene)a.scene(e.scene,...spawns[e.scene]);a.save();a.updateHud();}
 function finishEvent(a){const ep=a.state.episode;if(ep.chapter===6&&ep.step===2&&root.OkaeriJourney&&a.state.journey?.step!==9){root.OkaeriJourney.begin(a);return;}ep.step++;if(ep.step===events(a.state).length){ep.complete=true;}a.save();a.updateHud();if(ep.complete)endDay(a);else go(a,current(a.state));}
 function next(a){const s=a.state,nextState=create(s.episode.chapter+1,s.episode.route);nextState.courage=s.courage;nextState.flags={...s.flags,...nextState.flags};nextState.memories={...s.memories};Object.assign(s,nextState);a.scene(s.scene,s.x,s.y);a.toast(title(s));}
-function endDay(a){const s=a.state,ep=s.episode;const buttons=[['家で過ごす',a.closeModal,true]];const night=events(s).at(-1);if(night)buttons.push(['今夜の会話を振り返る',()=>{a.closeModal();a.talk(night.lines);}]);if(ep.chapter<10)buttons.push(['翌日の話へ',()=>{a.closeModal();next(a);}]);else buttons.push(['この一日をもう一度',()=>{a.closeModal();ep.step=0;ep.complete=false;a.save();go(a,current(s));}]);a.openModal((ep.chapter===10?'<div class="ending-art"></div>':'')+'<span class="tag">'+(ep.chapter===10?'おかえりの灯 · END':'第'+ep.chapter+'話 · おしまい')+'</span><h2>'+D.titles[ep.chapter-1]+'</h2><p>'+(ep.chapter===10?'春になれば、ニナは南へ発ちます。そして三週間後、この家の戸口には帰り灯がともっているはずです。<br>遊んでくれて、ありがとうございました。':D.closings?.[ep.chapter]||'今日の出来事を家に置いて、明日へ。')+'</p>',buttons,'explore');}
+function endDay(a){const s=a.state,ep=s.episode;const buttons=[['家で過ごす',a.closeModal,true]];const night=events(s).at(-1);if(night)buttons.push(['今夜の会話を振り返る',()=>{a.closeModal();a.talk(night.lines);}]);if(ep.chapter<10)buttons.push(['翌日の話へ',()=>{a.closeModal();next(a);}]);else{const epi=D.epilogues?.[ep.route];if(epi)buttons.push(['後日譚「'+epi.title+'」を読む',()=>{a.closeModal();epilogue(a);}]);buttons.push(['この一日をもう一度',()=>{a.closeModal();ep.step=0;ep.complete=false;a.save();go(a,current(s));}]);}a.openModal((ep.chapter===10?'<div class="ending-art"></div>':'')+'<span class="tag">'+(ep.chapter===10?'おかえりの灯 · END':'第'+ep.chapter+'話 · おしまい')+'</span><h2>'+D.titles[ep.chapter-1]+'</h2><p>'+(ep.chapter===10?'春になれば、ニナは南へ発ちます。そして三週間後、この家の戸口には帰り灯がともっているはずです。<br>遊んでくれて、ありがとうございました。':D.closings?.[ep.chapter]||'今日の出来事を家に置いて、明日へ。')+'</p>',buttons,'explore');}
+// 後日譚。場面を順に流すだけ。進み具合は保存しない（何度でも最初から読める）。
+let playing=null;
+function epilogue(a){
+ const s=a.state,epi=D.epilogues?.[s.episode?.route];if(!epi||s.episode.chapter!==10||!s.episode.complete)return false;
+ playing=s.episode.route;s.lead='touma';let i=0;
+ const step=()=>{const p=epi.parts[i++];if(!p){playing=null;a.scene('house',11,11);endDay(a);return;}a.scene(p.scene,p.x,p.y);a.talk(i===1?[['','後日譚　'+epi.title+'\n'+epi.lead,{fade:'black'}],...p.lines]:p.lines,step);};
+ step();return true;
+}
 function choose(a){
  const pick=r=>{a.closeModal();a.talk(D.confessions[r],()=>{setRoute(a.state,r);finishEvent(a);});};
  // コハルの話を聞いたあと、もう一度選ぶ。
@@ -87,5 +95,5 @@ S.activeObjects=function(s){let list=originalObjects(s);if(!s.episode)return lis
  // コハルは第1話から、薬草の籠を提げて広場に立つ。二人と一緒に歩いている間と、丘へ登っている間はいない。
  if(s.scene==='town'&&!root.OkaeriDirector?.companion(s)&&!(s.episode.chapter===8&&s.episode.step>=1&&!s.episode.complete)&&!(s.episode.chapter===2&&s.episode.step>=1&&!s.episode.complete)&&!(s.episode.chapter===3&&s.episode.step<4))list=[...list,{id:'koharu',type:'episodeNpc',x:13,y:12,label:'薬草屋のコハル'}];
  const e=current(s);if(!s.episode.complete&&e?.scene===s.scene){const base=list.find(o=>o.x===e.x&&o.y===e.y);list=list.filter(o=>o!==base);list.push({id:'episodeEvent',type:'episodeEvent',x:e.x,y:e.y,label:e.label,base,person:e.scene==='town'&&e.x===20?'リツ':e.scene==='town'&&e.x===11?'ユラ':e.lines[0][0]});}return list;};
-root.OkaeriEpisodes={create,events,current,title,objective,handle,won,spawns,endDay,next,finishEvent,detour,expand};
+root.OkaeriEpisodes={epilogue,playingEpilogue:()=>playing,create,events,current,title,objective,handle,won,spawns,endDay,next,finishEvent,detour,expand};
 })(globalThis);

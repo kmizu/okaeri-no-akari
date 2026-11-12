@@ -78,3 +78,16 @@ test('every later chapter has a battle on its main road',()=>{
  }
  assert.match(require('node:fs').readFileSync(require.resolve('../journey.js'),'utf8'),/startBattle\('sleet'/);
 });
+
+test('lover endings have an epilogue that plays every scene and returns to the ending screen',()=>{
+ const D=global.OkaeriEpisodesData;assert.deepEqual(Object.keys(D.epilogues).sort(),['both','koharuLove','nina','touma']);
+ for(const r of ['touma','nina','koharuLove','both','friends','koharu']){
+  const s=E.create(10,r);s.episode.step=4;s.episode.complete=true;let cb,buttons,scenes=[],talks=0;
+  const a={state:s,talk(l,done){talks++;assert.ok(l.length>5);for(const line of l)assert.ok(typeof line[0]==='string'&&typeof line[1]==='string');cb=done;},save(){},updateHud(){},scene(n,x,y){scenes.push(n);Object.assign(s,{scene:n,x,y});assert.ok(C.restoreSave(JSON.stringify(s)),n);},toast(){},openModal(h,b){buttons=b;},closeModal(){}};
+  E.endDay(a);const b=buttons.find(([label])=>label.startsWith('後日譚'));
+  if(!D.epilogues[r]){assert.equal(b,undefined);assert.equal(E.epilogue(a),false);continue;}
+  buttons=null;b[1]();assert.equal(E.playingEpilogue(),r);
+  for(let i=0;i<D.epilogues[r].parts.length;i++){const done=cb;cb=null;done();}
+  assert.equal(E.playingEpilogue(),null);assert.equal(talks,D.epilogues[r].parts.length);assert.ok(buttons,'back at the ending screen');assert.equal(s.scene,'house');
+ }
+});

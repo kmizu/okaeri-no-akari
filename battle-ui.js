@@ -277,6 +277,7 @@
               e.type +
               (e.tint ? ' tint-' + e.tint : '') +
               (e.hp <= 0 ? ' fallen-enemy' : '') +
+              (OkaeriWorld.OWN_ART?.[e.tint] ? ' own-art' : '') +
               (e.ice ? ' has-ice' : '') +
               (e.broken ? ' has-broken' : '') +
               '" aria-label="' +
@@ -288,7 +289,7 @@
               '" ' +
               (canPick ? '' : 'disabled') +
               '><span class="combatant-shadow"></span><span class="combatant-body">' +
-              OkaeriWorld.enemySvg(e.type) +
+              OkaeriWorld.enemySvg(e.type, e) +
               '<span class="condition-visual" aria-hidden="true"><i></i><i></i><i></i></span></span><span class="combatant-label">' +
               esc(label) +
               '</span><span class="foe-health"><i style="width:' +
@@ -648,6 +649,8 @@
         n.setAttribute('aria-label', label + '、HP ' + e.hp + ' / ' + e.max);
         n.classList.toggle('fallen-enemy', e.hp <= 0);
         n.classList.toggle('has-ice', e.hp > 0 && !!e.ice);
+        const art = n.querySelector('img[data-frozen]'); // 氷殻の差分絵を、状態に合わせて差し替える
+        if (art) { const want = e.ice ? art.dataset.frozen : art.dataset.thawed; if (art.getAttribute('src') !== want) art.setAttribute('src', want); }
         n.classList.toggle('has-broken', e.hp > 0 && e.broken > 0);
         n.querySelector('.foe-health i').style.width = (e.hp / e.max) * 100 + '%';
         n.querySelector('.field-conditions').innerHTML = this.conditionMarkup(conditionList(e, 'enemy'));

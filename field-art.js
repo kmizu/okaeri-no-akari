@@ -50,9 +50,14 @@ function background(c,scene,h){
  }
  return true;
 }
+const spirits={};function spirit(name){if(!spirits[name]){const im=new Image();im.src='assets/monsters/web/'+name+'.png';spirits[name]=im;}return spirits[name];}
 function object(c,o,x,y,s,t,h){
  const {rect,poly,line,ellipse,block,lantern,glow}=h,f=s.flags||{};
  if(o.type==='fieldSpirit'){
+  // 専用の絵がある精霊は、それをふわふわ揺らして置く。読み込めるまでは色ちがいの絵。
+  const own={valeHail:['arare-mochi-trio',92],passEcho:['kodama-guardian',62]}[o.id];
+  if(own){const img=spirit(own[0]);if(img.complete&&img.naturalWidth){const w=own[1],h=w*img.naturalHeight/img.naturalWidth,bob=Math.sin(t*2.2)*2;
+   ellipse(c,x+2,y+6,w*.38,7,'rgba(40,70,90,.22)');c.drawImage(img,x-w/2,y+8-h+bob,w,h);return;}}
   c.save();if(TINT[o.tint])c.filter=TINT[o.tint];
   if(o.id==='valeHail')for(const dx of [-26,0,26])root.OkaeriCast.drawMap(c,'mochi',x+dx,y+(dx?0:-8),t+dx);
   else if(o.id==='passMix'){root.OkaeriCast.drawMap(c,'crab',x,y,t);root.OkaeriCast.drawMap(c,'mochi',x+4,y-30,t);}

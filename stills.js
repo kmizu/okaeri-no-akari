@@ -18,7 +18,15 @@
     ['ending-nina', '結末　ニナから告白'],
     ['ending-friends', '結末　名前はまだつけない'],
     ['ending-koharu', '結末　三人で仲良く'],
-    ['ending-both', '結末　三人とも大事にする']
+    ['ending-both', '結末　三人とも大事にする'],
+    ['ending-touma-hearth', '結末　ストーブの前で'],
+    ['ending-nina-kiss', '結末　白樺の待ち場で'],
+    ['ending-koharu-love', '結末　コハルと二人で'],
+    ['epilogue-pair-gate', '後日譚　門の帰り灯'],
+    ['epilogue-pair-lamp', '後日譚　二人の玄関灯'],
+    ['epilogue-koharu-kitchen', '後日譚　朝の台所'],
+    ['epilogue-koharu-coat', '後日譚　外套のなか'],
+    ['epilogue-both-blanket', '後日譚　つないだ毛布']
   ].map(([id, title]) => ({ id, title, src: 'assets/stills/web/' + id + '.webp', thumb: 'assets/stills/web/' + id + '-thumb.webp' }));
   const byId = Object.fromEntries(list.map(s => [s.id, s]));
   function seen() {

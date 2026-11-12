@@ -80,3 +80,8 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
 
 /* 魔獣（専用の絵が来るまで、番人の絵を暗く赤くして見分ける） */
 .tint-beast .enemy-art{filter:brightness(.38) sepia(1) hue-rotate(-38deg) saturate(3.4) contrast(1.15)}
+
+/* 専用の絵がある精霊・魔獣：色ちがい用の着色と、絵に描きこまれている氷殻の重ね描きを外す */
+.own-art .enemy-art{filter:none!important;object-fit:contain;object-position:50% 100%}
+.own-art.has-ice .condition-visual:before,.own-art.has-ice .condition-visual:after{content:none}
+.own-art.tint-beast{--unit-size:clamp(150px,25cqw,240px)}.own-art.tint-sleet{--unit-size:clamp(110px,19cqw,180px)}.own-art.tint-echo{--unit-size:clamp(110px,18cqw,170px)}

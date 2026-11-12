@@ -89,6 +89,23 @@ def monsters():
         img = key_out(Image.open(path), 'magenta')
         img.save(path[:-4] + '-cut.png', optimize=True)
         print(os.path.basename(path[:-4] + '-cut.png'), img.size)
+    # ゲームで使う軽い版（web/）。絵の周りの余白を落として、長辺480に縮める。
+    # 凍結／融解のように重ねて差し替える組は、同じ枠で切って位置をそろえる。
+    web = os.path.join(A, 'monsters', 'web')
+    os.makedirs(web, exist_ok=True)
+    groups = {}
+    for path in sorted(glob.glob(os.path.join(A, 'monsters', '*-cut.png'))):
+        name = os.path.basename(path)[:-8]
+        groups.setdefault('mizore-yadokari' if name.startswith('mizore-yadokari') else name, []).append((name, Image.open(path).convert('RGBA')))
+    for members in groups.values():
+        boxes = [img.getbbox() for _, img in members]
+        box = (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes))
+        for name, img in members:
+            f = img.crop(box)
+            k = 480 / max(f.size)
+            f = f.resize((round(f.width * k), round(f.height * k)), Image.LANCZOS)
+            f.save(os.path.join(web, name + '.png'), optimize=True)
+            print('monsters/web/' + name + '.png', f.size)
 
 
 if __name__ == '__main__':

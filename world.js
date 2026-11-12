@@ -410,6 +410,13 @@ Renderer.prototype.draw=function(s,time,mode){
   return o?{x:o.x*T+24,y:o.y*T+24-96-lift}:null;
  });
 };
-function enemySvg(type){return OkaeriCast.battleArt(type);}
-root.OkaeriWorld={Renderer,enemySvg};
+// 専用の絵がある精霊・魔獣（色ちがいの代わりに使う）。ice は氷殻が溶けたあとの差分。
+const OWN_ART={hail:['arare-mochi'],sleet:['mizore-yadokari-frozen','mizore-yadokari-thawed'],echo:['kodama-guardian'],beast:['higui']};
+const ownArt=(e,name)=>'assets/monsters/web/'+name+'.png';
+function enemySvg(type,e){
+ const own=e&&OWN_ART[e.tint];if(!own)return OkaeriCast.battleArt(type);
+ const src=n=>ownArt(e,n),now=own[1]&&!e.ice?own[1]:own[0];
+ return '<img class="enemy-art own-art-img" alt="" draggable="false" src="'+src(now)+'"'+(own[1]?' data-frozen="'+src(own[0])+'" data-thawed="'+src(own[1])+'"':'')+'>';
+}
+root.OkaeriWorld={Renderer,enemySvg,OWN_ART};
 })(globalThis);

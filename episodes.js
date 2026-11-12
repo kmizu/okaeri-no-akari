@@ -81,7 +81,7 @@ S.activeObjects=function(s){let list=originalObjects(s);if(!s.episode)return lis
  if(s.scene==='town'&&s.episode.chapter===8&&!s.episode.complete)list=list.filter(o=>o.id!=='orlf');
  if(s.scene==='town')list=[...list,{id:'ritsu',type:'episodeNpc',x:20,y:9,label:'水番のリツ'},{id:'yura',type:'episodeNpc',x:11,y:11,label:'診療所のユラ'}];
  // コハルは第1話から、薬草の籠を提げて広場に立つ。二人と一緒に歩いている間と、丘へ登っている間はいない。
- if(s.scene==='town'&&!root.OkaeriDirector?.companion(s)&&!(s.episode.chapter===8&&s.episode.step>=1&&!s.episode.complete))list=[...list,{id:'koharu',type:'episodeNpc',x:13,y:12,label:'薬草屋のコハル'}];
+ if(s.scene==='town'&&!root.OkaeriDirector?.companion(s)&&!(s.episode.chapter===8&&s.episode.step>=1&&!s.episode.complete)&&!(s.episode.chapter===2&&s.episode.step>=1&&!s.episode.complete)&&!(s.episode.chapter===3&&s.episode.step<4))list=[...list,{id:'koharu',type:'episodeNpc',x:13,y:12,label:'薬草屋のコハル'}];
  const e=current(s);if(!s.episode.complete&&e?.scene===s.scene){const base=list.find(o=>o.x===e.x&&o.y===e.y);list=list.filter(o=>o!==base);list.push({id:'episodeEvent',type:'episodeEvent',x:e.x,y:e.y,label:e.label,base,person:e.scene==='town'&&e.x===20?'リツ':e.scene==='town'&&e.x===11?'ユラ':e.lines[0][0]});}return list;};
 root.OkaeriEpisodes={create,events,current,title,objective,handle,won,spawns,endDay,next,finishEvent,detour,expand};
 })(globalThis);

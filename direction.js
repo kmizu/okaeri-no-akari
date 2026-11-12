@@ -60,6 +60,8 @@ function ambient(s){
 // コハルが三人目として一緒に歩く場面。
 function companion(s){
  const ep=s.episode;if(!ep||ep.complete||['house','lampworkshop'].includes(s.scene)||root.OkaeriJourney?.active(s))return false;
+ if(ep.chapter===2)return ep.step>=1&&s.scene==='canal';
+ if(ep.chapter===3)return ep.step===0&&s.scene==='canal';
  if(ep.chapter===5)return ep.step===2&&s.scene==='hill';
  if(ep.chapter===8)return ep.step>=1&&s.scene==='hill';
  if(ep.chapter===10)return (ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=1);

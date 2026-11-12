@@ -43,8 +43,8 @@ function view(id){
 }
 // 人物紹介。背景を切り替えて、立ち絵と名前を大きく見せる。台詞のきっかけ {intro:'koharu'} で出し、{intro:null} か会話の終わりで消える。
 const people={
- touma:{name:'トウマ',kana:'TOUMA',role:'灯守 ・ 木と金具の修理',bust:['assets/faces.png','300% 200%','0% 0%'],notes:['ニナの幼馴染で、同じ家に暮らしている','口数は少ないが、手は先に動く','腰の剣は、輪をつなぐ者を守るためのもの。まだ一度も、本気で抜いたことはない']},
- nina:{name:'ニナ',kana:'NINA',role:'灯守 ・ 火を扱う「灯術」',bust:['assets/faces.png','300% 200%','0% 100%'],notes:['トウマの幼馴染で、同じ家に暮らしている','灯術の火で、町を囲む灯りの輪をつなぐ','平気なふりが上手。ばれているのは、たぶん一人だけ']},
+ touma:{name:'トウマ',kana:'TOUMA',role:'灯守 ・ 木と金具の修理',img:'assets/touma-town-cut.png',bust:['assets/faces.png','300% 200%','0% 0%'],notes:['ニナの幼馴染で、同じ家に暮らしている','口数は少ないが、手は先に動く','腰の剣は、輪をつなぐ者を守るためのもの。まだ一度も、本気で抜いたことはない']},
+ nina:{name:'ニナ',kana:'NINA',role:'灯守 ・ 火を扱う「灯術」',img:'assets/nina-town-cut.png',bust:['assets/faces.png','300% 200%','0% 100%'],notes:['トウマの幼馴染で、同じ家に暮らしている','灯術の火で、町を囲む灯りの輪をつなぐ','平気なふりが上手。ばれているのは、たぶん一人だけ']},
  koharu:{name:'コハル',kana:'KOHARU',role:'薬草屋の見習い',img:'assets/koharu-town-cut.png',notes:['トウマとニナの二つ年下の妹分','子どもの頃から、二人のあとをついて歩いてきた','かじかんだ指を戻す「温め草」を、いつも籠に入れている']}};
 let card=null;
 function intro(id){
@@ -54,6 +54,8 @@ function intro(id){
  card=doc.createElement('div');card.className='intro-card';card.dataset.who=id;card.setAttribute('aria-label',p.name+'の紹介');
  card.innerHTML=(p.bust?'<div class="intro-bust" style="background-image:url('+p.bust[0]+');background-size:'+p.bust[1]+';background-position:'+p.bust[2]+'"></div>':'<img src="'+p.img+'" alt="">')+'<div class="intro-text"><small>'+p.kana+'</small><strong>'+p.name+'</strong><em>'+p.role+'</em><ul>'+p.notes.map(n=>'<li>'+n+'</li>').join('')+'</ul></div>';
  stage.insertBefore(card,doc.getElementById('hud'));const mine=card;
+ // 立ち絵（*-town-cut.png）が届いている人物は、顔の切り抜きの代わりに立ち絵で見せる。無ければ顔のまま。
+ if(p.bust&&p.img&&typeof root.Image==='function'){const im=new root.Image();im.onload=()=>{const b=mine.querySelector?.('.intro-bust');if(b){const el=doc.createElement('img');el.src=p.img;el.alt='';b.replaceWith(el);}};im.src=p.img;}
  (root.requestAnimationFrame||(f=>f()))(()=>{if(card===mine)mine.className='intro-card is-shown';});
 }
 root.OkaeriStills={intro,people,list,seen,mark,show,hide,gallery,view,get current(){return current;}};

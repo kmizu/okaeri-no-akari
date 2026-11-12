@@ -5,7 +5,7 @@
 
 - assets/koharu-walk-atlas.png（緑背景）→ assets/koharu-walk.png
   12コマの背景を抜き、足元を下端・中央にそろえた同じ大きさのセルへ並べ直す。
-- assets/koharu-town.png（マゼンタ背景）→ assets/koharu-town-cut.png
+- assets/{koharu,touma,nina}-town.png（マゼンタ背景）→ assets/*-town-cut.png（ある分だけ）
 - assets/stills/*.png → assets/stills/web/*.webp（幅1280。原本は残す）
 
 ブラウザ側で画素を読まずに済むよう、背景抜きはここで済ませる
@@ -56,10 +56,16 @@ def walk():
 
 
 def town():
-    f = trim(key_out(Image.open(os.path.join(A, 'koharu-town.png')), 'magenta'))
-    f = f.resize((round(f.width * 900 / f.height), 900), Image.LANCZOS)  # 人物紹介の画面でも使うので大きめに
-    f.save(os.path.join(A, 'koharu-town-cut.png'), optimize=True)
-    print('koharu-town-cut.png', f.size)
+    # 人物紹介の立ち絵。コハルに加えて、トウマとニナの原本（マゼンタ背景）が届いていれば同じ手順で切り抜く。
+    for who in ('koharu', 'touma', 'nina'):
+        src = os.path.join(A, who + '-town.png')
+        if not os.path.exists(src):
+            print(who + '-town.png なし（未制作）')
+            continue
+        f = trim(key_out(Image.open(src), 'magenta'))
+        f = f.resize((round(f.width * 900 / f.height), 900), Image.LANCZOS)  # 人物紹介の画面でも使うので大きめに
+        f.save(os.path.join(A, who + '-town-cut.png'), optimize=True)
+        print(who + '-town-cut.png', f.size)
 
 
 def stills():

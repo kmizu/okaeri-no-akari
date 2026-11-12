@@ -4,6 +4,8 @@
 - 変更は作業ブランチと main の両方に push する（main は fast-forward。できないときは聞く）。
 - PR は頼まれたときだけ作る。
 - 絵は描画エンジン（`draw-engine.js`）で組み立てる。`home-art.js`（屋内）、`town-art.js`（屋外）を参照。
+- 台本は `script/` の話ごとのファイルを直す。`episodes-data.js` は生成物なので直接は触らず、`node tools/build-script.cjs` で作り直す。
+- 結末（ルート）の定義は `core.js` の `routes` の一か所。結末を足す時は、そこと `script/ep10-*.js` を足す。
 - 変更したら `node --test tests/*.test.cjs` を通し、画面でも確かめる。確かめていない範囲は正直に書く。
 
 ## 頼まれた編集の扱い（2026-11-12 の失敗から）

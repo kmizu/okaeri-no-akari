@@ -47,7 +47,7 @@
 
 | ファイル | 表示する場面 |
 |---|---|
-| `assets/stills/ending-koharu-love.png` | 最終話の夜。`episodes-data.js routes.koharuLove[3]` |
+| `assets/stills/ending-koharu-love.png` | 最終話の夜。`script/ep10-koharu-love.js` の最後の場面 |
 
 - 1672×941（既存のスチルと同じ横長）。文字・透かしなし。
 - 場面：二人の家の、薪ストーブの前の敷物。トウマが座り、コハルがその腕の中に背中をあずけて、肩ごしに振り向いたところ。
@@ -62,7 +62,7 @@
 
 | ファイル | 表示する場面 |
 |---|---|
-| `assets/stills/ending-nina-kiss.png` | 最終話の白樺の待ち場。`episodes-data.js routes.nina[2]` の終わり |
+| `assets/stills/ending-nina-kiss.png` | 最終話の白樺の待ち場。`script/ep10-nina.js` の三つ目の場面の終わり |
 
 - 1672×941。文字・透かしなし。既存の `ending-nina.png` は残し、手をつなぐ場面でそのまま使います。
 - 場面：雪の森、白樺の待ち場の古いベンチ。ニナがトウマの外套の前を開けさせて、その中にもぐりこんでいる。外套一枚に二人。
@@ -76,7 +76,7 @@
 
 | ファイル | 表示する場面 |
 |---|---|
-| `assets/stills/ending-touma-hearth.png` | 最終話の夜。`episodes-data.js routes.touma[3]` |
+| `assets/stills/ending-touma-hearth.png` | 最終話の夜。`script/ep10-touma.js` の最後の場面 |
 
 - 1672×941。場面：ストーブの前の敷物。ニナがトウマの膝の間に背中をあずけ、振り向いたところ。トウマは後ろから抱いている。
 - 口づけの直前。ストーブの火が二人の顔を同じ色に染めている。食卓の上に、行けなかった場所が二つ残った段取り表。
@@ -84,7 +84,7 @@
 
 ## 5. 後日譚のスチル（新規・余裕があれば）
 
-恋人になる結末には、最終話のあとに後日譚（`episodes-data.js epilogues`）があります。いまは絵なしで流れます。1672×941、文字・透かしなし。
+恋人になる結末には、最終話のあとに後日譚（`script/epilogue-*.js`）があります。いまは絵なしで流れます。1672×941、文字・透かしなし。
 
 | ファイル | 後日譚 | 場面 |
 |---|---|---|

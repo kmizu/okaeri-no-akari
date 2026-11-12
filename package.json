@@ -5,6 +5,7 @@
   "description": "雪国の幼馴染二人を中心にした短編RPG試作版",
   "scripts": {
     "start": "node serve.cjs",
+    "script": "node tools/build-script.cjs",
     "test": "node --test tests/*.test.cjs"
   },
   "engines": { "node": ">=20" }

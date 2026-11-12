@@ -91,3 +91,7 @@ test('lover endings have an epilogue that plays every scene and returns to the e
   assert.equal(E.playingEpilogue(),null);assert.equal(talks,D.epilogues[r].parts.length);assert.ok(buttons,'back at the ending screen');assert.equal(s.scene,'house');
  }
 });
+test('episodes-data.js is the up-to-date build of the script/ files',()=>{
+ const B=require('../tools/build-script.cjs');
+ assert.equal(require('node:fs').readFileSync(B.target,'utf8'),B.build(),'run: node tools/build-script.cjs');
+});

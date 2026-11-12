@@ -134,10 +134,13 @@
     if (ep && !ep.complete && ep.chapter === 10 && s.scene === 'house') return !!root.OkaeriCore?.route(ep.route)?.koharu;
     if (!ep || ep.complete || ['house', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
     if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && !(ep.chapter === 2 && ep.step === 0) && ep.chapter !== 4;
-    if (ep.chapter === 2) return ep.step >= 1 && s.scene === 'canal';
-    if (ep.chapter === 3) return ep.step === 0 && s.scene === 'canal';
-    if (ep.chapter === 5) return ep.step === 2 && s.scene === 'hill';
-    if (ep.chapter === 8) return ep.step >= 1 && s.scene === 'hill';
+    // 薬の番として加わった第2話からは、当番の日は町の中も三人で歩く。
+    // 朝のうちは薬草屋の仕事があるので、その日の最初の用事にはいないことがある。
+    if (ep.chapter === 2) return ep.step >= 1;
+    if (ep.chapter === 3) return ep.step === 0 || ep.step === 4; // 事故の間（1〜3）は一人ずつ動く
+    if (ep.chapter === 5) return ep.step >= 1;
+    if (ep.chapter === 8) return true;
+    if (ep.chapter === 9) return ep.step <= 1; // 祭りの途中で、姿が見えなくなる
     if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1;
     return false;
   }

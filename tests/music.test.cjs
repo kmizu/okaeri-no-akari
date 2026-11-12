@@ -21,3 +21,16 @@ test('failed playback leaves all tracks stopped',async()=>{
  const m=new Music(fake,0);m.tracks.opening.play=async()=>{throw Error('blocked');};
  await assert.rejects(m.play());assert.equal(m.enabled,false);assert.equal(m.tracks.village.paused,true);
 });
+
+test('lake and warm interiors have their own atmosphere cues',()=>{
+ assert.equal(Music.sceneFor('lake'),'lake');assert.equal(Music.sceneFor('lakeside'),'lake');
+ assert.equal(Music.sceneFor('lampworkshop'),'hearth');assert.equal(Music.sceneFor('house'),'hearth');
+ assert.equal(Music.sceneFor('town'),'village');assert.equal(Music.sceneFor('forest'),'journey');
+});
+test('switching between the two cooperating characters keeps the musical phrase aligned',async()=>{
+ const m=new Music(src=>({...fake(src),duration:80,currentTime:0}),0);
+ await m.select('lake');await m.play();m.tracks.lake.currentTime=27.5;
+ await m.select('hearth');assert.equal(m.tracks.hearth.currentTime,27.5);assert.equal(m.tracks.lake.paused,true);
+ m.tracks.hearth.currentTime=41.2;await m.select('lake');assert.equal(m.tracks.lake.currentTime,41.2);
+ assert.equal(m.tracks.hearth.paused,true);m.stop();
+});

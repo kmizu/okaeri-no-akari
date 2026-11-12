@@ -26,6 +26,7 @@ function tree(c,x,y,s=1){c.save();c.translate(x,y);c.scale(s,s);
  }c.restore();}
 function shopSign(c,x,y,kind){
  c.save();c.translate(x,y);
+ const custom=typeof kind==='object'?kind.name:null;kind=typeof kind==='object'?kind.kind:kind;
  const names={bread:'マロのパン',lamp:'灯守の共同所',thread:'織りもの',rest:'休憩小屋'},ink=kind==='lamp'?'#bce1d8':'#f4dab0';
  line(c,[[-39,-25],[39,-25]],'#364f50',4);
  for(const sx of [-29,29]){line(c,[[sx,-25],[sx,-15]],'#435956',2);ellipse(c,sx,-16,3,4,'#c0b48a');ellipse(c,sx,-16,1.5,2.5,'#405251');}
@@ -48,7 +49,7 @@ function shopSign(c,x,y,kind){
   rect(c,-8,-4,14,10,'#e6d2ac');c.strokeStyle='#e6d2ac';c.lineWidth=2;c.beginPath();c.arc(8,0,4,-Math.PI/2,Math.PI/2);c.stroke();
   line(c,[[-11,8],[11,8]],'#e6d2ac',2);
  }
- c.fillStyle=ink;c.font='bold 9px "Yu Gothic UI",sans-serif';c.textAlign='center';c.fillText(names[kind],0,17);
+ c.fillStyle=ink;c.font='bold 9px "Yu Gothic UI",sans-serif';c.textAlign='center';c.fillText(custom||names[kind],0,17);
  line(c,[[-43,-15],[-29,-17],[-8,-15],[13,-17],[40,-15]],'#eaf1e7',5);
  c.restore();
 }
@@ -178,6 +179,7 @@ function lantern(c,x,y,lit=true){
 
 Renderer.prototype.background=function(scene){
  if(this.cache[scene])return this.cache[scene];const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+ if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){this.cache[scene]=cv;return cv;}
  if(scene==='house'){
   rect(c,0,0,W,H,'#243c46');shadow(c,585,682,480,55);
   block(c,133,112,884,560,20,'#755b46','#35484a','#d5c6a5');
@@ -275,6 +277,7 @@ Renderer.prototype.draw=function(s,time,mode){
   const x=o.x*T+24,y=o.y*T+24;drawables.push({y,draw:()=>{
   if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
   if(!['exit','npc','mochi','crab','guardian','camp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
+  root.OkaeriJourneyArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
   if(o.type==='homeTable'){
    for(const dx of [-43,43]){block(c,x+dx-12,y+7,25,9,5,'#aa8a61','#5e6755','#d9bc8e');for(const leg of [-9,8])rect(c,x+dx+leg,y+16,4,12,'#685943');}
    for(const dx of [-54,45])block(c,x+dx,y-27,8,48,5,'#665442','#3b4c46','#b4a07c');
@@ -349,11 +352,11 @@ Renderer.prototype.draw=function(s,time,mode){
  this.f.dir=OkaeriSprites.facing(fx,fy,this.f.dir);this.f.x+=fx*.22;this.f.y+=fy*.22;
  const followersMoving=Math.hypot(fx,fy)>1;
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
- for(const actor of party.filter(actor=>!(s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||actor.id===s.lead))drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
+ for(const actor of party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||root.OkaeriJourney?.split(s))||actor.id===s.lead))drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
  if(s.episode?.chapter===3&&s.scene==='canal'&&s.episode.step>=1&&s.episode.step<=3){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
- if(s.scene!=='house')for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
+ if(!['house','lampworkshop'].includes(s.scene))for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
  const vign=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);vign.addColorStop(0,'#071d3000');vign.addColorStop(1,'#071d3077');c.fillStyle=vign;c.fillRect(0,0,W,H);
 };
 function enemySvg(type){return OkaeriCast.battleArt(type);}

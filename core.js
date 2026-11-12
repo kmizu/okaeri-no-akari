@@ -36,33 +36,33 @@ function resolveTurn(input,commands,order){
  }
  if(!commands.team&&order.filter(id=>input.heroes[id].hp>0&&commands[id]?.skill==='herb').length>(input.items||0))throw Error('薬草が足りません');
  const b=clone(input),forecast=intentions(b),log=b.logs=[];let cooperation=false,protect=false;
- const events=[]; delete b.events; function emit(message,effect=null){log.push(message);events.push({message,effect,heroes:clone(b.heroes),enemies:clone(b.enemies),gauge:b.gauge,items:b.items});}
+ const events=[]; delete b.events; function emit(message,effect=null,actor=null){log.push(message);events.push({message,effect,...(actor?{actor}:{}),heroes:clone(b.heroes),enemies:clone(b.enemies),gauge:b.gauge,items:b.items});}
  const defending=new Set(),counters=new Set(),fallen=new Set(order.filter(id=>b.heroes[id].hp<=0));
- function hit(e,n,fire=false,who,style='slash'){
+ function hit(e,n,fire=false,who,style='slash',afterDamage=null){
   if(e.hp<=0)return;
   if(fire&&e.ice){e.ice=false;emit(e.name+'の氷殻が溶けた！');}
   if(e.broken){n*=1.5;e.broken=0;if(who==='nina')cooperation=true;}
   if(e.ice)n*=.5;
-  n=Math.round(n);e.hp=Math.max(0,e.hp-n);emit(e.name+'に '+n+'。'+(e.hp===0?'落ち着きを取り戻した。':''),{type:who==='team'?'team':fire?'fire':style,enemy:b.enemies.indexOf(e),amount:n});
+  n=Math.round(n);e.hp=Math.max(0,e.hp-n);if(afterDamage)afterDamage();emit(e.name+'に '+n+'。'+(e.hp===0?'落ち着きを取り戻した。':''),{type:who==='team'?'team':fire?'fire':style,enemy:b.enemies.indexOf(e),amount:n},who);
  }
- function heal(id,amount){const h=b.heroes[id];if(h.hp<=0){emit('倒れている相手には「手を貸す」を使おう。');return;}const before=h.hp;cooperation ||=h.hp<h.max||h.chill>0;h.hp=Math.min(h.max,h.hp+amount);h.chill=0;emit(h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before});}
- if(commands.team){b.gauge=0;emit('「合わせるぞ！」「うん！」── 灯火の一閃！');hit(b.enemies.find(e=>e.hp>0),75,true,'team');}
+ function heal(id,amount,actor){const h=b.heroes[id];if(h.hp<=0){emit('倒れている相手には「手を貸す」を使おう。');return;}const before=h.hp;cooperation ||=h.hp<h.max||h.chill>0;h.hp=Math.min(h.max,h.hp+amount);h.chill=0;emit(h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before},actor);}
+ if(commands.team){b.gauge=0;emit('「合わせるぞ！」「うん！」── 灯火の一閃！',null,'team');hit(b.enemies.find(e=>e.hp>0),75,true,'team');}
  else for(const id of order){
   if(fallen.has(id))continue;
   const h=b.heroes[id],c=commands[id],a=actions(id).find(a=>a.id===c.skill),other=id==='touma'?'nina':'touma';h.sp-=a.cost;
-  emit(h.name+'の「'+a.name+'」。',['protect','guard','counter'].includes(c.skill)?{type:'shield',hero:id}:null);
+  emit(h.name+'の「'+a.name+'」。',['protect','guard','counter'].includes(c.skill)?{type:'shield',hero:id}:null,id);
   let e=b.enemies[c.target];if(a.target==='enemy'&&e?.hp<=0)e=b.enemies.find(e=>e.hp>0);
   const power=n=>n*(h.chill?0.75:1)*(h.buff?1.5:1);
-  if(['attack','break','fire'].includes(c.skill)&&e){const buff=h.buff>0;hit(e,power(c.skill==='fire'?22:c.skill==='break'?14:id==='touma'?20:14),c.skill==='fire'||buff,id);h.buff=0;if(buff)cooperation=true;if(c.skill==='break'&&e.hp>0)e.broken=2;}
+  if(['attack','break','fire'].includes(c.skill)&&e){const buff=h.buff>0;hit(e,power(c.skill==='fire'?22:c.skill==='break'?14:id==='touma'?20:14),c.skill==='fire'||buff,id,'slash',()=>{h.buff=0;if(buff)cooperation=true;if(c.skill==='break'&&e.hp>0)e.broken=2;});}
   if(c.skill==='ring')for(const foe of b.enemies)hit(foe,power(14),false,id,'ring');
   if(c.skill==='protect')protect=true;
   if(c.skill==='guard'||c.skill==='counter')defending.add(id);
   if(c.skill==='counter')counters.add(id);
-  if(c.skill==='heal')heal(c.target,Math.round(b.heroes[c.target].max*.45));
-  if(c.skill==='herb'){b.items--;heal(c.target,45);}
-  if(c.skill==='cheer')heal('nina',27);
-  if(c.skill==='buff'){b.heroes.touma.buff=2;emit('トウマの剣に灯りが宿った。',{type:'heal',hero:'touma'});}
-  if(c.skill==='rescue'){b.heroes[other].hp=Math.round(b.heroes[other].max*.3);emit('「大丈夫。手、貸して」── '+b.heroes[other].name+'が立ち上がった。',{type:'heal',hero:other,amount:b.heroes[other].hp});}
+  if(c.skill==='heal')heal(c.target,Math.round(b.heroes[c.target].max*.45),id);
+  if(c.skill==='herb'){b.items--;heal(c.target,45,id);}
+  if(c.skill==='cheer')heal('nina',27,id);
+  if(c.skill==='buff'){b.heroes.touma.buff=2;emit('トウマの剣に灯りが宿った。',{type:'heal',hero:'touma'},id);}
+  if(c.skill==='rescue'){b.heroes[other].hp=Math.round(b.heroes[other].max*.3);emit('「大丈夫。手、貸して」── '+b.heroes[other].name+'が立ち上がった。',{type:'heal',hero:other,amount:b.heroes[other].hp},id);}
  }
  if(b.enemies.every(e=>e.hp<=0))b.status='victory';
  else for(let i=0;i<b.enemies.length;i++){
@@ -71,7 +71,7 @@ function resolveTurn(input,commands,order){
    if(b.heroes[target].hp<=0){if(f.target==='all')continue;target=target==='touma'?'nina':'touma';}
    let covered=false;if(target==='nina'&&protect&&b.heroes.touma.hp>0&&f.target!=='all'){target='touma';covered=true;cooperation=true;}
    const h=b.heroes[target];let n=Math.round(f.damage*((covered||defending.has(target))?.5:1));h.hp=Math.max(0,h.hp-n);if(f.chill)h.chill=3;
-   emit((covered?'トウマがニナをかばった！ ':'')+h.name+'に '+n+' ダメージ。',{type:'hurt',hero:target,source:i,amount:n,covered});
+   emit((covered?'トウマがニナをかばった！ ':'')+h.name+'に '+n+' ダメージ。',{type:'hurt',hero:target,source:i,amount:n,covered},'enemy:'+i);
    if(counters.has(target)&&h.hp>0){hit(e,24,false,target);counters.delete(target);}
   }
  }
@@ -82,12 +82,33 @@ function resolveTurn(input,commands,order){
  if(cooperation)emit('二人の息が合った。灯りが一つ、ともった。');
  b.events=events;b.turn++;return b;
 }
+function journeyTile(scene,x,y){
+ if(!Number.isInteger(x)||!Number.isInteger(y)||x<1||x>22||y<2||y>14)return false;
+ if(scene==='lake')return (x>=2&&x<=8&&y>=10&&y<=13)||(x>=6&&x<=10&&y>=7&&y<=12)||(x>=8&&x<=17&&y>=6&&y<=8)||(x>=16&&x<=21&&y>=4&&y<=8);
+ if(scene==='lakeside')return x>=2&&x<=21&&y>=4&&y<=14&&!((x>=3&&x<=7&&y<=5)||(x>=9&&x<=13&&y<=5)||(x>=15&&x<=20&&y<=6)||(y>=11&&x>=8&&!(x>=15&&x<=19)));
+ if(scene==='lampworkshop')return x>=3&&x<=20&&y>=3&&y<=13&&!((x>=4&&x<=8&&y>=4&&y<=5)||(x>=16&&x<=18&&y>=4&&y<=5)||(x===10&&y===8)||(x>=18&&y>=10&&y<=11));
+ return false;
+}
 function restoreSave(raw){try{
- const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill','house'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
+ const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill','house','lake','lakeside','lampworkshop'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
+ let openingStage;
+ if(s.openingStage!==undefined){if(!Number.isInteger(s.openingStage)||s.openingStage<0||s.openingStage>1||s.flags.board===true||s.journey||s.pendingEvening||(s.episode&&(s.episode.chapter!==1||s.episode.step!==0||s.episode.complete))||s.scene!==(s.openingStage===0?'house':'town'))return null;openingStage=s.openingStage;}
+ if(s.openingPrelude!==undefined&&(s.openingPrelude!==true||openingStage!==0))return null;
  let memories;
  if(s.memories!==undefined){if(!s.memories||typeof s.memories!=='object'||Array.isArray(s.memories))return null;const allowed={gift:['tea','bookmark'],sled:['aligned'],window:['sealed'],signal:['waited'],ritsuReturn:['read'],yuraRounds:['read'],unsentLetter:['read'],stormThanks:['read']};memories={};for(const [k,v] of Object.entries(s.memories)){if(!allowed[k]?.includes(v))return null;memories[k]=v;}}
  let episode;
  if(s.episode!==undefined){const e=s.episode,counts=[0,0,4,6,4,4,4,4,5,4,4];if(!e||!Number.isInteger(e.chapter)||e.chapter<1||e.chapter>10||!Number.isInteger(e.step)||e.step<0||e.step>counts[e.chapter]||typeof e.complete!=='boolean'||![null,'touma','nina','friends'].includes(e.route)||((e.chapter<9)&&e.route!==null)||(e.chapter===10&&!e.route)||(e.chapter===9&&((e.step>=3)!==!!e.route))||(e.chapter>1&&e.complete!==(e.step===counts[e.chapter])))return null;episode={chapter:e.chapter,step:e.step,route:e.route,complete:e.complete};}
+ let journey;
+ if(s.journey!==undefined){
+  const j=s.journey,keys=['mirror','prism','shutter','reply'];
+  if(!j||!Number.isInteger(j.step)||j.step<0||j.step>9||!episode||episode.chapter<6||keys.some(k=>typeof j[k]!=='boolean')||!j.positions)return null;
+  if((j.prism&&!j.mirror)||(j.shutter&&!j.prism)||(j.reply&&!j.shutter)||(j.step<4&&keys.some(k=>j[k]))||(j.step>=5&&!keys.every(k=>j[k])))return null;
+  if((j.step<9&&(episode.chapter!==6||episode.step!==2||episode.complete))||(j.step===9&&episode.chapter===6&&episode.step<3))return null;
+  const positions={};for(const actor of ['touma','nina']){const p=j.positions[actor];if(!p||p.scene!==(actor==='touma'?'lakeside':'lampworkshop')||!journeyTile(p.scene,p.x,p.y))return null;positions[actor]={scene:p.scene,x:p.x,y:p.y};}
+  if([4,5].includes(j.step)&&s.scene!==positions[s.lead].scene)return null;
+  journey={step:j.step,mirror:j.mirror,prism:j.prism,shutter:j.shutter,reply:j.reply,positions};
+ }
+ if(['lake','lakeside','lampworkshop'].includes(s.scene)&&(!journeyTile(s.scene,s.x,s.y)||!episode||episode.chapter<6||(!journey&&episode.chapter===6&&episode.step<3)))return null;
  const flags={};for(const key of ['board','bread','mochi','log','rest','repair','crab','guardian','lit','returned','lamp','sae','gift','canalStarted','waterGate','canalCrab','waterFlow','waterLit','canalRest','waterReturned','hillStarted','windbreak','hillGuardian','hillLens','hillLit','hillRest','festivalStarted','festivalMeal','festivalRibbon','endingTouma','endingNina','endingFriends','sewingAsked','sewingFound','sewingReturned','seamVisible','signAsked','signFixed','signReported','waitingPost','waitingLit','waitingRest','waitingReported','nightOne','nightTwo','nightThree','nightTouma','nightNina','nightFriends'])flags[key]=s.flags[key]===true;
  if((flags.lit&&!flags.guardian)||(flags.guardian&&!flags.repair)||(flags.repair&&!flags.log)||(flags.log&&!flags.mochi)||(s.scene==='forest'&&!flags.board))return null;
  if((s.scene==='canal'&&(!flags.canalStarted||!flags.returned||!flags.lit))||(flags.waterGate&&!flags.canalStarted)||(flags.canalCrab&&!flags.waterGate)||(flags.waterFlow&&!flags.canalCrab)||(flags.waterLit&&!flags.waterFlow)||(flags.waterReturned&&!flags.waterLit))return null;
@@ -99,8 +120,8 @@ function restoreSave(raw){try{
  if(s.scene==='house'&&(s.x<3||s.x>20||s.y<3||s.y>13))return null;
  for(const [key,requirement] of Object.entries(nightRequirements))if(flags['night'+key[0].toUpperCase()+key.slice(1)]&&!flags[requirement])return null;
  if(s.pendingEvening&&(!nightRequirements[s.pendingEvening]||!flags[nightRequirements[s.pendingEvening]]||s.scene!=='house'))return null;
- return {...(memories?{memories}:{}),...(episode?{episode}:{}),...(s.pendingEvening?{pendingEvening:s.pendingEvening}:{}),version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
+ return {...(s.openingPrelude?{openingPrelude:true}:{}),...(openingStage!==undefined?{openingStage}:{}),...(journey?{journey}:{}),...(memories?{memories}:{}),...(episode?{episode}:{}),...(s.pendingEvening?{pendingEvening:s.pendingEvening}:{}),version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
  }catch{return null;}}
 function chooseEnding(choice,courage,response){if(choice==='confess')return 'touma';if(choice==='stay')return 'friends';if(choice==='wait'){if(courage<2)return 'ask';return response==='yes'?'nina':response==='notYet'?'friends':'confession';}return 'friends';}
-const C={newBattle,actions,resolveTurn,intentions,restoreSave,chooseEnding};if(typeof module!=='undefined')module.exports=C;root.OkaeriCore=C;
+const C={newBattle,actions,resolveTurn,intentions,restoreSave,chooseEnding,journeyTile};if(typeof module!=='undefined')module.exports=C;root.OkaeriCore=C;
 })(globalThis);

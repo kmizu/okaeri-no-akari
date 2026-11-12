@@ -70,19 +70,22 @@ const drawer=(x,y,w,h,knob='#e3c489')=>rect(x,y,w,h,'#1c0e05',2,{opacity:.22})+r
 
 // ---- 文書とスプライト
 const doc=(w,h,body)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${DEFS}${body}</svg>`;
-const sprites={};let pending=0,failed=false;
+const sprites={};let pending=0,failed=false,missed=0;
 // name: 呼び名。 box:[minX,minY,w,h]（基準点からの相対座標）。 body: 基準点を原点にした SVG。
-function define(name,box,body){
- const [mx,my,w,h]=box,s=sprites[name]={x:mx,y:my,w,h,svg:doc(w,h,g(body,{transform:`translate(${-mx},${-my})`})),canvas:null};
+function define(name,box,body,res=1){
+ const [mx,my,w,h]=box,s=sprites[name]={x:mx,y:my,w,h,res,svg:doc(w*res,h*res,g(body,{transform:`scale(${res}) translate(${-mx},${-my})`})),canvas:null};
  if(typeof Image==='undefined'||typeof document==='undefined'||!document.createElement){failed=true;return s;}
  pending++;const img=new Image();
- img.onload=()=>{try{const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);s.canvas=cv;}catch(e){failed=true;}pending--;};
+ img.onload=()=>{try{const cv=document.createElement('canvas');cv.width=w*res;cv.height=h*res;cv.getContext('2d').drawImage(img,0,0,w*res,h*res);s.canvas=cv;}catch(e){failed=true;}pending--;};
  img.onerror=()=>{failed=true;pending--;};
  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s.svg);
  return s;
 }
 const has=name=>!!sprites[name]?.canvas;
-function draw(c,name,x,y){const s=sprites[name];if(!s?.canvas)return false;c.drawImage(s.canvas,Math.round(x+s.x),Math.round(y+s.y));return true;}
-root.OkaeriDraw={rect,ell,path,stroke,line,g,text,wood,cloth,plaster,stone,shadow,contact,light,sheen,box,cyl,ball,drawer,doc,define,draw,has,sprites,
+function draw(c,name,x,y,scale=1){const s=sprites[name];if(!s?.canvas)return false;
+ if(scale===1&&s.res===1)c.drawImage(s.canvas,Math.round(x+s.x),Math.round(y+s.y));else c.drawImage(s.canvas,x+s.x*scale,y+s.y*scale,s.w*scale,s.h*scale);return true;}
+// 必要になったときに登録する絵。まだ描けなければ false を返し、missed を進める（呼び出し側は従来の絵で埋めて、あとで描き直す）。
+function want(name,box,make,res=1){if(failed)return false;if(!sprites[name])define(name,box,make(),res);if(sprites[name].canvas)return true;missed++;return false;}
+root.OkaeriDraw={rect,ell,path,stroke,line,g,text,wood,cloth,plaster,stone,shadow,contact,light,sheen,box,cyl,ball,drawer,doc,define,draw,has,sprites,want,missed:()=>missed,
  rng,mix,dark,lite,n,ready:()=>!failed&&pending===0,failed:()=>failed};
 })(globalThis);

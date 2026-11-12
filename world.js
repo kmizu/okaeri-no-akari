@@ -16,7 +16,7 @@ function block(c,x,y,w,h,d=10,front='#8c8474',side='#5d6968',top='#c8d4d0'){
  rect(c,x,y,w,h,front);line(c,[[x,y],[x+w,y],[x+w+d,y-d*.55]],'#ffffff35',1);
 }
 function shadow(c,x,y,w,h){const g=c.createRadialGradient(x,y,2,x,y,w);g.addColorStop(0,'#233d4e45');g.addColorStop(1,'#233d4e00');c.save();c.translate(x,y);c.scale(1,h/w);c.fillStyle=g;c.translate(-x,-y);c.fillRect(x-w,y-w,w*2,w*2);c.restore();}
-function tree(c,x,y,s=1){if(root.OkaeriScenery){root.OkaeriScenery.tree(c,x,y,s);return;}c.save();c.translate(x,y);c.scale(s,s);
+function tree(c,x,y,s=1){if(root.OkaeriTownArt?.tree(c,x,y,s))return;if(root.OkaeriScenery){root.OkaeriScenery.tree(c,x,y,s);return;}c.save();c.translate(x,y);c.scale(s,s);
  poly(c,[[-15,0],[18,-5],[84,27],[38,38]],'#496d8026');ellipse(c,8,5,37,12,'#3e5e6e32');
  block(c,-5,-40,10,43,6,'#756754','#4b5551','#a4977b');
  for(let i=0;i<4;i++){const yy=-18-i*24,w=40-i*8,peak=yy-48;
@@ -56,6 +56,12 @@ function shopSign(c,x,y,kind){
  c.restore();
 }
 function house(c,x,y,w,h,roof='#617b88',signKind='rest'){
+ if(root.OkaeriTownArt?.house(c,x,y,w,h,roof)){ // ベクターの家。看板・煙・夜の窓あかりはこちらで足す。
+  if(smokeLog)smokeLog.push([x+w*.68+10,y-34]);
+  if(lightLog){const wy=y+69,ww=Math.min(30,w*.19),wh=Math.min(31,h*.24);for(const wx of [x+w*.12,x+w*.73])lightLog.push([wx+ww/2,wy+wh/2,43]);if(h>120)lightLog.push([x+w*.5+45,y+h-Math.min(50,h*.4)+6,30]);}
+  if(w>160&&h>120)shopSign(c,x+w*.22,y+h-43,signKind);
+  root.OkaeriScenery?.houseDetails(c,x,y,w,h);return;
+ }
  const d=Math.min(36,w*.2),rise=d*.62,eave=y+48,base=y+h;
  poly(c,[[x+8,base],[x+w,base],[x+w+d+58,base+21],[x+53,base+39]],'#38576830');
  ellipse(c,x+w*.55,base+8,w*.65,16,'#42647728');
@@ -173,6 +179,7 @@ function house(c,x,y,w,h,roof='#617b88',signKind='rest'){
 }
 function lantern(c,x,y,lit=true){
  if(lit&&lightLog)lightLog.push([x+20,y-16,150]);
+ if(root.OkaeriTownArt?.lantern(c,x,y,lit))return;
  ellipse(c,x+11,y+8,21,7,'#35526826');block(c,x-5,y-39,7,45,5,'#647267','#405956','#94a092');
  line(c,[[x,y-37],[x+20,y-37],[x+20,y-29]],'#4b605a',3);
  if(lit)glow(c,x+20,y-16,57);
@@ -183,9 +190,10 @@ function lantern(c,x,y,lit=true){
 }
 
 Renderer.prototype.background=function(scene){
- if(this.cache[scene])return this.cache[scene];const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+ const VD=root.OkaeriDraw;this.stale=this.stale||{};
+ if(this.cache[scene]&&!(this.stale[scene]&&VD.ready()))return this.cache[scene];this.stale[scene]=false;const missed0=VD?.missed();const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
  this.lights=this.lights||{};lightLog=this.lights[scene]=[];this.smoke=this.smoke||{};smokeLog=this.smoke[scene]=[];
- let vector=false;const finish=()=>{lightLog=null;smokeLog=null;if(!vector)root.OkaeriScenery?.polish(c,scene);this.cache[scene]=cv;return cv;}; // vector: 描画エンジンの絵は仕上げ込みなので重ねない
+ let vector=false;const finish=()=>{lightLog=null;smokeLog=null;if(VD&&VD.missed()!==missed0&&!VD.failed())this.stale[scene]=true;if(!vector)root.OkaeriScenery?.polish(c,scene);this.cache[scene]=cv;return cv;}; // vector: 描画エンジンの絵は仕上げ込みなので重ねない
  if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})||root.OkaeriFieldArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){return finish();}
  if(scene==='house'&&root.OkaeriHomeArt?.background(c)){const tmp=document.createElement('canvas').getContext('2d');glow(tmp,240,440,190);glow(tmp,600,410,170);vector=true;return finish();}
  if(scene==='house'){

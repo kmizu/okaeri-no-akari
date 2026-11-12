@@ -65,7 +65,7 @@ function companion(s){
  if(ep.chapter===3)return ep.step===0&&s.scene==='canal';
  if(ep.chapter===5)return ep.step===2&&s.scene==='hill';
  if(ep.chapter===8)return ep.step>=1&&s.scene==='hill';
- if(ep.chapter===10)return (ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=1);
+ if(ep.chapter===10)return ['koharu','both','koharuLove'].includes(ep.route)&&ep.step>=1;
  return false;
 }
 // 次の目的地。いまの地図にあればその場所を、別の地図ならそこへ向かう出口を指す。

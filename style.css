@@ -78,36 +78,40 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 .intro-card:has(.intro-bust){align-items:center}
 @media(max-width:600px){.intro-bust{width:52%}}
 
-/* ===== 文字を大きく（2026-11-12）。広い画面では、会話・案内・選択の文字をおよそ倍にする。狭い画面は上の指定のまま。 ===== */
+/* ===== 文字を大きく（2026-11-12）。広い画面では、会話・案内・選択の文字をおよそ1.6倍にする。狭い画面は上の指定のまま。 ===== */
 @media(min-width:900px){
- .masthead nav button{font-size:17px;padding:11px 18px}.masthead .brand{font-size:26px}.masthead .edition{font-size:14px}
- #controls{font-size:15px}#controls kbd{font-size:14px}#controls button{font-size:17px;padding:8px 15px}#saveStatus{font-size:14px}
+ .masthead nav button{font-size:14px;padding:11px 18px}.masthead .brand{font-size:21px}.masthead .edition{font-size:11px}
+ #controls{font-size:12px}#controls kbd{font-size:11px}#controls button{font-size:14px;padding:8px 15px}#saveStatus{font-size:11px}
  /* 会話 */
- .dialogue{min-height:236px;padding:22px 26px;gap:24px}
- #speaker{font-size:24px;margin-bottom:8px}
- #dialogueText{font-size:30px;line-height:1.6;margin-bottom:8px}
- .dialogue.narration{min-height:200px}
- .dialogue.narration #dialogueText{font-size:30px;line-height:1.7;letter-spacing:.04em}
- #nextDialogue{font-size:18px}#nextDialogue kbd{font-size:15px}
- #choices{gap:10px}#choices button{font-size:24px;padding:12px 20px}
- .portrait{flex:0 0 150px;height:150px}
+ .dialogue{min-height:200px;padding:20px 24px;gap:22px}
+ #speaker{font-size:19px;margin-bottom:8px}
+ #dialogueText{font-size:24px;line-height:1.6;margin-bottom:8px}
+ .dialogue.narration{min-height:170px}
+ .dialogue.narration #dialogueText{font-size:24px;line-height:1.7;letter-spacing:.04em}
+ #nextDialogue{font-size:14px}#nextDialogue kbd{font-size:12px}
+ #choices{gap:10px}#choices button{font-size:19px;padding:12px 20px}
+ .portrait{flex:0 0 138px;height:138px}
  /* 案内 */
- .location{padding:14px 52px 14px 18px}.location small{font-size:17px}.location strong{font-size:40px;margin:6px 0}.location>span{font-size:17px}
- .objective{font-size:22px;max-width:440px;padding:14px 20px;line-height:1.45}.objective small{font-size:16px}
- .lead{font-size:20px;padding:11px 17px}.lead kbd{font-size:15px}.lead>span:first-child{width:17px;height:17px}
- #interactPrompt{font-size:23px;padding:12px 26px}
- #toast{font-size:23px;padding:15px 26px}
+ .location{padding:14px 52px 14px 18px}.location small{font-size:14px}.location strong{font-size:32px;margin:6px 0}.location>span{font-size:14px}
+ .objective{font-size:18px;max-width:380px;padding:14px 20px;line-height:1.45}.objective small{font-size:13px}
+ .lead{font-size:16px;padding:11px 17px}.lead kbd{font-size:12px}.lead>span:first-child{width:17px;height:17px}
+ #interactPrompt{font-size:18px;padding:12px 26px}
+ #toast{font-size:18px;padding:15px 26px}
  /* 選択と手帳 */
  .modal{padding:18px}
- .modal-card{width:min(940px,100%);padding:32px 36px}
- .modal-card h2{font-size:40px;margin-bottom:16px}.modal-card h3{font-size:24px;margin:22px 0 8px}
- .modal-card p,.modal-card ul{font-size:22px;line-height:1.7}
- .modal-card .actions{gap:12px;margin-top:20px}.modal-card .actions button,.modal-card button{font-size:22px;padding:12px 20px}
- .tag{font-size:17px}
- .journal-step{font-size:22px}
- .still-card span{font-size:16px}.still-viewer p{font-size:24px}.still-viewer button{font-size:20px}
+ .modal-card{width:min(820px,100%);padding:30px 34px}
+ .modal-card h2{font-size:32px;margin-bottom:16px}.modal-card h3{font-size:19px;margin:22px 0 8px}
+ .modal-card p,.modal-card ul{font-size:18px;line-height:1.7}
+ .modal-card .actions{gap:12px;margin-top:20px}.modal-card .actions button,.modal-card button{font-size:18px;padding:12px 20px}
+ .tag{font-size:14px}
+ .journal-step{font-size:18px}
+ .still-card span{font-size:13px}.still-viewer p{font-size:19px}.still-viewer button{font-size:16px}
  /* 人物紹介 */
- .intro-text small{font-size:20px}.intro-text em{font-size:24px}.intro-text li{font-size:24px;line-height:1.6}
- /* タイトル */
- .title-description{font-size:24px;line-height:1.8}.title-note{font-size:17px;line-height:1.8}.title-actions button{font-size:23px;width:330px;padding:17px 24px}.eyebrow{font-size:16px}.title-intro{font-size:22px}.title-bottom{font-size:15px}
+ .intro-text small{font-size:16px}.intro-text em{font-size:19px}.intro-text li{font-size:19px;line-height:1.6}
+ /* タイトル：画面の高さに合わせて縮む（低い画面でボタンがはみ出さないように） */
+ .title-description{font-size:clamp(13px,2.1vh,19px);line-height:1.7}.title-note{font-size:clamp(10px,1.5vh,14px);line-height:1.7}
+ .title-actions{gap:clamp(5px,1vh,10px)}.title-actions button{font-size:clamp(13px,2vh,18px);width:clamp(210px,31vh,280px);padding:clamp(7px,1.4vh,14px) 20px}
+ .eyebrow{font-size:clamp(10px,1.4vh,13px)}.title-intro{font-size:clamp(13px,2vh,18px)}.title-bottom{font-size:clamp(9px,1.3vh,12px)}
 }
+
+@media(max-height:860px){.title-bottom{display:none}}

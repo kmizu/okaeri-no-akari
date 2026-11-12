@@ -57,7 +57,7 @@ def walk():
 
 def town():
     f = trim(key_out(Image.open(os.path.join(A, 'koharu-town.png')), 'magenta'))
-    f = f.resize((round(f.width * 420 / f.height), 420), Image.LANCZOS)
+    f = f.resize((round(f.width * 900 / f.height), 900), Image.LANCZOS)  # 人物紹介の画面でも使うので大きめに
     f.save(os.path.join(A, 'koharu-town-cut.png'), optimize=True)
     print('koharu-town-cut.png', f.size)
 

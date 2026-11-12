@@ -41,6 +41,18 @@ function view(id){
  const close=()=>{v.remove();doc.removeEventListener('keydown',key,true);};const key=e=>{if(e.key==='Escape'){e.stopPropagation();close();}};
  v.addEventListener('click',close);doc.addEventListener('keydown',key,true);doc.getElementById('stage').append(v);v.querySelector('button').focus();
 }
-root.OkaeriStills={list,seen,mark,show,hide,gallery,view,get current(){return current;}};
+// 人物紹介。背景を切り替えて、立ち絵と名前を大きく見せる。台詞のきっかけ {intro:'koharu'} で出し、{intro:null} か会話の終わりで消える。
+const people={koharu:{name:'コハル',kana:'KOHARU',role:'薬草屋の見習い',img:'assets/koharu-town-cut.png',notes:['トウマとニナの妹分。二人より半年遅く生まれた','子どもの頃から、二人のあとをついて歩いてきた','かじかんだ指を戻す「温め草」を、いつも籠に入れている']}};
+let card=null;
+function intro(id){
+ const doc=root.document,stage=doc?.getElementById('stage');if(!stage||!stage.append)return;
+ if(!id||!people[id]){if(card){const c=card;card=null;c.className='intro-card';root.setTimeout(()=>c.remove(),600);}return;}
+ if(card)card.remove();const p=people[id];
+ card=doc.createElement('div');card.className='intro-card';card.setAttribute('aria-label',p.name+'の紹介');
+ card.innerHTML='<img src="'+p.img+'" alt=""><div class="intro-text"><small>'+p.kana+'</small><strong>'+p.name+'</strong><em>'+p.role+'</em><ul>'+p.notes.map(n=>'<li>'+n+'</li>').join('')+'</ul></div>';
+ stage.insertBefore(card,doc.getElementById('hud'));const mine=card;
+ (root.requestAnimationFrame||(f=>f()))(()=>{if(card===mine)mine.className='intro-card is-shown';});
+}
+root.OkaeriStills={intro,people,list,seen,mark,show,hide,gallery,view,get current(){return current;}};
 if(typeof module!=='undefined')module.exports=root.OkaeriStills;
 })(typeof globalThis!=='undefined'?globalThis:this);

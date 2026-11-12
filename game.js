@@ -44,6 +44,7 @@ function showLine(){
  D.apply(cue,speaker);if(m.mark&&speaker&&!cue.emote)D.emote(speaker,m.mark);
  if(cue.bgm!==undefined)musicCue(cue.bgm);
  if(cue.still!==undefined)Stills?.show(cue.still);
+ if(cue.intro!==undefined)Stills?.intro(cue.intro);
  if(cue.jingle)bgm.jingle?.(cue.jingle);
  for(const se of [].concat(cue.se||[]))Sfx?.play(se);
  if(m.mark&&speaker)Sfx?.play('pop');
@@ -64,7 +65,7 @@ function nextDialogue(){if(mode!=='dialogue')return;
  queueIndex++;if(queueIndex<queue.length){showLine();return;}
  $('dialogue').hidden=true;mode='explore';typing=null;const serial=talkSerial;let done=afterTalk;afterTalk=null;if(done)done();
  // 続けて次の会話が始まっていなければ、会話中だけの演出（時間帯・曲の指定）を解く。
- if(serial===talkSerial){D.clearOverrides();Stills?.hide();updateHud();musicCue(null);}
+ if(serial===talkSerial){D.clearOverrides();Stills?.hide();Stills?.intro(null);updateHud();musicCue(null);}
 }
 function playOpening(step=0){
  const part=S.opening[step];state.openingStage=step;scene(part.scene,part.x,part.y);setMusic('opening');

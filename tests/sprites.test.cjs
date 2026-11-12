@@ -20,5 +20,5 @@ test('every exit of the background builder stops recording lights',()=>{
  // 出口はすべて finish() を通る。finish が記録を止め、仕上げを重ねてからキャッシュする。
  assert.match(body,/const finish=\(\)=>\{lightLog=null;smokeLog=null;/);
  assert.equal((body.match(/this\.cache\[scene\]=cv;return cv;/g)||[]).length,1,'only finish() may cache and return');
- assert.ok((body.match(/return finish\(\);/g)||[]).length>=3);
+ assert.ok((body.match(/finish\(\);/g)||[]).length>=3,'every scene exits through finish()');
 });

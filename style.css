@@ -77,3 +77,37 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 .intro-card[data-who="touma"] .intro-text em{background:#4f8a88}.intro-card[data-who="nina"] .intro-text em{background:#b8674f}
 .intro-card:has(.intro-bust){align-items:center}
 @media(max-width:600px){.intro-bust{width:52%}}
+
+/* ===== 文字を大きく（2026-11-12）。広い画面では、会話・案内・選択の文字をおよそ倍にする。狭い画面は上の指定のまま。 ===== */
+@media(min-width:900px){
+ .masthead nav button{font-size:17px;padding:11px 18px}.masthead .brand{font-size:26px}.masthead .edition{font-size:14px}
+ #controls{font-size:15px}#controls kbd{font-size:14px}#controls button{font-size:17px;padding:8px 15px}#saveStatus{font-size:14px}
+ /* 会話 */
+ .dialogue{min-height:236px;padding:22px 26px;gap:24px}
+ #speaker{font-size:24px;margin-bottom:8px}
+ #dialogueText{font-size:30px;line-height:1.6;margin-bottom:8px}
+ .dialogue.narration{min-height:200px}
+ .dialogue.narration #dialogueText{font-size:30px;line-height:1.7;letter-spacing:.04em}
+ #nextDialogue{font-size:18px}#nextDialogue kbd{font-size:15px}
+ #choices{gap:10px}#choices button{font-size:24px;padding:12px 20px}
+ .portrait{flex:0 0 150px;height:150px}
+ /* 案内 */
+ .location{padding:14px 52px 14px 18px}.location small{font-size:17px}.location strong{font-size:40px;margin:6px 0}.location>span{font-size:17px}
+ .objective{font-size:22px;max-width:440px;padding:14px 20px;line-height:1.45}.objective small{font-size:16px}
+ .lead{font-size:20px;padding:11px 17px}.lead kbd{font-size:15px}.lead>span:first-child{width:17px;height:17px}
+ #interactPrompt{font-size:23px;padding:12px 26px}
+ #toast{font-size:23px;padding:15px 26px}
+ /* 選択と手帳 */
+ .modal{padding:18px}
+ .modal-card{width:min(940px,100%);padding:32px 36px}
+ .modal-card h2{font-size:40px;margin-bottom:16px}.modal-card h3{font-size:24px;margin:22px 0 8px}
+ .modal-card p,.modal-card ul{font-size:22px;line-height:1.7}
+ .modal-card .actions{gap:12px;margin-top:20px}.modal-card .actions button,.modal-card button{font-size:22px;padding:12px 20px}
+ .tag{font-size:17px}
+ .journal-step{font-size:22px}
+ .still-card span{font-size:16px}.still-viewer p{font-size:24px}.still-viewer button{font-size:20px}
+ /* 人物紹介 */
+ .intro-text small{font-size:20px}.intro-text em{font-size:24px}.intro-text li{font-size:24px;line-height:1.6}
+ /* タイトル */
+ .title-description{font-size:24px;line-height:1.8}.title-note{font-size:17px;line-height:1.8}.title-actions button{font-size:23px;width:330px;padding:17px 24px}.eyebrow{font-size:16px}.title-intro{font-size:22px}.title-bottom{font-size:15px}
+}

@@ -128,42 +128,11 @@ function polish(c,scene){
   // 5. 遠くほど淡く。上端にうすい靄、左上から差す光と、右下の冷たい陰。
   let g=c.createLinearGradient(0,0,0,H*.42);g.addColorStop(0,'rgba(222,234,240,.34)');g.addColorStop(1,'rgba(222,234,240,0)');c.fillStyle=g;c.fillRect(0,0,W,H*.42);
   g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'rgba(255,238,205,.16)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(58,92,128,.16)');c.fillStyle=g;c.fillRect(0,0,W,H);
- }else if(scene==='house')interior(c,r);
+ }
  // 6. 紙の質感。細かな粒子を全体に薄く重ねる。
  const grain=root.document.createElement('canvas');grain.width=grain.height=256;const gc=grain.getContext('2d'),gd=gc.createImageData(256,256);
  for(let i=0;i<gd.data.length;i+=4){const v=r()<.5?255:20;gd.data[i]=gd.data[i+1]=gd.data[i+2]=v;gd.data[i+3]=r()*(indoor?9:6);}
  gc.putImageData(gd,0,0);c.save();c.fillStyle=c.createPattern(grain,'repeat');c.fillRect(0,0,W,H);c.restore();
-}
-// 二人の家の中。窓からの光、床板の木目、暮らしの小物。
-function interior(c,r){
- // 床板の木目と節
- for(let i=0;i<240;i++){const x=150+r()*850,y=335+r()*320,l=18+r()*46;c.strokeStyle='rgba(88,62,40,'+(.05+r()*.07)+')';c.lineWidth=1;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+l*.5,y+(r()-.5)*3,x+l,y);c.stroke();}
- for(let i=0;i<26;i++){const x=160+r()*830,y=340+r()*310;ell(c,x,y,3,1.5,'rgba(86,58,36,.20)');ell(c,x,y,1.4,.7,'rgba(60,40,26,.25)');}
- // 窓から差す光（二つの寝室）
- for(const wx of [375,782]){const g=c.createLinearGradient(wx,210,wx+60,330);g.addColorStop(0,'rgba(214,232,244,.30)');g.addColorStop(1,'rgba(214,232,244,0)');c.fillStyle=g;c.beginPath();c.moveTo(wx+6,212);c.lineTo(wx+72,212);c.lineTo(wx+118,286);c.lineTo(wx+30,286);c.closePath();c.fill();}
- // 家具の下の、やわらかい影
- for(const [x,y,w,h] of [[258,470,58,14],[577,470,96,18],[820,392,150,14],[450,236,36,10],[838,236,36,10]])ell(c,x,y,w,h,'rgba(58,40,28,.16)');
- // 戸口の外套掛け：青緑と赤茶、二人分
- const hx=650,hy=640;c.fillStyle='#6a543e';c.fillRect(hx-4,hy-52,52,5);
- for(const [dx,body,trim] of [[6,'#3f6f72','#e6dcc2'],[30,'#a5543f','#efe5cc']]){
-  c.fillStyle='#4a3b2c';c.fillRect(hx+dx+5,hy-50,2,6);
-  c.fillStyle=body;c.beginPath();c.moveTo(hx+dx,hy-44);c.lineTo(hx+dx+13,hy-44);c.lineTo(hx+dx+16,hy-6);c.lineTo(hx+dx-3,hy-6);c.closePath();c.fill();
-  c.fillStyle=trim;c.fillRect(hx+dx,hy-46,13,5);c.fillStyle='rgba(0,0,0,.12)';c.fillRect(hx+dx+6,hy-40,1.5,32);
- }
- // ストーブの横の薪と、手桶
- for(let row=0;row<3;row++)for(let i=0;i<4-row;i++){const x=196+i*12+row*6,y=520-row*9;ell(c,x,y,6,4.5,'#6f5a42');ell(c,x-1,y-1,3.6,2.6,'#c9a878');}
- c.fillStyle='#7b6a52';c.fillRect(340,470,20,18);ell(c,350,470,10,4,'#a8997c');ell(c,350,470,7,2.6,'#5f7f8c');
- // 台所の上に吊るした鍋と、干した薬草
- c.strokeStyle='#5d5346';c.lineWidth=2;c.beginPath();c.moveTo(700,316);c.lineTo(960,316);c.stroke();
- for(const [x,kind] of [[730,0],[772,1],[812,0],[858,2],[900,2],[936,2]]){
-  c.strokeStyle='#5d5346';c.lineWidth=1.5;c.beginPath();c.moveTo(x,316);c.lineTo(x,326);c.stroke();
-  if(kind===0){ell(c,x,334,10,7,'#4c5556');ell(c,x,332,7,3.5,'#7f8b8a');}
-  else if(kind===1){ell(c,x,333,7,6,'#8a6b4a');c.fillStyle='#6d5238';c.fillRect(x-1,338,2,10);}
-  else{for(let i=-2;i<=2;i++){c.strokeStyle=i%2?'#8fa46a':'#73905c';c.lineWidth=2;c.beginPath();c.moveTo(x,326);c.lineTo(x+i*3,346+Math.abs(i));c.stroke();}}
- }
- // 窓辺の小さな鉢、戸口の敷物
- c.fillStyle='#9a6b4c';c.fillRect(905,548,16,12);ell(c,913,548,9,3.5,'#5c4a36');
- c.fillStyle='#8b6a55';c.fillRect(560,660,84,20);c.strokeStyle='#d8c19a';c.lineWidth=2;c.strokeRect(565,664,74,12);
 }
 
 // ---------------------------------------------------------------- 毎フレームの動き
@@ -181,38 +150,6 @@ function animate(c,scene,t,smoke=[]){
  }
 }
 
-// ---------------------------------------------------------------- 木（world.js の tree を置き換える）
-function tree(c,x,y,s=1){
- const k=((Math.sin(x*12.9898+y*78.233)*43758.5453)%1+1)%1,lean=(k-.5)*.08,tiers=k>.6?6:5;
- c.save();c.translate(x,y);c.scale(s,s);
- // 落ちる影
- c.fillStyle='rgba(60,96,118,.17)';c.beginPath();c.moveTo(-14,2);c.lineTo(20,-6);c.lineTo(96,26);c.lineTo(44,40);c.closePath();c.fill();
- ell(c,8,5,38,12,'rgba(52,88,108,.22)');
- // 幹
- c.fillStyle='#6f6150';c.fillRect(-5,-40,10,44);c.fillStyle='#4a534e';c.fillRect(2,-40,3,44);
- c.strokeStyle='rgba(40,34,28,.35)';c.lineWidth=1;for(let i=0;i<4;i++){c.beginPath();c.moveTo(-4,-34+i*9);c.lineTo(1,-31+i*9);c.stroke();}
- ell(c,0,4,12,4,'#f2f4ed');
- c.rotate(lean);
- for(let i=0;i<tiers;i++){
-  const yy=-16-i*(22-tiers),w=(44-i*(36/tiers))*(1+(k-.5)*.12),peak=yy-46+i*2;
-  // 枝のかたまり。裾をぎざぎざに。
-  c.fillStyle='#2f4f54';c.beginPath();c.moveTo(-w,yy);
-  for(let j=0;j<=6;j++){const px=-w+(2*w)*j/6,py=yy+(j%2?7:0)+Math.sin(j*1.7+i)*2;c.lineTo(px,py);}
-  c.lineTo(0,peak);c.closePath();c.fill();
-  // 陰の側
-  c.fillStyle='#1f3f48';c.beginPath();c.moveTo(0,peak);c.lineTo(w,yy);c.lineTo(w*.66,yy+7);c.lineTo(w*.33,yy);c.lineTo(8,yy+7);c.lineTo(4,yy-12);c.closePath();c.fill();
-  // 日の当たる枝先
-  c.strokeStyle='rgba(98,138,122,.55)';c.lineWidth=1.4;for(let j=0;j<3;j++){c.beginPath();c.moveTo(-w*.2-j*w*.22,yy-6-j*2);c.lineTo(-w*.34-j*w*.22,yy+3);c.stroke();}
-  // 雪。上面に厚く積もり、枝先から少し垂れる。
-  c.fillStyle='#b4cdd8';c.beginPath();c.moveTo(-w+1,yy-5);c.lineTo(0,peak-2);c.lineTo(w-3,yy-6);c.quadraticCurveTo(w*.5,yy-14,16,yy-7);c.quadraticCurveTo(4,yy+3,-8,yy-6);c.quadraticCurveTo(-w*.5,yy+2,-w+1,yy-5);c.fill();
-  c.fillStyle='#f3f5ee';c.beginPath();c.moveTo(-w+2,yy-9);c.lineTo(0,peak-3);c.lineTo(8,yy-13);c.quadraticCurveTo(-2,yy-6,-10,yy-11);c.quadraticCurveTo(-w*.5,yy-2,-w+2,yy-9);c.fill();
-  c.fillStyle='#ffffff';c.beginPath();c.ellipse(-w*.52,yy-9,w*.2,3.2,-.25,0,Math.PI*2);c.fill();
-  for(const dx of [-w*.82,-w*.3,w*.5]){c.fillStyle='#e8efea';c.beginPath();c.moveTo(dx-2,yy-3);c.lineTo(dx+2,yy-3);c.lineTo(dx,yy+5+((i+dx)|0)%3);c.closePath();c.fill();}
- }
- // 梢の雪
- ell(c,0,-16-(tiers-1)*(22-tiers)-44,5,4,'#f6f7f0');
- c.restore();
-}
 // 家の足元の暮らし（world.js の house が最後に呼ぶ）：窓あかりの照り返し、樽と木箱、花箱、雪かき。
 function houseDetails(c,x,y,w,h){
  const base=y+h,eave=y+48,r=rng((x*7+y*13)|0);
@@ -232,29 +169,5 @@ function houseDetails(c,x,y,w,h){
  c.fillStyle='#93795a';c.fillRect(bx+14,by-15,19,17);c.strokeStyle='#5f4a35';c.lineWidth=1.5;c.strokeRect(bx+14,by-15,19,17);c.beginPath();c.moveTo(bx+14,by-15);c.lineTo(bx+33,by+2);c.stroke();ell(c,bx+23,by-15,10,3,'#f2f4ed');
  const sx=x+w+2+r()*4;c.strokeStyle='#6d5a43';c.lineWidth=3;c.lineCap='round';c.beginPath();c.moveTo(sx,base-44);c.lineTo(sx+9,base+2);c.stroke();c.fillStyle='#9fb0b4';c.beginPath();c.moveTo(sx+3,base-4);c.lineTo(sx+18,base-2);c.lineTo(sx+19,base+9);c.lineTo(sx+5,base+8);c.closePath();c.fill();
 }
-// 町の据え物。井戸（9,5）、粉の荷車（14-15,5）、薪の山とそり（16,13）。
-function townProps(c,h){
- const {rect,poly,line,ellipse,block}=h,P=n=>n*T+24;
- // 井戸
- let x=P(9),y=P(5);ell(c,x+8,y+12,40,12,'rgba(52,84,104,.22)');
- for(let i=0;i<7;i++){const a=i/7*Math.PI,px=x-26+i*8.6;block(c,px,y-10-Math.sin(a)*3,9,20,3,i%2?'#8d9aa0':'#a3afb0','#64798a','#dfe6e2');}
- ell(c,x,y-12,27,9,'#3d5565');ell(c,x,y-12,22,6.5,'#27404f');ell(c,x-5,y-13,8,2,'rgba(190,220,230,.5)');
- for(const dx of [-27,24]){block(c,x+dx,y-62,5,54,4,'#6f5c45','#4a5550','#a5946f');}
- poly(c,[[x-38,y-58],[x,y-84],[x+38,y-58],[x+34,y-52],[x-34,y-52]],'#5d7480');poly(c,[[x-40,y-62],[x,y-90],[x+40,y-62],[x+36,y-56],[x,y-82],[x-36,y-56]],'#f1f3ea');
- line(c,[[x-24,y-50],[x+26,y-50]],'#5b4c3a',4);line(c,[[x+2,y-50],[x+2,y-26]],'#b9a88a',1.5);
- block(c,x-5,y-28,14,12,4,'#8a6f50','#5c4a36','#c8ad84');ell(c,x+3,y-28,8,3,'#6f8f9c');
- // 小麦粉の荷車
- x=P(14)+18;y=P(5)+8;ell(c,x+12,y+12,62,13,'rgba(52,84,104,.22)');
- line(c,[[x-58,y-6],[x-88,y+6]],'#6f5c45',4);line(c,[[x-58,y-16],[x-88,y-2]],'#6f5c45',4);
- block(c,x-56,y-22,104,20,12,'#8f7453','#5d4d3a','#c5a97f');for(let i=0;i<6;i++)line(c,[[x-50+i*18,y-21],[x-50+i*18,y-3]],'#5d4d3a66',1.5);
- for(const [sx,sy,col] of [[-40,-40,'#e9dfc8'],[-14,-42,'#f1e8d2'],[14,-40,'#e4d9bf'],[-26,-56,'#eee4cd'],[2,-58,'#e8dec6']]){ell(c,x+sx,y+sy,17,11,col);ell(c,x+sx-3,y+sy-3,10,5,'#fbf6e8');line(c,[[x+sx-8,y+sy-8],[x+sx+7,y+sy-9]],'#b8a583',1.5);}
- ell(c,x-12,y-62,30,7,'#f6f7f0');
- for(const wx of [-34,30]){c.strokeStyle='#4f4335';c.lineWidth=5;c.beginPath();c.arc(x+wx,y+2,15,0,Math.PI*2);c.stroke();c.strokeStyle='#7a6850';c.lineWidth=1.5;for(let i=0;i<4;i++){const a=i*Math.PI/4;c.beginPath();c.moveTo(x+wx-Math.cos(a)*13,y+2-Math.sin(a)*13);c.lineTo(x+wx+Math.cos(a)*13,y+2+Math.sin(a)*13);c.stroke();}ell(c,x+wx,y+2,3.5,3.5,'#3f352a');ell(c,x+wx,y-12,10,3,'#f2f4ed');}
- // 薪の山と、立てかけたそり
- x=P(16);y=P(13);ell(c,x+8,y+12,42,11,'rgba(52,84,104,.22)');
- for(let row=0;row<4;row++)for(let i=0;i<6-row;i++){const px=x-27+i*11+row*5.5,py=y+6-row*9;ell(c,px,py,6,5,'#6a563f');ell(c,px-1,py-1,3.8,3,'#cdae7f');c.strokeStyle='#8c7355';c.lineWidth=1;c.beginPath();c.arc(px-1,py-1,1.6,0,Math.PI*2);c.stroke();}
- ell(c,x+3,y-27,22,5,'#f4f5ee');
- line(c,[[x+38,y+10],[x+52,y-34]],'#7b6247',4);line(c,[[x+48,y+12],[x+62,y-32]],'#7b6247',4);for(let i=0;i<4;i++)line(c,[[x+40+i*3.4,y+2-i*11],[x+50+i*3.4,y+4-i*11]],'#a88c66',3);
-}
-root.OkaeriScenery={townProps,polish,animate,tree,houseDetails,bush,rock,mound};
+root.OkaeriScenery={polish,animate,houseDetails,bush,rock,mound};
 })(globalThis);

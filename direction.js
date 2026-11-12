@@ -128,8 +128,10 @@
   // コハルが三人目として一緒に歩く場面。
   function companion(s) {
     const epi = root.OkaeriEpisodes?.playingEpilogue?.();
-    if (epi) return !!root.OkaeriCore?.route(epi)?.koharu && !['house', 'lampworkshop'].includes(s.scene); // 後日譚：コハルのいる結末では一緒に歩く
+    if (epi) return !!root.OkaeriCore?.route(epi)?.koharu; // 後日譚：コハルのいる結末では、家の中でも一緒にいる
     const ep = s.episode;
+    // 最終話でコハルが食卓を囲む結末は、家の中にもコハルがいる（三脚目の椅子の主）。
+    if (ep && !ep.complete && ep.chapter === 10 && s.scene === 'house') return !!root.OkaeriCore?.route(ep.route)?.koharu;
     if (!ep || ep.complete || ['house', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
     if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && !(ep.chapter === 2 && ep.step === 0) && ep.chapter !== 4;
     if (ep.chapter === 2) return ep.step >= 1 && s.scene === 'canal';

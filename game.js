@@ -1477,7 +1477,7 @@
       } catch {}
       if (replay) buttons.push(['章選択の旅の続き', () => start(replay, true, chapterSaveKey)]);
       buttons.push(['戻る', closeModal]);
-      openModal('<h2>十話の帰り道</h2><p>通常の旅と章選択は別々に保存します。第9・10話には結末の内容が含まれます。</p>', buttons, 'title');
+      openModal('<h2>章を選ぶ</h2><p>通常の旅と章選択は別々に保存します。第9・10話には結末の内容が含まれます。</p>', buttons, 'title');
       return;
     }
 

@@ -361,12 +361,12 @@ function chapterSelect(){
  if(globalThis.OkaeriEpisodes){
   const enter=(n,r=null)=>{start(OkaeriEpisodes.create(n,r),n!==1,chapterSaveKey);save();};
   const buttons=OkaeriEpisodesData.titles.map((t,i)=>['第'+(i+1)+'話 · '+t,()=>{
-   if(i===9)openModal('<h2>第10話の関係を選ぶ</h2><p>章選択用です。通常の旅の選択は変わりません。</p>',[['トウマから告白して恋人',()=>enter(10,'touma'),true],['ニナから告白して恋人',()=>enter(10,'nina')],['今の二人のまま',()=>enter(10,'friends')],['コハルと：三人で仲良く',()=>enter(10,'koharu')],['コハルと：コハルのことも選ぶ',()=>enter(10,'both')],['コハルと：コハルひとりを選ぶ',()=>enter(10,'koharuLove')],['戻る',chapterSelect]],'title');
+   if(i===9)openModal('<h2>第10話の関係を選ぶ</h2><p>章選択用です。通常の旅の選択は変わりません。</p>',[...C.routes.map((r,k)=>[r.select,()=>enter(10,r.id),k===0]),['戻る',chapterSelect]],'title');
    else enter(i+1);
   }]);
   // 後日譚：最終話を終えた状態を作って、そのまま読み始める。
   const after=r=>{const s=OkaeriEpisodes.create(10,r);s.episode.step=OkaeriEpisodes.events(s).length;s.episode.complete=true;Object.assign(s,{scene:'house',x:11,y:11});start(s,true,chapterSaveKey);save();OkaeriEpisodes.epilogue(episodeApi());};
-  buttons.push(['後日譚 · 恋人になった、その先',()=>openModal('<h2>どの結末の後日譚を読む</h2><p>最終話のあとの、甘い時間だけの読み物です。結末の内容が含まれます。</p>',[['トウマから告白した二人',()=>after('touma'),true],['ニナから告白した二人',()=>after('nina')],['コハルひとりを選んだ二人',()=>after('koharuLove')],['コハルのことも選んだ三人',()=>after('both')],['戻る',chapterSelect]],'title')]);
+  buttons.push(['後日譚 · 恋人になった、その先',()=>openModal('<h2>どの結末の後日譚を読む</h2><p>最終話のあとの、甘い時間だけの読み物です。結末の内容が含まれます。</p>',[...C.routes.filter(r=>r.epilogue).map((r,k)=>[r.epilogue,()=>after(r.id),k===0]),['戻る',chapterSelect]],'title')]);
   if(globalThis.OkaeriJourney)buttons.push(['第6話の小旅行から',()=>{enter(6);state.episode.step=2;OkaeriJourney.begin(episodeApi());}]);
   let replay=null;try{replay=C.restoreSave(localStorage.getItem(chapterSaveKey));}catch{}
   if(replay)buttons.push(['章選択の旅の続き',()=>start(replay,true,chapterSaveKey)]);

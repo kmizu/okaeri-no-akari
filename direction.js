@@ -59,14 +59,14 @@ function ambient(s){
 }
 // コハルが三人目として一緒に歩く場面。
 function companion(s){
- const epi=root.OkaeriEpisodes?.playingEpilogue?.();if(epi)return ['koharuLove','both'].includes(epi)&&!['house','lampworkshop'].includes(s.scene); // 後日譚：コハルのいる結末では一緒に歩く
+ const epi=root.OkaeriEpisodes?.playingEpilogue?.();if(epi)return !!root.OkaeriCore?.route(epi)?.koharu&&!['house','lampworkshop'].includes(s.scene); // 後日譚：コハルのいる結末では一緒に歩く
  const ep=s.episode;if(!ep||ep.complete||['house','lampworkshop'].includes(s.scene)||root.OkaeriJourney?.active(s))return false;
  if(root.OkaeriField?.names[s.scene])return ep.chapter>=2&&!(ep.chapter===2&&ep.step===0)&&ep.chapter!==4;
  if(ep.chapter===2)return ep.step>=1&&s.scene==='canal';
  if(ep.chapter===3)return ep.step===0&&s.scene==='canal';
  if(ep.chapter===5)return ep.step===2&&s.scene==='hill';
  if(ep.chapter===8)return ep.step>=1&&s.scene==='hill';
- if(ep.chapter===10)return ['koharu','both','koharuLove'].includes(ep.route)&&ep.step>=1;
+ if(ep.chapter===10)return !!root.OkaeriCore?.route(ep.route)?.koharu&&ep.step>=1;
  return false;
 }
 // 次の目的地。いまの地図にあればその場所を、別の地図ならそこへ向かう出口を指す。

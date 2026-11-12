@@ -7,6 +7,18 @@ const skills={
  koharu:[{id:'tend',name:'手当て',cost:0,desc:'味方一人のHPを12回復。冷えも解除。',target:'ally'},{id:'warm',name:'温め草',cost:2,desc:'味方一人のHPを40％回復。冷えも解除。',target:'ally'},{id:'tea',name:'薬草茶',cost:3,desc:'立っている全員のHPを18回復。冷えも解除。'},{id:'salve',name:'守りの軟膏',cost:1,desc:'味方一人がこのターン受けるダメージを半減。',target:'ally'},{id:'mint',name:'薄荷の息',cost:2,desc:'味方一人のMPを3回復。',target:'ally'},{id:'rouse',name:'気つけ草',cost:4,desc:'倒れた仲間をHP40％で起こす。',target:'ally'}]
 };
 const common=[{id:'guard',name:'防御',cost:0,desc:'このターン受けるダメージを半減。'},{id:'rescue',name:'手を貸す',cost:0,desc:'倒れた相手をHP30％で起こす。'},{id:'herb',name:'薬草',cost:0,desc:'味方一人のHPを45回復。冷えも解除。',target:'ally'}];
+// 第9話で選ぶ結末の一覧。結末を足す・変える時は、ここと台本（script/）だけを直す。
+//  select: 章選択での呼び名 / epilogue: 後日譚の呼び名（あれば後日譚つき） / flag: 旧来の結末フラグ
+//  koharu: コハルが最終話で同行し、食卓の椅子が三脚になる / night: 第9話の夜の台本の鍵 / ninaAway: 二人きりの場面と後日譚でニナを地図に出さない
+const routes=[
+ {id:'touma',select:'トウマから告白して恋人',epilogue:'トウマから告白した二人',flag:'endingTouma'},
+ {id:'nina',select:'ニナから告白して恋人',epilogue:'ニナから告白した二人',flag:'endingNina'},
+ {id:'friends',select:'今の二人のまま',flag:'endingFriends'},
+ {id:'koharu',select:'コハルと：三人で仲良く',koharu:true,night:'koharu'},
+ {id:'both',select:'コハルと：コハルのことも選ぶ',epilogue:'コハルのことも選んだ三人',koharu:true,night:'both'},
+ {id:'koharuLove',select:'コハルと：コハルひとりを選ぶ',epilogue:'コハルひとりを選んだ二人',koharu:true,night:'koharuLove',ninaAway:true}
+];
+const route=id=>routes.find(r=>r.id===id)||null;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const enemy=(name,hp,type,ice=false)=>({name,hp,max:hp,type,ice,broken:0});
 function newBattle(kind,options={}){
@@ -118,7 +130,7 @@ function restoreSave(raw){try{
  let memories;
  if(s.memories!==undefined){if(!s.memories||typeof s.memories!=='object'||Array.isArray(s.memories))return null;const allowed={gift:['tea','bookmark'],sled:['aligned'],window:['sealed'],signal:['waited'],ritsuReturn:['read'],yuraRounds:['read'],unsentLetter:['read'],stormThanks:['read']};memories={};for(const [k,v] of Object.entries(s.memories)){if(!allowed[k]?.includes(v))return null;memories[k]=v;}}
  let episode;
- if(s.episode!==undefined){const e=s.episode,counts=[0,0,4,6,4,4,4,4,5,4,4];if(!e||!Number.isInteger(e.chapter)||e.chapter<1||e.chapter>10||!Number.isInteger(e.step)||e.step<0||e.step>counts[e.chapter]||typeof e.complete!=='boolean'||![null,'touma','nina','friends','koharu','both','koharuLove'].includes(e.route)||((e.chapter<9)&&e.route!==null)||(e.chapter===10&&!e.route)||(e.chapter===9&&((e.step>=3)!==!!e.route))||(e.chapter>1&&e.complete!==(e.step===counts[e.chapter])))return null;episode={chapter:e.chapter,step:e.step,route:e.route,complete:e.complete};}
+ if(s.episode!==undefined){const e=s.episode,counts=[0,0,4,6,4,4,4,4,5,4,4];if(!e||!Number.isInteger(e.chapter)||e.chapter<1||e.chapter>10||!Number.isInteger(e.step)||e.step<0||e.step>counts[e.chapter]||typeof e.complete!=='boolean'||!(e.route===null||route(e.route))||((e.chapter<9)&&e.route!==null)||(e.chapter===10&&!e.route)||(e.chapter===9&&((e.step>=3)!==!!e.route))||(e.chapter>1&&e.complete!==(e.step===counts[e.chapter])))return null;episode={chapter:e.chapter,step:e.step,route:e.route,complete:e.complete};}
  let journey;
  if(s.journey!==undefined){
   const j=s.journey,keys=['mirror','prism','shutter','reply'];
@@ -144,5 +156,5 @@ function restoreSave(raw){try{
  return {...(s.openingPrelude?{openingPrelude:true}:{}),...(openingStage!==undefined?{openingStage}:{}),...(journey?{journey}:{}),...(memories?{memories}:{}),...(episode?{episode}:{}),...(s.pendingEvening?{pendingEvening:s.pendingEvening}:{}),version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
  }catch{return null;}}
 function chooseEnding(choice,courage,response){if(choice==='confess')return 'touma';if(choice==='stay')return 'friends';if(choice==='wait'){if(courage<2)return 'ask';return response==='yes'?'nina':response==='notYet'?'friends':'confession';}return 'friends';}
-const C={newBattle,actions,resolveTurn,intentions,restoreSave,chooseEnding,journeyTile};if(typeof module!=='undefined')module.exports=C;root.OkaeriCore=C;
+const C={routes,route,newBattle,actions,resolveTurn,intentions,restoreSave,chooseEnding,journeyTile};if(typeof module!=='undefined')module.exports=C;root.OkaeriCore=C;
 })(globalThis);

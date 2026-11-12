@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const D=root.OkaeriEpisodesData,S=root.OkaeriStory;
+const D=root.OkaeriEpisodesData,S=root.OkaeriStory,C=root.OkaeriCore;
 const spawns={town:[12,10],forest:[5,13],canal:[3,12],hill:[4,13],house:[12,12]};
 // ['@名前'] の一行を、条件に合う台詞へ差し替える（合わなければ消す）。
 function expand(lines,slots){return lines.flatMap(l=>l.length===1&&typeof l[0]==='string'&&l[0][0]==='@'?(slots[l[0].slice(1)]||[]):[l]);}
@@ -11,7 +11,7 @@ function slots(s){
  if(chapter===6&&s.journey?.step===9)out.journey=D.journeyEcho;
  if(chapter===9){out.festival=Object.entries(D.festivalEchoes||{}).flatMap(([key,extra])=>key==='journey'?(s.journey?.step===9?extra:[]):m[key]==='read'?extra:[]);}
  if(chapter===10&&m.unsentLetter==='read')out.letter=D.finalEchoes[s.episode.route];
- if(chapter===9)out.night=D.night9[['koharu','both','koharuLove'].includes(s.episode.route)?s.episode.route:'pair'];
+ if(chapter===9)out.night=D.night9[C.route(s.episode.route)?.night||'pair'];
  return out;
 }
 function events(s){
@@ -27,7 +27,7 @@ function create(chapter,route=null){
  if(chapter===10)setRoute(s,route);
  const e=current(s);if(e){s.scene=e.scene;[s.x,s.y]=spawns[e.scene];}return s;
 }
-function setRoute(s,route){s.episode.route=route;s.flags.festivalStarted=true;s.flags.festivalMeal=true;s.flags.festivalRibbon=true;for(const r of ['touma','nina','friends'])s.flags['ending'+r[0].toUpperCase()+r.slice(1)]=r===route;}
+function setRoute(s,route){s.episode.route=route;s.flags.festivalStarted=true;s.flags.festivalMeal=true;s.flags.festivalRibbon=true;for(const r of C.routes)if(r.flag)s.flags[r.flag]=r.id===route;}
 function title(s){return '第'+s.episode.chapter+'話 · '+D.titles[s.episode.chapter-1];}
 function objective(s){if(s.episode.complete)return s.episode.chapter===10?'二人の明日へ。食卓で最後の一日を振り返れます。':'今日の話はおしまい。食卓から翌日へ進めます。';const e=current(s);return e?({town:'町',forest:'森',canal:'水路',hill:'丘',house:'二人の家'}[e.scene]+'：'+e.label+(e.lead?(e.solo?'（操作：':'（Qで')+(e.lead==='nina'?'ニナ':'トウマ')+(e.solo?'）':'に交代）'):'')):null;}
 function go(a,e){if(e.solo)a.state.lead=e.lead;if(e.arrival){a.scene(...e.arrival);}else if(a.state.scene!==e.scene)a.scene(e.scene,...spawns[e.scene]);a.save();a.updateHud();}

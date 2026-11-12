@@ -309,7 +309,8 @@ function glow(c,x,y,r,rgb,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addCo
 function steam(c,x,y,t,k=3){for(let i=0;i<k;i++){const p=(t*.32+i/k)%1,a=.3*(1-p)*Math.min(1,p*5);c.fillStyle=`rgba(255,255,255,${a})`;c.beginPath();c.ellipse(x+Math.sin(t*1.5+i*2.1)*5*p,y-p*30,3+p*7,2.4+p*6,0,0,Math.PI*2);c.fill();}}
 function object(c,o,x,y,s,t){
  const name=o.type==='homeBed'?(o.id==='toumaRoom'?'bedT':'bedN'):NAMES[o.type];if(!name||!D.ready())return false;
- if(name==='table'&&s.episode?.chapter===10&&['koharu','both'].includes(s.episode.route)&&s.episode.step>=1)D.draw(c,'home/chair3',x-98,y+18);
+ const third=!!root.OkaeriCore?.route(s.episode?.route)?.koharu; // 三人で食卓を囲む結末
+ if(name==='table'&&s.episode?.chapter===10&&third&&s.episode.step>=1)D.draw(c,'home/chair3',x-98,y+18);
  if(!D.draw(c,'home/'+name,x,y))return false;
  if(name==='stove'){const cx=x-24,f=.78+Math.sin(t*9)*.1+Math.sin(t*23)*.07;
   c.save();c.beginPath();c.rect(cx-22,y-37,44,28);c.clip();
@@ -318,7 +319,7 @@ function object(c,o,x,y,s,t){
   c.save();c.globalCompositeOperation='lighter';glow(c,cx,y-22,120,'255,150,70',.16*f);glow(c,cx,y+26,74,'255,150,70',.22*f);c.restore();
   steam(c,cx+42,y-88,t,3);}
  if(name==='table'){steam(c,x-14,y-46,t,2);steam(c,x+18,y-33,t+1.7,2);c.save();c.globalCompositeOperation='lighter';glow(c,x+52,y-50,58,'255,214,140',.30+Math.sin(t*6)*.03+Math.sin(t*17)*.02);c.restore();}
- if(name==='sewing'){const ch=s.episode?.chapter||0;if(ch>=7)D.draw(c,'home/'+(ch>=10?(['koharu','both'].includes(s.episode.route)?'pot3':'pot1'):'pot0'),x+60,y-22);}
+ if(name==='sewing'){const ch=s.episode?.chapter||0;if(ch>=7)D.draw(c,'home/'+(ch>=10?(third?'pot3':'pot1'):'pot0'),x+60,y-22);}
  return true;
 }
 function background(c){return D.ready()&&D.draw(c,'home/room',0,0);}

@@ -380,7 +380,7 @@ Renderer.prototype.draw=function(s,time,mode){
  const gx=this.follow2.x-this.g.x,gy=this.follow2.y-this.g.y;this.g.dir=OkaeriSprites.facing(gx,gy,this.g.dir);this.g.x+=gx*.2;this.g.y+=gy*.2;
  const third=D?.companion(s)&&OkaeriSprites.has?.('koharu');
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
- const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&s.episode.route==='koharuLove'&&s.episode.step===2)||(root.OkaeriEpisodes?.playingEpilogue?.()==='koharuLove')||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
+ const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&s.episode.step===2)||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
  if(third)shown.push({...this.g,id:'koharu',moving:Math.hypot(gx,gy)>1});
  for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();

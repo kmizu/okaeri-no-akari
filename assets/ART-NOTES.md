@@ -57,7 +57,9 @@ residents-atlas.png：新住人二名。上段エルナ、下段オルフ、各�
 Built-in image_gen を使用。既存 residents-atlas.png を絵柄と3列2行の配置参照として、新しい素材シート ritsu-yura-atlas.png を生成。上段：リツ（栗色短髪、青灰色の防寒着、水番の工具）。下段：ユラ（銀髪の低いまとめ髪、くすんだ赤紫の防寒着、薬草の鞄）。各段は全身チップ／通常顔／笑顔。左列のマゼンタ背景は実行時に透過し、顔グラは中央・右列を表示。住人は既存住人と同じ静止チップ方式。
 Prompt: Match the existing cozy watercolor RPG atlas, exact 3x2 grid, 1536x1024. Ritsu is a clean-shaven 28-year-old waterworks keeper with chestnut hair, slate-blue padded coat, oatmeal scarf, wrench and notebook. Yura is a mature 52-year-old clinician with silver-gray bun, dusty cranberry padded coat, cream scarf and medicinal-leaf satchel. Each row: full-body chibi on #FF00FF, normal bust, smiling bust on cream parchment. Preserve identical identity and clothing between sprite and faces. No text or borders.
 
-## コハル（未制作・生成の指示）
+## コハル（画像制作済み・生成の仕様）
+
+2026-11-12、承認された丸く可愛い顔を基準に、顔5表情・歩行12コマ・戦闘3ポーズ・町用の全身静止画を正式版として統一。旧版は削除し、正式画像は版番号なしのファイル名で保存。ファイル一覧、セル配置、生成指示、検証は [KOHARU-ART-NOTES.md](KOHARU-ART-NOTES.md) を参照。ゲームへの組み込みは未実施。以下は制作時の設定と仕様。
 
 三人目の仲間。薬草屋の見習いで、トウマとニナより半年遅く生まれた**同い年の成人**。二人のあとをついて歩いてきた妹分。背は二人より少し低いが、子どもには描かないこと。
 

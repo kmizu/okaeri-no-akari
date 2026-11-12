@@ -1,0 +1,62 @@
+{
+  "status": "official",
+  "generator": "built-in image_gen",
+  "date": "2026-11-12",
+  "activeSet": {
+    "faces": "koharu-faces.png",
+    "walk": "koharu-walk-atlas.png",
+    "battle": "koharu-battle-quarter.png",
+    "town": "koharu-town.png"
+  },
+  "sourceFiles": [
+    "koharu-faces-grid.png"
+  ],
+  "prompts": [
+    "koharu-faces-prompt.txt",
+    "koharu-walk-prompt.txt",
+    "koharu-battle-prompt.txt",
+    "koharu-town-prompt.txt"
+  ],
+  "files": [
+    {
+      "file": "koharu-faces.png",
+      "width": 2560,
+      "height": 512,
+      "mode": "RGBA",
+      "sha256": "8d0f74738f0f14a1980c3cf83c3c2c6c324821e1641715a3e5e70bb716ef2cc4",
+      "role": "official"
+    },
+    {
+      "file": "koharu-faces-grid.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGB",
+      "sha256": "c853ecbb7da8a70423aad510dc885d27cc3436b6d0edcb8179b5ac52ce932c48",
+      "role": "production-source"
+    },
+    {
+      "file": "koharu-walk-atlas.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "sha256": "20c50d0990fba2b951ff8e95dcec5ede58bd4ac7f1775b6ae59b5c496d6d6ff8",
+      "role": "official"
+    },
+    {
+      "file": "koharu-battle-quarter.png",
+      "width": 2172,
+      "height": 724,
+      "mode": "RGBA",
+      "sha256": "7dbe81510b3e6915482a72a5f7775318d1469dfc38523fd3bc856f924e87996c",
+      "role": "official"
+    },
+    {
+      "file": "koharu-town.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "72346e6e636e7535d74f41d5882e63c1dd4272f8dc4b39d62dbce914b0678d39",
+      "role": "official"
+    }
+  ]
+}

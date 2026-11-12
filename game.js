@@ -13,7 +13,7 @@ function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTi
 function updateHud(){
  $('locationName').textContent=state.scene==='house'?'二人の家':state.scene==='town'?'雪の町 ユキネ':state.scene==='canal'?'雪解けの共同水路':state.scene==='hill'?'風待ちの丘':'粉ひきの森';$('weather').textContent=state.scene==='house'?'薪の灯り / 家の中':state.flags.festivalStarted?'帰り灯祭り / 夜':state.flags.hillStarted?'祭りの日 / 夕暮れ':state.flags.lit?'冬の終わり / 夕暮れ':'冬の終わり / 午前';
  $('chapter').textContent=state.flags.festivalStarted?'最終話 · 帰り灯祭り':state.flags.hillStarted?'第三話 · 風待ちの丘':state.flags.canalStarted?'第二話 · 水音の帰る道':'第一話 · 帰り灯の日';
- if(state.episode){$('chapter').textContent=OkaeriEpisodes.title(state);$('weather').textContent=state.scene==='house'?'薪の灯り / 二人の家':state.episode.chapter===8?'吹雪 / 祭りの前日':state.episode.chapter===9?'帰り灯祭り / 夜':state.episode.chapter===10?'祭りの翌日 / 晴れ間':'冬の終わり / 日中';}
+ if(state.episode){const a=D.ambient(state),clock={morning:'朝',day:'日中',dusk:'夕暮れ',night:'夜'}[a.time];$('chapter').textContent=OkaeriEpisodes.title(state);$('weather').textContent=a.indoors?'薪の灯り / '+clock:state.episode.chapter===9?'帰り灯祭り / 夜':(a.weather==='blizzard'?'吹雪':state.episode.chapter===10?'祭りの翌日':'冬の終わり')+' / '+clock;}
  $('objectiveText').textContent=(state.episode&&OkaeriEpisodes.objective(state))||S.objective(state);$('leadText').textContent=name(state.lead)+'が先頭';$('leadDot').style.background=state.lead==='touma'?'#77b8b6':'#cb8267';
  if(globalThis.OkaeriJourney?.names[state.scene]){$('locationName').textContent=OkaeriJourney.names[state.scene];$('weather').textContent=state.scene==='lampworkshop'?'小屋の火 / 湖を望む窓':'氷湖の迎え灯 / 湖岸の風';}
  if(globalThis.OkaeriJourney?.active(state)){$('objectiveText').textContent=OkaeriJourney.objective(state);if(OkaeriJourney.split(state))$('leadText').textContent=name(state.lead)+'を操作中';}
@@ -40,7 +40,7 @@ function showLine(){
  // きっかけ: 画面は Director、音はここで鳴らす。
  D.apply(cue,speaker);if(m.mark&&speaker&&!cue.emote)D.emote(speaker,m.mark);
  if(cue.bgm!==undefined)musicCue(cue.bgm);
- if(cue.jingle)bgm.jingle(cue.jingle);
+ if(cue.jingle)bgm.jingle?.(cue.jingle);
  for(const se of [].concat(cue.se||[]))Sfx?.play(se);
  if(m.mark&&speaker)Sfx?.play('pop');
  typing={text:q.text,shown:0,acc:-(cue.wait||0),started:false,done:false,slow:cue.slow||1,voice:!speaker?null:speaker==='touma'?'blipTouma':speaker==='nina'?'blipNina':'blipOther'};
@@ -79,34 +79,193 @@ function nearest(){return S.activeObjects(state).map(o=>({o,d:Math.hypot(o.x-sta
 function switchLead(){if(mode!=='explore')return;if(globalThis.OkaeriJourney?.switchActor(episodeApi()))return;if(state.episode&&OkaeriEpisodes.current(state)?.solo){toast('今は'+(state.lead==='nina'?'避難棚にいるニナ':'岸にいるトウマ')+'を操作しています。画面の目的を進めよう。');return;}state.lead=state.lead==='touma'?'nina':'touma';updateHud();save();Sfx?.play('swap');}
 function scene(next,x,y){const door=(next==='house')!==(state.scene==='house')||(next==='lampworkshop')!==(state.scene==='lampworkshop');if(next!==state.scene){D.fade('black');if(door)Sfx?.play('door');}state.scene=next;travelMusic();state.x=x;state.y=y;renderer.reset(state);route=[];save();updateHud();}
 function interact(){if(mode==='dialogue'){if(!queue[queueIndex].choices)nextDialogue();return;}if(mode!=='explore')return;const o=nearest();if(!o){toast('気になるものに近づいて、調べてみよう');return;}handle(o.id);}
-function episodeApi(){return {state,talk,save,updateHud,toast,scene,openModal,closeModal,startBattle,jingle:n=>bgm.jingle(n),sfx:n=>Sfx?.play(n)};}
+function episodeApi(){return {state,talk,save,updateHud,toast,scene,openModal,closeModal,startBattle,jingle:n=>bgm.jingle?.(n),sfx:n=>Sfx?.play(n)};}
 function handle(id){const f=state.flags;if(state.episode&&OkaeriEpisodes.handle(id,episodeApi()))return;if(handleHouse(id))return;if(OkaeriSideStories.handle(id,{state,talk,save,updateHud,toast,openModal,closeModal}))return;if(['elna','orlf'].includes(id)){talk(S.residentLines(state,id));return;}if(OkaeriHill.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;if(OkaeriCanal.handle(id,{state,talk,save,toast,scene,openModal,closeModal,updateHud,startBattle,evening}))return;
  if(id==='board'){
-  if(f.returned){talk([['','二枚の出発札は、並んで町の欄に戻っている。'],['nina',f.waterReturned?'今日も、二人で帰ってこられたね。':'今度は東の水路だね。帰ったらまた、ここに寄ろう。']]);return;}
-  if(f.lit){f.returned=true;save();talk([['','トウマとニナは、二枚の出発札を並べて戻した。'],['サエ','おかえり。灯台の火、町からも見えたよ。'],['touma','ただいま。二人で、ともしてきました。'],['サエ','そうか。手は？　冷やしすぎてないかい。'],['nina','橋で少し。でも、待ってもらってから直しました。'],['サエ','うん。いい報告だ。'],['','サエは二枚の札を確かめて、傾いていた方を指先で直した。'],['touma','そこからでも、見えるんですね。札の傷。'],['サエ','毎日見てるからね。'],['マロ','お疲れさま！　焼き場も準備できたよ。まずは食べていって。'],['nina','……いい匂い。朝から楽しみにしてたんだ。'],['','濡れた外套を掛け、二人で食卓につく。\n冷たかった指先が、ゆっくり温まっていく。'],['nina','トウマ。明日も、一緒に行こうね。'],['touma','うん。お弁当、今度は俺が作る。'],['nina','じゃあ、飲み物は私。甘さ控えめ、だよね。']],()=>evening('one'));return;}
-  if(f.board){talk([['nina','札、二人分あるね。これで、ちゃんと帰ってこなくちゃ。'],['touma','帰ろう。二人で。']]);return;}
-  talk([['','「トウマ」「ニナ」――二枚の木札を、森の欄に掛ける。'],['nina','昔は、サエさんの札の隣に付いて歩いてたね。'],['touma','今年は俺たちだけだ。'],['','札の下端には、小さな丸いくぼみがある。ニナが手袋の親指で、そっとなぞった。'],['nina','これ、背伸びして掛けようとして、落とした跡。まだ残ってる。'],['touma','俺が椅子を持ってくる前に登るから。'],['nina','トウマだって、下で受け止めるって言ったよ。'],['touma','……札じゃなくて、お前をな。'],['nina','うん。……頼りにしてる。'],['touma','こっちも。']],()=>{f.board=true;save();updateHud();toast('行き先を記録した。北の道から森へ。');});return;
+  if(f.returned){talk([['','二枚の出発札は、並んで「町」の欄に戻っている。'],['nina',f.waterReturned?'今日も、二枚とも戻せたね。':'明日は東の水路だって。帰ったらまた、ここに戻しに来ようね。']]);return;}
+  if(f.lit){f.returned=true;save();talk([
+   ['','トウマとニナは、二枚の出発札を「森」の欄から外した。'],
+   ['サエ','おかえり。灯台の火、ここからも見えたよ。','happy'],
+   ['touma','ただいま戻りました。倒木を一本どかして、橋の灯りの線をつなぎ直して、灯台に火を入れました。'],
+   ['サエ','精霊は。'],
+   ['nina','こごえモチと、氷の殻のヤドカリ。それから灯台の前に、枝角の番人が。みんな、温めたら帰っていきました。'],
+   ['サエ','手は。冷やしすぎてないかい。'],
+   ['nina','橋の上で一回、指が動かなくなって。トウマに待ってもらって、温めてから締め直しました。'],
+   ['サエ','うん。待てたなら上出来だ。'],
+   ['','サエは二枚の札を「町」の欄へ掛け、傾いていた方を指先でまっすぐに直した。\nそれから、しばらく森の方角を見ていた。'],
+   ['サエ','……いい火だ。',{wait:600}],
+   ['マロ','おかえりー！　荷車、さっき着いたよ。粉は無事、明日のパンも無事！　ほら、焼きたて。まずは食べてって！','happy',{se:'cheer'}],
+   ['nina','……いい匂い。朝からこれを楽しみに歩いてたんだ。','happy'],
+   ['touma','お前、灯台の前でも腹が減ったって言ってたな。'],
+   ['nina','言ったよ。帰り道の分は別腹だもん。','joy'],
+   ['','濡れた外套を店先に掛け、二人並んでパンをかじる。\n冷えていた指先が、ゆっくり温まっていった。']
+  ],()=>evening('one'));return;}
+  if(f.board){talk([['nina','札、ちゃんと二枚掛かってるね。夕方には戻しに来よう。'],['touma','ああ。北の道から森だ。']]);return;}
+  talk([
+   ['','掲示板の下半分は「出発札」の板になっている。\n行き先ごとに欄があり、出かける者は自分の名札をそこへ掛けていく。'],
+   ['','「トウマ」「ニナ」。二枚の木札を、「森」の欄に並べて掛けた。',{se:'knock'}],
+   ['nina','去年までは、サエさんの札の隣だったね。'],
+   ['touma','今年は二枚だけだ。'],
+   ['','ニナの札は、下の角が少し欠けている。'],
+   ['nina','これ、子どもの頃に自分で掛けたくて、背伸びして落とした跡。'],
+   ['touma','椅子を持ってくるから待てって言ったのに、板によじ登るからだ。'],
+   ['nina','トウマだって「下で受け止める」って言ったよ。'],
+   ['touma','……札じゃなくて、お前をな。'],
+   ['nina','……。','shy'],
+   ['nina','行こっか。夕方には、この札を戻しに来ようね。'],
+   ['touma','ああ。二枚とも。']
+  ],()=>{f.board=true;save();updateHud();toast('行き先を記録した。北の道から森へ。');});return;
  }
- if(id==='sae'){talk([['サエ','灯守の仕事は、火をつけるだけじゃない。帰ってくるまでが仕事だよ。'],['サエ','倒木はトウマ、灯りの仕掛けはニナ。得意な方に先頭を代わるんだ。'],['nina','危ない風が出たら、休憩小屋で待ちます。'],['サエ','それでいい。灯りが消えていたら、戻る判断をする人もいる。道は見えなくても、あの火だけは見えるからね。'],['touma','間に合わせなきゃ、ですね。'],['サエ','急ぐのと、無茶をするのは別だよ。休んだことも、引き返したことも、ちゃんと報告するんだ。'],['サエ','帰ったら、二人の話を聞かせておくれ。']],()=>{f.sae=true;save();});return;}
- if(id==='bakery'){if(f.bread){talk([['マロ','帰りは焼きたてを用意しておくね。道中、気をつけて！']]);return;}
- talk([['マロ','おはよう！　灯台まで行くんだって？　これ、持っていって。'],['','紙包みの中には、干しりんごの焼き菓子が二つ。'],['touma','干しりんごのやつだ。ニナ、毎年これを買ってるよな。今年はまだ食べてなかっただろ。'],['nina','……覚えててくれたんだ。私、去年は最後の一つをトウマにあげたでしょ。あれ、ちょっと迷ってたの、ばれてた？',null,'shy'],['touma','半分にしようって言う前に、俺の手に置かれたからな。今日は二つある。ニナも、自分の分はゆっくり食べていいよ。'],['マロ','包みは小屋の火起こしに使っていいよ。油が染みたところが、よく燃えるから。'],['nina','マロさんの包み、昔は宝物をくるんでたのに。'],['マロ','知ってる。石ころ入りのまま返してくれたこともあったね。'],['touma','……それ、まだ覚えてるんですか。'],['マロ','今日は二人とも、無事に帰っておいで。夕方の焼き上がりを一つ、遅らせておくよ。']],()=>{f.bread=true;state.courage=Math.min(3,state.courage+1);save();toast('包みに、焼き菓子が増えた');});return;}
- if(id==='lamp'){talk([['','玄関の風除室に、小さな帰り灯がともっている。'],['nina','この家、おじさんが隣の集落に配達中なんだって。'],['touma','最後に帰った人が消すんだよな。'],['nina','うん。「待ってるよ」って、灯りで言うの。']],()=>{f.lamp=true;save();});return;}
- if(id==='gift'){talk([['','共同所の籠には、繕いかけの手袋と色とりどりの糸が入っている。ニナは太さの違う二本を指で比べた。'],['nina','トウマの右の手袋、次はこっちの糸にしようかな。今日のは柔らかいけど、道具を握る所が、また擦れそう。'],['touma','もう次の修理のことまで考えてるのか。これだけ直してもらうと、新しいのを買った方がいいか、迷うんだけど。'],['nina','手に合ってるなら、使っていいと思うよ。……でも、私が直したからって、無理して使ってるんじゃないよね？'],['touma','そんなことない。今日も指が動かしやすかったし、俺はこれがいい。直すのが大変になったら、その時は言ってくれ。'],['nina','うん。それなら、また持ってきて。破れたまま黙って使われる方が、私は困るから。'],['touma','分かった。ニナの鞄も、また引っかかったら教えて。直したあと、どうだったか聞けると助かる。']],()=>{f.gift=true;save();});return;}
- if(id==='exit'){if(!f.board){talk([['nina','先に出発札を掛けよう。サエさんが、二人ともまだ町にいると思っちゃう。行き先を知らせてから出ようね。']]);return;}scene('forest',5,13);if(!f.mochi)talk([['nina','町の中より、ずっと雪が深いね。昨日の道、ほとんど埋まってる。サエさんが一緒の時は、迷わず歩いてたのに。'],['touma','俺、先に踏んでみる。ニナは道標を見ててくれるか。向きが違ってたら、遠慮せず止めて。'],['nina','うん。二人で確かめながら行こう。……待って、トウマ。あの道標の下、何か跳ねてない？']]);return;}
- if(id==='home'){scene('town',12,3);if(f.lit)talk([['','町の窓に、朝よりたくさんの灯りがともっていた。'],['nina','ただいまって言う前から、帰ってきた感じがするね。'],['touma','札、戻してこよう。']]);return;}
- if(id==='mochi'){talk([['nina','こごえモチだ。寒くて、ランタンに集まってきたんだね。'],['touma','道を空けてもらおう。傷つけすぎないように。'],['','「たたかう」を選び、トウマ、ニナの順に行動を決めます。\n矢印キーで選び、Enterで決定。Escでひとつ前へ。\nトウマの「とくぎ」とニナの「じゅもん」で、二人の連携も使えます。']],()=>startBattle('mochi'));return;}
- if(id==='log'){if(state.lead!=='touma'){talk([['nina','これは重いな……。トウマ、お願い。'],['','Q または左下の交代ボタンで、トウマを先頭にしよう。']]);return;}
- talk([['touma','幹は俺が持ち上げるから、ニナは下の小枝を払ってくれるか。動きそうなら一度下ろす。手を入れる前に、声をかけて。'],['nina','分かった。……こっちの枝は取れたよ。もう少しだけ、そっちへ動かせる？　私も端を押すね。'],['','二人で息を合わせ、倒木を道の端へ動かした。ニナが雪の下に残った枝を拾い、トウマは幹が転がらないか確かめる。'],['nina','……昔はこれくらいの枝も、二人で引きずってたね。薪をいっぱい持って帰ったら、サエさんが喜ぶと思って。'],['touma','重くて途中で置いて、結局サエさんを呼びに戻ったな。今なら、あの時の分まで運べそうだ。'],['nina','でも、今日は道を空けるところまで。帰りに欲張って持っていったら、また二人で置いて帰ることになるよ。'],['touma','そうだな。まず灯台だ。帰る分の力も、残しておこう。']],()=>{f.log=true;save();toast('森の奥へ進めるようになった');});return;}
- if(id==='rest'){if(f.rest){talk([['','炉にはまだ、穏やかな火が残っている。\n二人は飲み物を温め、ひと息ついた。'],['nina','無理しないで進もうね。']]);return;}
- const lines=[['','小屋の雪を払い、扉を閉める。炉のそばに手袋を掛けると、張っていた肩が少し緩んだ。'],['nina','お昼にしよう。包みパン、鞄の中で少しつぶれちゃったけど……味は大丈夫なはず。朝、閉じる所で手間取ってたの、見てた？'],['touma','見てたけど、声をかけると余計やりづらそうだったから。……きのこの匂いがする。俺の分も、同じのにしてくれたのか。'],['nina','うん、きのことチーズ。好きでしょ。端の所に具が寄ってるから、そっちから食べてみて。熱いの、逃げちゃう前に。'],['touma','……うまい。朝、あんなに支度してたのに、これも作ってくれたんだな。帰りのスープは、ちゃんと俺がやるよ。',null,'happy'],['nina','ありがとう。じゃあ、今はその飲み物を少しもらってもいい？　私の分、冷めちゃって。トウマの水筒、ちゃんと布を巻いてきたんだね。',null,'happy'],['','窓際の棚には、大小ふぞろいのカップが並んでいた。一つだけ、青い取っ手が継いである。'],['nina','あのカップ、まだある。吹雪でサエさんと泊まったときの。'],['touma','お前、帰れないって泣いてた。'],['nina','泣いてない。……ちょっとしか。トウマはずっと、扉の前にいたね。'],['touma','先に雪がやむのを見つけたくて。'],['nina','私、平気な顔してるつもりだったけど。今日も、少しだけ怖かった。サエさんが後ろにいないの。'],['touma','俺も怖かった。札を掛けた時、サエさんの分がないのを見て、急に。ニナには落ち着いてるように見えてたなら、うまく隠してただけだよ。'],['nina','……そっか。私だけじゃなかったんだ。歩くのが遅いと迷惑かなって思って、雪の深い所でも、すぐ大丈夫って答えてた。聞いてくれたのに、ごめんね。'],['touma','次から、寒いとか怖いとか、先に言おう。黙ってると分からないこともあるし。'],['nina','じゃあ、今ひとつ。もう少し、ここにいたい。'],['touma','ああ。飲み終わって、手袋も乾いてから行こう。灯台を急いで直しても、帰る途中で二人とも動けなくなったら困るし。俺も、もう少し座ってたい。'],['','トウマは、カップを両手で包むニナを見た。',[['「こういう時間、好きだな」',()=>{state.courage=Math.min(3,state.courage+1);}],['「次は俺が作るよ」',()=>{state.courage=Math.min(3,state.courage+1);}],['「もう一個、食べてもいい？」',()=>{}]]],['nina','……また二人で来ようね。今度は、灯台の仕事がない日に。何を持っていくか相談するところから、ゆっくり楽しみたいな。',null,'shy'],['touma','うん。その時は俺も、弁当を作ってくる。今日の包み方、帰ったら教えてくれるか。二人で持ってくれば、片方がつぶれても困らないだろ。',null,'happy'],['','出発前に、トウマは炉の横へ細い薪を寄せた。ニナは空いたカップを洗い、次の人が取りやすい向きに戻した。'],['nina','取っ手、こっちでいいかな。'],['touma','うん。手袋のままでも取れる。']];
- if(f.bread)lines.push(['','食後に、マロの焼き菓子を分けた。\nニナは袋に残った小さなかけらまで、大事そうに食べた。']);
+ if(id==='sae'){talk([
+  ['サエ','灯守の仕事は、火をつけて終わりじゃない。自分が帰ってくるまでが仕事だよ。'],
+  ['サエ','倒木や足場はトウマ、灯りの仕掛けはニナ。得意な方が先頭に立つこと。'],
+  ['nina','風が強くなったら、森の休憩小屋で待ちます。'],
+  ['サエ','それでいい。急ぐのと無茶をするのは別だからね。休んだことも、引き返したことも、帰ったら全部報告するんだよ。'],
+  ['touma','はい。札を戻す時に。'],
+  ['サエ','うん。……二人の話を聞くのを、楽しみにしてる。']
+ ],()=>{f.sae=true;save();});return;}
+ if(id==='bakery'){if(f.bread){talk([['マロ','夕方の焼き上がりを、一つ遅らせとくからね。二人とも、ちゃんと帰っておいで！','happy']]);return;}
+ talk([
+  ['マロ','はい、お弁当のおまけ！　森の灯台まで行くんでしょ。小屋で食べな。','happy'],
+  ['','紙包みの中には、干しりんごの焼き菓子が二つ入っていた。',{se:'item'}],
+  ['touma','干しりんごのやつだ。ニナ、毎年これを買ってるよな。今年はまだ食べてないだろ。'],
+  ['nina','……覚えてたんだ。去年は、最後の一個をトウマにあげたんだよね。','shy'],
+  ['touma','半分にしようって言う前に、手に置かれた。あげるのを迷ってた顔もしてた。'],
+  ['nina','見てたの！？　迷ってない。……ちょっとしか。','fluster'],
+  ['マロ','今年は二つあるから、けんかしないでね。包み紙は、小屋の火起こしに使うといいよ。油が染みてて、よく燃えるから。'],
+  ['nina','マロさんの包み紙、昔は宝物をくるむのに使ってたなあ。'],
+  ['マロ','知ってる。石ころを入れたまま返してきたこともあったね。'],
+  ['touma','……まだ覚えてるんですか、それ。','sweat'],
+  ['マロ','覚えてるよ。あんたたちのことは、だいたい全部。','happy']
+ ],()=>{f.bread=true;state.courage=Math.min(3,state.courage+1);save();toast('お弁当に、焼き菓子が増えた');});return;}
+ if(id==='lamp'){talk([
+  ['','家の戸口に、小さな帰り灯がともっている。昼間なのに、消えていない。'],
+  ['nina','ここのおじさん、丘向こうの集落へ配達に出てるんだって。'],
+  ['touma','帰り灯は、最後に帰った人が消す決まりだからな。ともってるうちは、まだ誰か外にいる。'],
+  ['nina','うん。「待ってるよ」って、灯りが代わりに言ってくれてるの。'],
+  ['','二人の家の戸口にも、同じ形の灯りが一つある。\n今朝、ニナがともしてきた。']
+ ],()=>{f.lamp=true;save();});return;}
+ if(id==='gift'){talk([
+  ['','灯守の共同所の前に、繕いものの籠が出してある。\n町の誰でも、破れた手袋や靴下を入れていい。手の空いた人が直して戻す決まりだ。'],
+  ['nina','トウマの右の手袋、次はこっちの太い糸にしようかな。今のは柔らかいけど、道具を握る所がまた擦れそう。'],
+  ['touma','……まだ今朝直したばかりだろ。これだけ繕ってもらうと、新しいのを買った方が早い気もする。'],
+  ['nina','買ってもいいよ。でも、私が直したからって、我慢して使ってるんじゃないよね？'],
+  ['touma','違う。手に合ってるから使ってる。'],
+  ['nina','ならよし。破れたら、黙って使わないですぐ出すこと。'],
+  ['touma','お前の鞄の口金もな。また引っかかったら、すぐ言え。']
+ ],()=>{f.gift=true;save();});return;}
+ if(id==='exit'){if(!f.board){talk([['nina','待って、先に出発札。掛けずに出たら、サエさんは私たちがまだ町にいると思っちゃう。']]);return;}scene('forest',5,13);if(!f.mochi)talk([
+  ['','町の北、粉ひきの森。\n灯台は、この道を登りきった先にある。'],
+  ['nina','町の中より、ずっと雪が深い……。昨日の足跡、ひとつも残ってないね。'],
+  ['touma','俺が先に踏む。お前は道標を見ててくれ。向きがずれたら止めろ。'],
+  ['nina','了解。……あれ。トウマ、あの道標の下。何か、跳ねてない？','question']
+ ]);return;}
+ if(id==='home'){scene('town',12,3);if(f.lit)talk([['','町の窓には、朝よりたくさんの灯りがともっていた。'],['nina','「ただいま」って言う前から、もう帰ってきた気がするね。'],['touma','まだだ。札を戻すまでが仕事だろ。'],['nina','はいはい。掲示板ね。','happy']]);return;}
+ if(id==='mochi'){talk([
+  ['nina','こごえモチだ！　……二匹いる。灯台が消えたから、寒くて私のランタンに寄ってきたんだね。'],
+  ['touma','このままじゃ道を通れない。サエさんの言った通り、温めて落ち着かせよう。傷つけるなよ。'],
+  ['nina','トウマこそ。力、入れすぎないでね。'],
+  ['','「たたかう」を選び、トウマ、ニナの順に行動を決めます。\n矢印キーで選び、Enterで決定。Escでひとつ前へ。\nトウマの「とくぎ」とニナの「じゅもん」で、二人の連携も使えます。']
+ ],()=>startBattle('mochi'));return;}
+ if(id==='log'){if(state.lead!=='touma'){talk([['nina','倒木が道をふさいでる。……重くて、私じゃびくともしない。トウマ、お願い。','sweat'],['','Q または左下の交代ボタンで、トウマを先頭にしよう。']]);return;}
+ talk([
+  ['','ゆうべの雪の重みで折れた木が、道を横切って倒れている。荷車は、これでは通れない。'],
+  ['touma','幹は俺が持ち上げる。ニナは下に噛んでる小枝を払ってくれ。手を入れる前に、必ず声をかけろよ。'],
+  ['nina','分かった。……入れるよ！　……はい、こっちの枝は取れた。'],
+  ['touma','よし。せーの――',{se:'thud',shake:1}],
+  ['','二人で息を合わせて、倒木を道の端へ転がした。'],
+  ['nina','……昔さ、これくらいの枝を二人で引きずって帰ったよね。薪にしたら、サエさんが喜ぶと思って。'],
+  ['touma','重くて途中で置いて、結局サエさんを呼びに戻った。'],
+  ['nina','今日は持って帰らないよ。帰りの分の力は、残しておくこと。','happy'],
+  ['touma','……それ、今朝サエさんが言ってたやつだろ。']
+ ],()=>{f.log=true;save();toast('森の奥へ進めるようになった');});return;}
+ if(id==='rest'){if(f.rest){talk([['','炉には、まだ穏やかな火が残っている。二人は飲み物を温めて、ひと息ついた。',{se:'fire'}],['nina','あったかい……。もうちょっとだけ、ね。']]);return;}
+ const lines=[
+  ['','森の休憩小屋。雪を払って扉を閉めると、風の音が急に遠くなった。\n炉に火を入れ、濡れた手袋を二組、並べて掛ける。',{se:['door','fire']}],
+  ['nina','お昼にしよ。包みパン、鞄の中でちょっとつぶれたけど……味は変わらないはず。'],
+  ['touma','きのこの匂いがする。'],
+  ['nina','きのことチーズ。好きでしょ。端っこに具が寄ってるから、そっちから食べて。','happy'],
+  ['touma','……うまい。','happy'],
+  ['nina','ほんと？　よかった。朝、閉じ目がなかなかくっつかなくて、三個だめにしたの。'],
+  ['touma','知ってる。だめにした三個が、俺の朝飯だったから。'],
+  ['nina','あれ食べたの！？','fluster'],
+  ['touma','うまかった。'],
+  ['','窓際の棚に、大小ふぞろいのカップが並んでいる。\n一つだけ、青い取っ手を継いだ跡があった。'],
+  ['nina','あのカップ、まだある。昔、吹雪でサエさんと三人、ここに泊まった時のだ。'],
+  ['touma','お前、「家に帰れない」って泣いてたな。'],
+  ['nina','泣いてない。……ちょっとしか。'],
+  ['nina','トウマはあの晩、ずっと扉の前に座ってたよね。寝ないで。'],
+  ['touma','雪がやんだら、いちばんに教えてやろうと思って。'],
+  ['nina','……。','shy',{wait:400}],
+  ['','炉の薪がはぜた。ニナはカップを両手で包んだまま、しばらく黙っていた。',{se:'fire'}],
+  ['nina','ねえ。今日、サエさんが後ろにいないの、ちょっと変な感じしない？'],
+  ['touma','する。札を掛けた時、三枚目がなくて手が止まった。'],
+  ['nina','なんだ、トウマも？　落ち着いてるから、私だけかと思ってた。','happy'],
+  ['touma','落ち着いてるように見えるだけだ。鞄を三回も開けるやつが、落ち着いてるわけないだろ。'],
+  ['nina','ふふ。それもそうだね。','joy'],
+  ['','トウマは、カップを両手で包んで笑うニナを見た。',[['「こういう時間、好きだな」',()=>{state.courage=Math.min(3,state.courage+1);}],['「次は俺が作るよ」',()=>{state.courage=Math.min(3,state.courage+1);}],['「もう一個、食べてもいい？」',()=>{}]]],
+  ['nina','……うん。また来よ、ここ。今度は仕事のない日に、お弁当だけ持って。','shy'],
+  ['touma','その時は俺が作る。包み方、帰ったら教えてくれ。','happy'],
+  ['','出がけに、トウマは次に来る人のために薪を炉の横へ寄せた。\nニナは洗ったカップを、取っ手が手前に来るように棚へ戻す。']
+ ];
+ if(f.bread)lines.push(['','食後に、マロの焼き菓子を一つずつ食べた。\nニナは包み紙に残ったかけらまで、指でていねいに拾った。']);
  talk(lines,()=>{f.rest=true;save();toast('小屋の思い出を、手帳に残した');});return;}
- if(id==='repair'){if(f.repair){talk([['nina','うん。しっかりつながってる。これなら帰りも安心。']]);return;}if(state.lead!=='nina'){talk([['touma','灯りの線が切れてる。これはニナの出番だな。'],['','Q または交代ボタンで、ニナを先頭にしよう。']]);return;}
- talk([['nina','橋の灯りが消えて、足元まで凍ってる。火を足すだけじゃ、また消えそう。柱の中の線を、先につなぎ直したいな。'],['touma','柱が傾かないように、俺が支えるよ。そこから留め具に手が届くか？　やりにくかったら、立つ場所を変える。'],['nina','そこなら大丈夫。鞄の金具も、今朝直してくれたから……ほら、手袋のまま出せた。もう少し、その向きでお願い。'],['','トウマが灯柱を支え、ニナが芯をつなぐ。\n橙色の火が走り、橋の薄氷がするりとほどけた。'],['nina','……あと一つなんだけど、風で指が滑る。少し待ってもらっていい？　急いで締めると、芯を挟んじゃいそう。'],['touma','分かった。こっちは持てるから、一度手を温めて。締める時も、ニナから合図してくれ。'],['','ニナは一度手を引き、息を吹きかけてから、最後の留め具を締め直した。'],['nina','できた。火も、もう揺れてないね。私が先に渡って、向こうの柱も確かめてくる。'],['touma','ああ。渡り終わるまで、こっちから足元を見てる。滑りそうなら、そこに止まってくれ。'],['nina','うん。……見ててくれるなら、落ち着いて歩けそう。渡ったら、今度は私がトウマを待ってるね。']],()=>{f.repair=true;save();toast('灯りの橋を修理した');});return;}
- if(id==='crab'){talk([['nina','あのヤドカリ、カップが氷で覆われてる。'],['touma','火花で溶かしてから、俺が合わせる。'],['','ニナの「じゅもん」から「火花」を選ぼう。\n氷の殻が溶けると、次のターンからトウマの攻撃も届きやすくなります。']],()=>startBattle('crab'));return;}
- if(id==='guardian'){talk([['touma','枝角の番人……。灯台の前から動かないな。'],['nina','見て、角のところ。鳥の巣を守ってる。吹雪で落ちてきたんだ。'],['touma','怖がらせずに近づくのは、難しそうだな。'],['nina','荒れた灯りを落ち着かせよう。二人ならできるよ。'],['','番人の大きな踏み込みは、トウマの「かばう」で守れます。\n息ぴったりの灯りが三つともったら、二人技「灯火の一閃」が使えます。']],()=>startBattle('guardian'));return;}
- if(id==='tower'){if(!f.guardian){toast('先に、番人を落ち着かせよう');return;}if(f.lit){talk([['nina','町まで見えるかな。この灯り。'],['touma','きっと、見てる。帰ろう。']]);return;}
- talk([['touma','灯りの軸、ここでいいか？'],['nina','うん。そのまま……少しだけ支えてて。'],['','ニナがランタンの火を分ける。\nトウマの手の中で軸が震え、灯台に温かな光が満ちた。'],['nina','……ともった！'],['touma','うん。二人で、できたな。'],['','光が雪の稜線をなぞり、遠い道標がひとつ浮かび上がる。その下を、荷を背負った小さな影が町へ向かっていた。'],['nina','あの人にも、見えたかな。'],['touma','立ち止まった。……こっちを見てる。'],['','二人は手を振った。遠すぎて届いたかは分からない。それでも、影がまた歩きだすまで見送った。'],['nina','小さい頃、窓からこの灯台を探したよね。サエさん、もう帰ってくるかなって。灯りが見えたら、まだ遠くても、町の入口へ行きたくなって。'],['touma','ニナが先に靴を履くから、俺も慌てて追いかけたな。……今日は向こうで、誰かがこの灯りを探してるんだ。点いてるところを確かめられて、よかった。'],['nina','帰ろう。……安心したら、お腹が空いちゃった。'],['touma',f.rest?'小屋であんなに食べたのに。':'そういえば、ちゃんと休んでなかったな。'],['nina','町に着いたら、座ってゆっくり食べようね。']],()=>{f.lit=true;save();tone(659,.7);updateHud();openModal('<span class="tag">第一の灯り</span><h2>森の灯台が、ともった</h2><p>道はもう分かっている。二人で町へ帰ろう。<br>そのまま森を歩いて戻ることもできます。</p>',[['二人で町へ帰る',()=>{closeModal();scene('town',12,3);talk([['','帰り道の小さな標識灯も、ぽつり、ぽつりと明るくなっていた。'],['nina','私たちの火、帰り道を照らしてるね。'],['touma','うん。……ただいまを言いに行こう。']]);},true],['森をもう少し歩く',closeModal]],'explore');});}
+ if(id==='repair'){if(f.repair){talk([['nina','うん、しっかりつながってる。帰りもこの橋を渡るんだから、ちゃんと照らしててね。']]);return;}if(state.lead!=='nina'){talk([['touma','橋の灯りが消えてる。柱の中の線が切れてるな。……火の仕掛けは、ニナの出番だ。'],['','Q または交代ボタンで、ニナを先頭にしよう。']]);return;}
+ talk([
+  ['','谷にかかる「灯りの橋」。欄干の灯りが熱を伝えて、橋板の氷を溶かす仕掛けだ。\nその灯りが消えて、橋板は一面、薄氷に覆われていた。'],
+  ['nina','火を足すだけじゃ、すぐまた消えちゃう。柱の中を通ってる芯の線が切れてるの。先に、そこをつなぎ直したい。'],
+  ['touma','柱が傾かないように、俺が抱えておく。そこから留め具に手は届くか？'],
+  ['nina','届く。……ほら見て、鞄。手袋のまま開いた！','happy'],
+  ['touma','見せなくていい。早く出せ。'],
+  ['','トウマが灯柱を抱え、ニナが芯をつなぐ。\n橙色の火が線を走り、橋の薄氷がするするとほどけていく。',{se:'flare'}],
+  ['nina','……あと一つなんだけど。風で指がかじかんで、留め具がつかめない。','sweat'],
+  ['nina','トウマ、ごめん。少し待ってて。急いで締めたら、芯を挟んじゃう。'],
+  ['touma','待つ。柱は持ってるから、手を温めろ。締める時に声をかけてくれればいい。'],
+  ['','ニナは手を引いて、指に息を吹きかけた。握って、開いて、もう一度。\nそれから、最後の留め具を締め直した。'],
+  ['nina','できた！　火も、もう揺れてない。','happy',{se:'chime'}],
+  ['nina','私が先に渡って、向こうの柱も見てくるね。'],
+  ['touma','ああ。渡り終わるまで、こっちから足元を見てる。'],
+  ['nina','……見ててくれるなら、落ち着いて歩けそう。渡ったら、今度は私が待ってるからね。']
+ ],()=>{f.repair=true;save();toast('灯りの橋を修理した');});return;}
+ if(id==='crab'){talk([
+  ['nina','見て、ヤドカリ。殻の代わりに、誰かのカップを背負ってる……。'],
+  ['touma','そのカップごと、氷に包まれてるな。寒くて、気が立ってる。'],
+  ['nina','私の火花で氷を溶かすね。溶けるまでは、トウマの手も届かないと思う。'],
+  ['','ニナの「じゅもん」から「火花」を選ぼう。\n氷の殻が溶けると、次のターンからトウマの攻撃も届きやすくなります。']
+ ],()=>startBattle('crab'));return;}
+ if(id==='guardian'){talk([
+  ['touma','……でかい。灯台の前から動かないな、あれ。'],
+  ['','枝のような角を持つ、森の精霊。灯守は「枝角の番人」と呼んでいる。'],
+  ['nina','待って、角の間を見て。鳥の巣。……ゆうべの吹雪で、木から落ちたのを拾ってくれたんだ。'],
+  ['touma','巣を守ってるのか。それで気が立ってる。'],
+  ['nina','落ち着かせて、巣を木に戻してあげよう。二人でなら、できるよ。'],
+  ['','番人の大きな踏み込みは、トウマの「かばう」で守れます。\n息ぴったりの灯りが三つともったら、二人技「灯火の一閃」が使えます。']
+ ],()=>startBattle('guardian'));return;}
+ if(id==='tower'){if(!f.guardian){toast('先に、番人を落ち着かせよう');return;}if(f.lit){talk([['nina','町からも見えてるかな、この灯り。'],['touma','見えてる。帰ろう。札を戻すまでが仕事だ。']]);return;}
+ talk([
+  ['','森の灯台。石積みの塔のてっぺんで、大きな芯が雪をかぶっている。'],
+  ['touma','芯の軸が傾いてた。……よし、立った。ニナ、火を。'],
+  ['nina','うん。ランタン、開けるね。'],
+  ['','ニナがランタンの種火を、細い芯に移す。灯術の火は、息をひそめるように小さい。\nそれが灯台の大きな芯に触れて――',{bgm:'silence',wait:300}],
+  ['','森の灯台に、あたたかな光が満ちた。',{flash:'warm',se:'lit',jingle:'lit',time:'dusk',lit:true}],
+  ['nina','……ともった！','happy'],
+  ['touma','ああ。ともったな。','happy'],
+  ['','光が雪の稜線をなぞる。分かれ道の道標が、遠くにひとつ浮かび上がった。\nその下を、荷車の小さな影が動いている。',{bgm:'tender'}],
+  ['','影は一度止まり、それから、町の方へ曲がった。'],
+  ['nina','見えたんだ。あの人たちにも。'],
+  ['touma','……ああ。'],
+  ['','十二年前の大雪の晩、この灯台は消えていた。\n峠から戻るはずだった荷車の列は、この分かれ道を見つけられなかった。',{wait:500}],
+  ['','その列に、トウマの両親と、ニナの両親がいた。'],
+  ['nina','小さい頃、窓からこの灯台を探したよね。ともってたら、もうすぐ誰か帰ってくるって。'],
+  ['touma','お前が先に靴を履いて飛び出すから、俺は毎回追いかける羽目になった。'],
+  ['nina','だって、迎えに行きたかったんだもん。'],
+  ['','ニナは灯台の壁に、手袋のまま手のひらを当てた。'],
+  ['nina','……今日は、ちゃんとともってるよ。',{wait:500}],
+  ['touma','帰ろう。札を戻すまでが仕事だ。'],
+  ['nina','うん。……安心したら、おなか空いちゃった。','happy'],
+  ['touma',f.rest?'小屋であれだけ食っといて。':'昼を抜いたからだ。小屋に寄ればよかったな。'],
+  ['nina','帰り道の分は、別腹なの。','joy']
+ ],()=>{f.lit=true;save();updateHud();openModal('<span class="tag">第一の灯り</span><h2>森の灯台が、ともった</h2><p>日が傾いてきた。二人で町へ帰ろう。<br>そのまま森を歩いて戻ることもできます。</p>',[['二人で町へ帰る',()=>{closeModal();scene('town',12,3);talk([['','帰り道の小さな標識灯も、ぽつり、ぽつりと明るくなっていく。'],['nina','私たちの火が、順番に下りていってるんだ。'],['touma','ああ。……掲示板へ行こう。札を戻して、報告だ。']]);},true],['森をもう少し歩く',closeModal]],'explore');});}
 }
 let classicBattle=null;
 function startBattle(kind){setMusic('battle');
@@ -122,7 +281,7 @@ function resolve(team=false){if(mode!=='battle')return;try{
  battle=C.resolveTurn(battle,team?{team:'flare'}:commands,order);tone(battle.status==='victory'?659:392,.15);classicBattle.showResult(battle);
  }catch(err){toast(err.message.replace('SP','MP'));classicBattle.begin(battle);}}
 function victory(){travelMusic();if(state.episode&&OkaeriEpisodes.current(state)?.battle){$('battleScreen').hidden=true;mode='explore';OkaeriEpisodes.won(episodeApi());return;}if(state.scene==='hill'){closeModal();$('battleScreen').hidden=true;mode='explore';state.flags.hillGuardian=true;save();updateHud();talk([['','枝角の番人は、ゆっくり雪の上に伏せた。荒れていた灯りが、穏やかに戻っている。'],['nina','待っててね。すぐに、灯台をともすから。'],['touma','今度は俺たちが、帰り道を守る。']]);return;}if(state.scene==='canal'){closeModal();$('battleScreen').hidden=true;mode='explore';state.flags.canalCrab=true;save();updateHud();talk([['','ヤドカリは、温まった水の中へそっと降りていった。'],['nina','帰る場所、見つかったね。'],['touma','俺たちも、水を家まで連れていこう。']]);return;}closeModal();$('battleScreen').hidden=true;mode='explore';state.flags[battle.kind]=true;save();updateHud();
- const lines=battle.kind==='mochi'?[['','雪玉たちは、すっかり小さくなって道端へ跳ねていった。'],['nina','あったかくなったんだね。よかった。'],['touma','この先、小屋がある。お昼にしよう。']]:battle.kind==='crab'?[['','氷の溶けたカップから、小さなはさみがのぞく。\nヤドカリは水路へ、ことこと歩いていった。'],['nina','あのカップ、誰かの忘れ物かな。'],['touma','今はあいつの家だな。']]:[['','枝角の番人が、ゆっくり頭を下げる。\n二人は巣を受け取り、低い木の枝へ戻した。'],['nina','ここなら、風も当たらないよ。'],['touma','……守ってたんだな。ずっと。'],['','苔の上で、小鳥が一声鳴いた。'],['nina','さあ。私たちも、灯りをつけよう。']];talk(lines);}
+ const lines=battle.kind==='mochi'?[['','こごえモチたちは、ほかほかと湯気を立てて道端へ跳ねていった。さっきより、ひとまわり小さい。'],['nina','あったまったら、縮むんだ……。よかった、怒ってないみたい。','happy'],['touma','道が空いた。この先に休憩小屋がある。昼にしよう。']]:battle.kind==='crab'?[['','氷の溶けたカップから、小さなはさみがのぞく。\nヤドカリは橋の下の沢へ、ことこと歩いていった。'],['nina','あのカップ、誰かの忘れ物かな。'],['touma','今はあいつの家だ。返せとは言えないな。']]:[['','枝角の番人が、ゆっくり頭を下げた。角の間の巣が、二人の目の高さまで下りてくる。'],['','トウマが巣を受け取り、ニナの指さす低い枝の股へそっと戻した。'],['nina','ここなら風も当たらないよ。'],['touma','……一晩じゅう、守ってたんだな。'],['','巣の中で、小鳥が一声鳴いた。番人は灯台の前から退き、森の奥へ歩いていく。',{se:'chime'}],['nina','さあ、私たちの番。灯りをともそう。']];talk(lines);}
 function journal(){if(!['explore','title'].includes(mode))return;
  if(mode==='explore'&&globalThis.OkaeriJourney?.active(state)){
   const j=state.journey;const work=[['mirror','トウマ：反射板を直す'],['prism','ニナ：共鳴灯を合わせる'],['shutter','トウマ：風よけを開く'],['reply','ニナ：応答灯をともす']];
@@ -135,7 +294,7 @@ function journal(){if(!['explore','title'].includes(mode))return;
   const overview=OkaeriEpisodesData.contexts?.[ep.chapter];
   openModal('<h2>'+OkaeriEpisodes.title(state)+'</h2>'+(overview?'<h3>今日の用事</h3><p>'+escape(overview)+'</p>':'')+'<p>'+(OkaeriEpisodes.objective(state)||S.objective(state))+'</p>'+OkaeriEpisodesData.titles.map((t,i)=>'<p>'+(i+1<ep.chapter?'✓ ':i+1===ep.chapter?'→ ':'○ ')+(i+1)+'. '+t+'</p>').join('')+'<h3>二人の思い出</h3>'+((globalThis.OkaeriActivities?.notes(state)||[]).map(n=>'<p>◆ '+escape(n)+'</p>').join('')||'<p>二人で選んだことが、ここに残ります。</p>')+'<p>リツ：町に戻った水番。ユラ：二人を幼い頃から知る診療所の先生。</p>',buttons,'explore');return;
  }
-if(mode==='title'){openModal('<span class="tag">はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染の灯守。道の灯りや足場を直して、町へ帰る人を支えています。トウマは木や金具の修理、ニナは灯術と灯りの調整が得意です。</p><p>二人の仕事と日々を全10話でたどる制作途中の試作です。氷湖への小旅行と、終盤の関係選択を含みます。プレイ時間はまだ二時間に調整していません。</p><p>操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代。Jの「旅の手帳」で、その日の用事と次の行き先を確認できます。</p>',[['閉じる',closeModal,true]],'title');return;}
+if(mode==='title'){openModal('<span class="tag">はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染。雪で消える道の代わりに、人が帰る方角を知らせる「帰り灯」の番をする、灯守（ひもり）です。トウマは木や金具の修理、ニナは火を扱う「灯術」が得意です。</p><p>二人の仕事と暮らしを、全10話でたどります。第9話で二人の関係を選ぶと、最終話が三通りに変わります。</p><p>操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代。Jの「旅の手帳」で、今日の用事と次の行き先を確かめられます。右上の「音」で、音楽と効果音が入ります。</p>',[['閉じる',closeModal,true]],'title');return;}
  const steps=[['board','出発札を掛ける'],['mochi','こごえモチを落ち着かせる'],['log','トウマで倒木を動かす'],['repair','ニナで灯りの橋を修理する'],['crab','氷殻を火花で溶かす'],['guardian','枝角の番人と向き合う'],['lit','二人で灯台をともす'],['returned','出発札を戻して、ただいま'],['canalStarted','共同水路の依頼を受ける'],['waterGate','トウマで水門を支える'],['canalCrab','水路のヤドカリを落ち着かせる'],['waterFlow','ニナで調整灯をつなぐ'],['waterLit','水路の帰り灯をともす'],['waterReturned','マロに水の便りを届ける'],['hillStarted','風待ちの丘へ出発'],['windbreak','トウマで風よけを直す'],['hillGuardian','尾根の番人を落ち着かせる'],['hillLens','ニナでレンズを合わせる'],['hillLit','丘の灯台をともす'],['festivalStarted','帰り灯祭りへ'],['festivalMeal','二人でスープを食べる'],['festivalRibbon','帰り結びを贈り合う']];
  const html='<span class="tag">旅の手帳</span><h2>二人の灯守日誌</h2><p>'+S.objective(state)+'</p>'+steps.map(([k,v])=>'<div class="journal-step"><span>'+(state.flags[k]?'✓':'○')+'</span>'+v+'</div>').join('')+'<h3>町の人との寄り道</h3>'+OkaeriSideStories.notes(state).map(n=>'<div class="journal-step"><span>'+(n.done?'✓':'◇')+'</span><div><strong>'+n.title+'</strong><br>'+n.text+'</div></div>').join('')+'<h3>道中の思い出</h3><p>'+(state.flags.bread?'焼き菓子をもらった。':'パン屋には、いい匂いがしている。')+'<br>'+(state.flags.rest?'小屋で、二人のお昼を食べた。':'森の小屋で、ひと休みできそう。')+'</p><p>'+(state.flags.canalRest?'水番の休憩所で、次の人の薪を残した。':'共同水路にも、小さな休憩所がある。')+'</p><h3>二人の得意なこと</h3><p>トウマ：倒木を動かす / 崩し斬り・かばう<br>ニナ：灯りの修理 / 火花・回復<br>戦闘では毎回HP・SPが満タンで始まる試作仕様です。</p>';
  const btns=[['冒険に戻る',closeModal,true]];if(state.flags.lit&&state.scene==='forest')btns.push(['町へ帰る',()=>{closeModal();scene('town',12,3);}]);openModal(html,btns,'explore');}
@@ -152,11 +311,21 @@ function handleHouse(id){
  if(id==='ourHome'){scene('house',12,12);return true;}
  if(state.scene!=='house')return false;
  if(id==='houseExit'){scene('town',3,13);return true;}
- if(id==='homeTable'){if(state.episode){if(state.episode.complete)OkaeriEpisodes.endDay(episodeApi());else talk([['nina','今日の用事が済んだら、ここで話そうね。'],['touma','うん。お茶の分の薪は、残しておこう。']]);return true;}
+ if(id==='homeTable'){if(state.episode){if(state.episode.complete)OkaeriEpisodes.endDay(episodeApi());else talk([['nina','今日の用事が済んだら、ここでゆっくり話そうね。'],['touma','ああ。お茶を沸かす分の薪は、残しておく。']]);return true;}
  const options=[['one','returned','第一話 · 二つのカップ'],['two','waterReturned','第二話 · 味見の距離'],['three','festivalStarted','第三話 · いつもと違う支度'],['touma','endingTouma','最終話 · 恋人になった家'],['nina','endingNina','最終話 · 返事の続き'],['friends','endingFriends','最終話 · 明日の席']].filter(([,flag])=>state.flags[flag]);
- openModal('<h2>二人の食卓</h2><p>今日のことを、少し話そう。終えた章の夜を読み返せます。</p>',[...options.map(([key,,label])=>[label,()=>{closeModal();evening(key);}]),['今はお茶にする',()=>{closeModal();talk([['nina','お湯、沸いてるよ。'],['touma','じゃあ、二人分。']]);},true]],'explore');return true;
+ openModal('<h2>二人の食卓</h2><p>今日のことを、少し話そう。終えた章の夜を読み返せます。</p>',[...options.map(([key,,label])=>[label,()=>{closeModal();evening(key);}]),['今はお茶にする',()=>{closeModal();talk([['nina','お湯、沸いてるよ。'],['touma','じゃあ、二人分淹れる。',{se:'cup'}]]);},true]],'explore');return true;
  }
- const lines={"toumaDesk":[["","磨いた修理机。小箱には「ニナの外套」と書かれた予備の留め金。工具の柄には、滑り止めの布が巻いてある。"],["nina","この布、まだ使ってくれてるんだ。"],["touma","手に馴染んでるから。"],["nina","……そっか。新しいのも、同じ色にするね。"]],"toumaBooks":[["","雪道の地図、家具の直し方、料理の本。スープのページだけ、何度も開いた跡がある。"],["nina","これ、私の好きなやつ。"],["touma","次は、焦がさない。"],["nina","この前のも、おいしかったよ。最後のところ以外。"]],"ninaMirror":[["","小さな鏡台。手作りの鏡枠に、青いリボンが掛かっている。引き出しの上には、書きかけのお礼のカード。"],["touma","鏡の高さ、これでいい？"],["nina","うん。毎朝、ちゃんと見える。"],["touma","何が？"],["nina","……直してくれた人が、丁寧だったってこと。"]],"ninaWardrobe":[["","畳んだ冬服と、色順に並んだ毛糸。二人分の手袋が、同じ籠に収まっている。"],["touma","俺のも、ここに？"],["nina","片方なくす人がいるので。"],["touma","助かります。"],["nina","出かけるときは、私に声かけてね。手袋、渡すから。"]],homeStove:[['','町から分けてもらった小さな薪ストーブ。脚のがたつきは、トウマが直した。'],['nina','火の番、今日は私ね。'],['touma','寝る前に、一緒に見よう。']],toumaRoom:[['','トウマの部屋。整えた寝床の脇に、修理道具と読みかけの本がある。'],['nina','入るときは、ノックするね。'],['touma','俺も、そうする。']],ninaRoom:[['','ニナの部屋。寝床には繕った毛布。小さな棚に、お気に入りの糸が並んでいる。'],['touma','窓、冷気は入らない？'],['nina','大丈夫。トウマが直してくれたから。']],homeShelf:[['','古い家の鍵と、町の人たちと写った一枚の写真。血のつながりはなくても、二人を育ててくれた顔が並ぶ。'],['nina','この家の掃除、みんな来てくれたね。'],['touma','マロさんは、掃除よりパンを配ってた。'],['nina','それも、大事なお仕事。']],homeSewing:[['','繕い机には、ニナの針箱と、トウマの予備の留め金。互いの道具が少しずつ隣り合っている。'],['nina','ここ、半分使っていいよ。'],['touma','もう半分、借りてる。'],['nina','うん。知ってる。']]};
+ const lines={
+  toumaDesk:[['','トウマの修理机。よく磨かれた天板の隅に、「ニナの外套」と書いた小箱。中身は予備の留め金だ。\n工具の柄には、滑り止めの布が巻いてある。'],['nina','この布、私が巻いたやつだ。まだ使ってくれてるんだ。'],['touma','手になじんでるから。'],['nina','……そっか。すり切れたら言ってね。同じ色で巻き直すから。','happy']],
+  toumaBooks:[['','本棚には、雪道の地図、家具の直し方、それから料理の本。\nスープの頁だけ、何度も開いた跡がある。'],['nina','これ、私の好きなきのこのスープの頁だ。'],['touma','次は焦がさない。'],['nina','この前のも、おいしかったよ。……鍋の底の方以外は。','joy']],
+  ninaMirror:[['','ニナの鏡台。手作りの鏡枠に、青いリボンが掛けてある。\n引き出しの上には、書きかけのお礼のカード。'],['touma','鏡の高さ、直したままでいいか。'],['nina','うん。毎朝、ちゃんと見えるよ。'],['touma','何が。'],['nina','……直してくれた人が、丁寧だったってことが。','shy']],
+  ninaWardrobe:[['','たたんだ冬服と、色の順に並んだ毛糸玉。\n二人分の手袋が、同じ籠に入っている。'],['touma','俺の手袋も、ここにあるのか。'],['nina','片方だけなくす人がいるので、まとめて管理してます。'],['touma','……助かります。','sweat']],
+  homeStove:[['','町の人から譲り受けた、小さな薪ストーブ。がたついていた脚は、トウマが直した。',{se:'fire'}],['nina','今夜の火の番は、私ね。'],['touma','寝る前に、二人で確かめよう。']],
+  toumaRoom:[['','トウマの部屋。きちんと整えた寝床の脇に、修理道具と読みかけの本がある。'],['nina','入る時は、ちゃんとノックするからね。'],['touma','俺もそうする。']],
+  ninaRoom:[['','ニナの部屋。寝床には、何度も繕った毛布。小さな棚に、お気に入りの糸が並んでいる。'],['touma','窓から冷気は入らないか。'],['nina','大丈夫。トウマが直してくれたから。','happy']],
+  homeShelf:[['','古い家の鍵と、一枚の写真。この家を大掃除した日に、町の人たちと撮ったものだ。\n血のつながりはなくても、二人を育ててくれた顔が並んでいる。'],['nina','この日、町じゅうの人が来てくれたんだよね。'],['touma','マロさんは掃除より、パンを配る方が忙しそうだった。'],['nina','それも大事なお仕事。','happy']],
+  homeSewing:[['','窓辺の繕い机。ニナの針箱の隣に、トウマの予備の留め金の箱。\n互いの道具が、少しずつ相手の側へはみ出している。'],['nina','この机、半分使っていいよ。'],['touma','もう半分、借りてる。'],['nina','うん。知ってる。','happy']]
+ };
  if(lines[id]){talk(lines[id]);return true;}return false;
 }
 function move(dx,dy){if(mode!=='explore')return false;const x=state.x+dx,y=state.y+dy;if(!S.walkable(state,x,y))return false;state.x=x;state.y=y;Sfx?.play(['house','lampworkshop'].includes(state.scene)?'stepWood':'step');updateHud();return true;}

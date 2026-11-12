@@ -2,20 +2,20 @@
 'use strict';
 const D=root.OkaeriEpisodesData,S=root.OkaeriStory;
 const spawns={town:[12,10],forest:[5,13],canal:[3,12],hill:[4,13],house:[12,12]};
+// ['@名前'] の一行を、条件に合う台詞へ差し替える（合わなければ消す）。
+function expand(lines,slots){return lines.flatMap(l=>l.length===1&&typeof l[0]==='string'&&l[0][0]==='@'?(slots[l[0].slice(1)]||[]):[l]);}
+function slots(s){
+ const chapter=s.episode.chapter,m=s.memories||{},out={};
+ const echo=D.nightEchoes?.[chapter];if(echo&&m[echo.key]==='read')out.echo=echo.lines;
+ if([4,10].includes(chapter))out.gift=root.OkaeriActivities?.keepsake(s)||null;
+ if(chapter===6&&s.journey?.step===9)out.journey=D.journeyEcho;
+ if(chapter===9){out.festival=Object.entries(D.festivalEchoes||{}).flatMap(([key,extra])=>key==='journey'?(s.journey?.step===9?extra:[]):m[key]==='read'?extra:[]);}
+ if(chapter===10&&m.unsentLetter==='read')out.letter=D.finalEchoes[s.episode.route];
+ return out;
+}
 function events(s){
- const chapter=s.episode.chapter,list=chapter===10?D.routes[s.episode.route]||[]:D.episodes[chapter]||[];
- return list.map((e,i)=>{
-  let lines=e.lines;
-  if(i===list.length-1){
-   if(root.OkaeriActivities&&[4,10].includes(chapter))lines=root.OkaeriActivities.closing(s,lines);
-   const echo=D.nightEchoes?.[chapter];
-   if(echo&&s.memories?.[echo.key]==='read'){const at=echo.at==='end'?lines.length:echo.at;lines=[...lines.slice(0,at),...echo.lines,...lines.slice(at)];}
-   if(chapter===10&&s.memories?.unsentLetter==='read'){const at={touma:3,nina:5,friends:3}[s.episode.route];lines=[...lines.slice(0,at),...D.finalEchoes[s.episode.route],...lines.slice(at)];}
-  }
-  if(chapter===6&&i===list.length-1&&s.journey?.step===9)lines=[...lines.slice(0,1),['','鞄の隣で、ミナモの乾燥豆を水に浸す。知らない町の夕飯が、明日はこの台所で湯気になる。'],['nina','小屋にいた時、トウマの方へ光が届いてるって思うと、ちゃんと合わせたくなった。'],['touma','俺も。ニナが待ってる窓へ向けてた。'],['','ニナはうなずいて、明日の鍋を二人で選んだ。'],...lines.slice(1)];
-  if(chapter===9&&i===0){const echoes=Object.entries(D.festivalEchoes||{}).flatMap(([key,extra])=>s.memories?.[key]==='read'?extra:[]);if(s.journey?.step===9)echoes.push(['オルフ','ミナモから祭りのパンが届いたよ。君たちが直した迎え灯、夕方の便にも役立ってるって。']);lines=[...lines.slice(0,-1),...echoes,...lines.slice(-1)];}
-  return lines===e.lines?e:{...e,lines};
- });
+ const chapter=s.episode.chapter,list=chapter===10?D.routes[s.episode.route]||[]:D.episodes[chapter]||[],fill=slots(s);
+ return list.map(e=>({...e,lines:expand(e.lines,fill)}));
 }
 function current(s){return s.episode?events(s)[s.episode.step]:null;}
 function create(chapter,route=null){
@@ -32,7 +32,7 @@ function objective(s){if(s.episode.complete)return s.episode.chapter===10?'二�
 function go(a,e){if(e.solo)a.state.lead=e.lead;if(e.arrival){a.scene(...e.arrival);}else if(a.state.scene!==e.scene)a.scene(e.scene,...spawns[e.scene]);a.save();a.updateHud();}
 function finishEvent(a){const ep=a.state.episode;if(ep.chapter===6&&ep.step===2&&root.OkaeriJourney&&a.state.journey?.step!==9){root.OkaeriJourney.begin(a);return;}ep.step++;if(ep.step===events(a.state).length){ep.complete=true;}a.save();a.updateHud();if(ep.complete)endDay(a);else go(a,current(a.state));}
 function next(a){const s=a.state,nextState=create(s.episode.chapter+1,s.episode.route);nextState.courage=s.courage;nextState.flags={...s.flags,...nextState.flags};nextState.memories={...s.memories};Object.assign(s,nextState);a.scene(s.scene,s.x,s.y);a.toast(title(s));}
-function endDay(a){const s=a.state,ep=s.episode;const buttons=[['家で過ごす',a.closeModal,true]];const night=events(s).at(-1);if(night)buttons.push(['今夜の会話を振り返る',()=>{a.closeModal();a.talk(night.lines);}]);if(ep.chapter<10)buttons.push(['翌日の話へ',()=>{a.closeModal();next(a);}]);else buttons.push(['この一日をもう一度',()=>{a.closeModal();ep.step=0;ep.complete=false;a.save();go(a,current(s));}]);a.openModal('<span class="tag">'+(ep.chapter===10?'END':'一日の終わり')+'</span><h2>'+D.titles[ep.chapter-1]+'</h2><p>'+(ep.chapter===10?'選んだ関係で過ごした一日。二人の暮らしは、これからも続きます。':'今日の出来事を家に置いて、明日へ。')+'</p>',buttons,'explore');}
+function endDay(a){const s=a.state,ep=s.episode;const buttons=[['家で過ごす',a.closeModal,true]];const night=events(s).at(-1);if(night)buttons.push(['今夜の会話を振り返る',()=>{a.closeModal();a.talk(night.lines);}]);if(ep.chapter<10)buttons.push(['翌日の話へ',()=>{a.closeModal();next(a);}]);else buttons.push(['この一日をもう一度',()=>{a.closeModal();ep.step=0;ep.complete=false;a.save();go(a,current(s));}]);a.openModal((ep.chapter===10?'<div class="ending-art"></div>':'')+'<span class="tag">'+(ep.chapter===10?'おかえりの灯 · END':'第'+ep.chapter+'話 · おしまい')+'</span><h2>'+D.titles[ep.chapter-1]+'</h2><p>'+(ep.chapter===10?'春になれば、ニナは南へ発ちます。そして三週間後、この家の戸口には帰り灯がともっているはずです。<br>遊んでくれて、ありがとうございました。':D.closings?.[ep.chapter]||'今日の出来事を家に置いて、明日へ。')+'</p>',buttons,'explore');}
 function choose(a){
  const pick=r=>{a.closeModal();a.talk(D.confessions[r],()=>{setRoute(a.state,r);finishEvent(a);});};
  a.openModal('<h2>ニナに、伝えたいこと</h2><p>第10話は、この選択で過ごし方が変わります。</p>',[['自分から好きだと伝える',()=>pick('touma'),true],['ニナの告白を受け止める',()=>pick('nina')],['今の二人の関係を選ぶ',()=>pick('friends')],['もう少し考える',a.closeModal]],'explore');
@@ -47,7 +47,7 @@ function offerDetour(a,done){
 }
 function handle(id,a){const s=a.state;if(!s.episode)return false;
  if(root.OkaeriJourney?.handle(id,a))return true;
- if(s.episode.chapter===1){if(id==='ritsu'||id==='yura'){a.talk(id==='ritsu'?[['リツ','水番のリツです。町に戻ってきたばかり。森から帰ったら、水路も一緒に見てもらえる？'],['nina','もちろん。あの頃の宝物、まだ隠してないよね？']]:[['ユラ','二人とも、大きくなったねえ。自分の家で暮らしても、食事は抜かないこと。'],['touma','今日は弁当もあります。'],['ユラ','よろしい。何もなくても、顔を見せにおいで。']]);return true;}return false;}
+ if(s.episode.chapter===1){if(id==='ritsu'||id==='yura'){a.talk(id==='ritsu'?[['','広場の東で、見慣れない外套の男が水路の石組みをのぞきこんでいる。図面を片手に、何か数えているようだ。'],['nina','……誰だろ。旅の人かな。'],['touma','仕事中みたいだ。帰ってきたら声をかけよう。今は森が先だ。']]:[['ユラ','おや、二人とも。今日から森は二人だけだってね。自分の家を持っても、食事は抜かないこと。'],['touma','今日は弁当があります。ニナが作りました。'],['ユラ','よろしい。怪我をしてもしなくても、帰ったら顔を見せにおいで。','happy']]);return true;}return false;}
  if(s.episode.complete&&id==='homeTable'){endDay(a);return true;}
  if(id==='episodeEvent'){
  const e=current(s);if(!e||e.scene!==s.scene)return true;
@@ -59,11 +59,18 @@ function handle(id,a){const s=a.state;if(!s.episode)return false;
  if(s.scene==='house'||id==='ourHome')return false;
  const exits={exit:['forest',5,13],home:['town',12,3],canalExit:['canal',3,12],canalHome:['town',21,9],hillExit:['hill',4,13],hillHome:['town',2,9]};
  if(exits[id]){a.scene(...exits[id]);return true;}
- if(id==='ritsu'||id==='yura'){a.talk(id==='ritsu'?[['リツ','点検の記録は、みんなに見てもらうことにしたよ。'],['touma','一緒に確かめましょう。']]:[['ユラ','今日はちゃんと休む時間も作ること。お茶だけ飲みに来てもいいんだよ。'],['nina','今度は二人で、お菓子を持ってきます。']]);return true;}
- a.talk([['nina',s.episode.complete?'今日の話、家でゆっくりしよう。':'今は、'+current(s).label+'だったね。'],['touma','うん。一緒に行こう。']]);return true;
+ // 町の人や掲示板は、出来事の合間にいつでも話しかけられる。
+ // 寄り道（針仕事帳・帰還札・白樺の待ち場）は、吹雪の日を除いていつでも進められる。
+ if(s.episode.chapter!==8&&root.OkaeriSideStories?.handle(id,a))return true;
+ const chat=D.chatter?.[s.episode.chapter]?.[id]||D.idle?.[id];
+ if(chat){a.talk(chat);return true;}
+ a.talk([['nina',s.episode.complete?'今日の話は、家でゆっくりしよう。':'今は「'+current(s).label+'」だったね。'],['touma','ああ。行こう。']]);return true;
 }
-function won(a){const e=current(a.state);if(!e?.battle)return false;a.talk([['','荒れていた灯りが静まり、番人は小屋へ続く道をあけた。'],['nina','ありがとう。あとは、私たちで届けるね。']],()=>finishEvent(a));return true;}
+function won(a){const e=current(a.state);if(!e?.battle)return false;a.talk([['','荒れていた角の光が、ゆっくり静まった。\n番人は灯台へ続く道をあけ、雪の上に伏せる。'],['nina','ありがとう。あとは、私たちが届けるね。']],()=>finishEvent(a));return true;}
 const originalObjects=S.activeObjects;
-S.activeObjects=function(s){let list=originalObjects(s);if(!s.episode)return list;if(s.scene==='town')list=[...list,{id:'ritsu',type:'episodeNpc',x:20,y:9,label:'水番のリツ'},{id:'yura',type:'episodeNpc',x:11,y:11,label:'診療所のユラ'}];const e=current(s);if(!s.episode.complete&&e?.scene===s.scene){const base=list.find(o=>o.x===e.x&&o.y===e.y);list=list.filter(o=>o!==base);list.push({id:'episodeEvent',type:'episodeEvent',x:e.x,y:e.y,label:e.label,base,person:e.scene==='town'&&e.x===20?'リツ':e.scene==='town'&&e.x===11?'ユラ':e.lines[0][0]});}return list;};
-root.OkaeriEpisodes={create,events,current,title,objective,handle,won,spawns,endDay,next,finishEvent,detour};
+S.activeObjects=function(s){let list=originalObjects(s);if(!s.episode)return list;
+ // 第8話のオルフは丘の小屋にいる。全員が帰るまで、広場には立っていない。
+ if(s.scene==='town'&&s.episode.chapter===8&&!s.episode.complete)list=list.filter(o=>o.id!=='orlf');
+ if(s.scene==='town')list=[...list,{id:'ritsu',type:'episodeNpc',x:20,y:9,label:'水番のリツ'},{id:'yura',type:'episodeNpc',x:11,y:11,label:'診療所のユラ'}];const e=current(s);if(!s.episode.complete&&e?.scene===s.scene){const base=list.find(o=>o.x===e.x&&o.y===e.y);list=list.filter(o=>o!==base);list.push({id:'episodeEvent',type:'episodeEvent',x:e.x,y:e.y,label:e.label,base,person:e.scene==='town'&&e.x===20?'リツ':e.scene==='town'&&e.x===11?'ユラ':e.lines[0][0]});}return list;};
+root.OkaeriEpisodes={create,events,current,title,objective,handle,won,spawns,endDay,next,finishEvent,detour,expand};
 })(globalThis);

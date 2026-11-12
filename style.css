@@ -35,3 +35,5 @@
 .dialogue.typing #nextDialogue{opacity:.35}.dialogue.typing #nextDialogue span{animation:none}
 @keyframes next-bob{50%{transform:translateX(4px)}}
 @media(max-width:600px){.portrait-wrap{align-self:flex-start}.portrait-mark{width:28px;height:28px;top:-8px;right:-8px;padding:3px}}
+.objective,.lead,#interactPrompt{transition:opacity .35s}
+#stage:has(#dialogue:not([hidden])) .objective,#stage:has(#dialogue:not([hidden])) .lead{opacity:0;pointer-events:none}

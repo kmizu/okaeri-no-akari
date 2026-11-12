@@ -1,13 +1,13 @@
 (function(root){
 'use strict';
 const shots=[
- {view:'snow',label:'雪に閉ざされた土地',text:'山あいの町ユキネには、長い冬がある。\n人の通う道も、一晩の雪で姿を変える。',duration:7500},
- {view:'lights',label:'町へ続く灯り',text:'だから人々は、道の曲がり角や家の窓に、\n小さな灯りをともしてきた。',duration:6500},
- {view:'lights',label:'帰り灯',text:'仕事へ出た人が、帰り道を見失わないように。\n待つ人のいる場所が、遠くからでも分かるように。',duration:7500},
- {view:'pair',label:'トウマとニナ',text:'その灯りを守る、トウマとニナ。\n幼馴染の二人は、町の空き家を直して、一緒に暮らしている。',duration:8000},
- {view:'promise',label:'いつもの帰り道',text:'トウマ「帰ったら、何食べようか。\n灯台まで歩いたら、きっと腹が減るな」',duration:7000},
- {view:'promise',label:'帰ってからの楽しみ',text:'ニナ「昨日のスープ、残してあるよ。\n帰り道にも、楽しみなことがあるといいでしょ」',duration:7500},
- {view:'home',label:'二人の帰る場所',text:'遠くへ行く日も、いつもの道を歩く日も。\n一日の終わりには、二人であの家へ。',duration:7000},
+ {view:'snow',label:'雪に閉ざされた土地',text:'山あいの町ユキネは、一年の半分を雪の中で過ごす。\n道は一晩で消える。昨日の足跡も、朝には残らない。',duration:7500},
+ {view:'lights',label:'町へ続く灯り',text:'だからこの町の人は、道の曲がり角ごとに灯りを置いた。\n雪の夜でも、家の方角だけは分かるように。',duration:7000},
+ {view:'lights',label:'帰り灯',text:'人はそれを「帰り灯」と呼ぶ。\nともすのは、出ていく人のため。消すのは、最後に帰った人の役目。',duration:7500},
+ {view:'pair',label:'トウマとニナ',text:'その灯りの番をするのが、灯守（ひもり）。\nトウマとニナは、去年ようやく一人前になった。',duration:7500},
+ {view:'promise',label:'いつもの朝',text:'トウマ「帰ったら、何食う」\nニナ「まだ出かけてもないよ」',duration:6000},
+ {view:'promise',label:'帰る理由',text:'ニナ「ゆうべのスープ、半分残してあるの。\n帰る理由は、多い方がいいでしょ」',duration:7000},
+ {view:'home',label:'二人の帰る場所',text:'幼馴染のふたりは、町はずれの古い家を直して暮らしている。\n恋人ではない。たぶん、まだ。',duration:7500},
  {view:'title',label:'おかえりの灯',text:'きみと灯して、ふたりで帰ろう。',title:'おかえりの灯',duration:8500}
 ];
 class OpeningFilm {

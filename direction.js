@@ -47,7 +47,7 @@ function ambient(s){
  if(ep&&E){
   const e=ep.complete?null:E.current(s);
   if(ep.chapter===1)time=s.pendingEvening||ep.complete||f.returned?'night':f.lit?'dusk':s.openingStage!==undefined||!f.board?'morning':'day';
-  else if(ep.complete)time='night';
+  else if(ep.complete){time='night';if(ep.chapter===10)bgm='ending';}
   else if(e){time=e.time||'day';weather=e.weather||'snow';bgm=e.bgm||null;}
   if(ep.chapter===9){time='night';if(s.scene==='town'&&!bgm)bgm='festival';}
  }else time=f.festivalStarted||s.pendingEvening?'night':f.lit&&!f.returned?'dusk':'day';
@@ -65,6 +65,8 @@ function apply(cue,speaker){
  if(!cue)return;const t=now(),calm=reduced();
  if(cue.time)stage.over.time=cue.time;
  if(cue.weather)stage.over.weather=cue.weather;
+ if(cue.flood)stage.over.flood=true;
+ if(cue.lit)stage.over.lit=true;
  if(cue.shake&&!calm)stage.shake={start:t,power:cue.shake===true?1:cue.shake,ms:cue.shakeMs||520};
  if(cue.flash)stage.flash={start:t,color:cue.flash==='warm'?'255,222,160':'255,255,255',ms:calm?200:520};
  if(cue.fade)fade(cue.fade,cue.fadeMs);
@@ -92,8 +94,8 @@ function lightsFor(s,fixed){
   if(o.type==='homeStove')out.push([x-8,y-31,330,1.25]);
   else if(o.type==='homeTable')out.push([x+48,y-47,260,1]);
   else if(o.type==='lamp')out.push([x+20,y-16,190,1]);
-  else if(o.type==='tower'&&f.lit)out.push([x,y-47,330,1.2]);
-  else if(o.type==='hillBeacon'&&(f.hillLit||s.episode?.chapter===8&&s.episode.step>3))out.push([x,y-60,340,1.2]);
+  else if(o.type==='tower'&&(f.lit||stage.over.lit))out.push([x,y-47,330,1.2]);
+  else if(o.type==='hillBeacon'&&((f.hillLit&&!(s.episode?.chapter===8&&s.episode.step<=3))||stage.over.lit))out.push([x,y-60,340,1.2]);
   else if(o.type==='waterBeacon'&&f.waterLit)out.push([x,y-50,240,1]);
   else if(o.type==='waitingLight'&&f.waitingLit)out.push([x+20,y-16,170,1]);
   else if(o.type==='repair'&&f.repair)out.push([x+53,y-36,170,1]);

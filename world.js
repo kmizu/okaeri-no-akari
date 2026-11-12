@@ -205,7 +205,7 @@ Renderer.prototype.background=function(scene){
   block(c,690,350,263,34,13,'#9a815d','#56645a','#d6c3a0');
   for(let i=0;i<5;i++){ellipse(c,718+i*39,349,11,5,'#eee2c4');rect(c,710+i*39,340,16,9,'#c4b99a');}
   c.font='bold 15px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f2dfb9';c.fillText('トウマの部屋',389,279);c.fillText('ニナの部屋',812,279);c.fillText('二人の家',590,709);
-  glow(c,275,445,170);glow(c,560,472,180);this.cache[scene]=cv;return cv;
+  glow(c,275,445,170);glow(c,560,472,180);lightLog=null;this.cache[scene]=cv;return cv;
  }
  let g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#bdd6df');g.addColorStop(.5,'#dce6df');g.addColorStop(1,'#9bbdc9');c.fillStyle=g;c.fillRect(0,0,W,H);
  const paths=[];const path=(p,w)=>paths.push([p,w]);
@@ -264,7 +264,10 @@ Renderer.prototype.background=function(scene){
  lightLog=null;this.cache[scene]=cv;return cv;
 };
 Renderer.prototype.draw=function(s,time,mode){
- const c=this.c,t=time*.001,D=root.OkaeriDirector;this.t=t;c.clearRect(0,0,W,H);c.save();D?.pre(c,time);c.drawImage(this.background(s.scene),0,0);
+ const c=this.c,t=time*.001,D=root.OkaeriDirector;this.t=t;c.clearRect(0,0,W,H);c.fillStyle='#0b1c26';c.fillRect(0,0,W,H);c.save();D?.pre(c,time);
+ const wantLift=mode==='dialogue'?Math.max(0,Math.min(170,this.p.y-400)):0;this.lift=(this.lift||0)+(wantLift-(this.lift||0))*.1;if(this.lift<.5&&!wantLift)this.lift=0;const lift=this.lift;c.translate(0,-lift);
+ const litNow=!!D?.stage.over.lit,beaconLit=(s.flags.hillLit&&!(s.episode?.chapter===8&&s.episode.step<=3))||(litNow&&s.scene==='hill'),towerLit=s.flags.lit||(litNow&&s.scene==='forest');
+ c.drawImage(this.background(s.scene),0,0);
  if(s.scene==='town'&&s.flags.festivalStarted&&(!s.episode||s.episode.chapter===9)){
   rect(c,0,0,W,H,'#1a244957');
   for(const [x,y] of [[300,440],[510,360],[760,420],[875,470],[600,560]])glow(c,x,y,120);
@@ -307,8 +310,8 @@ Renderer.prototype.draw=function(s,time,mode){
   }
   if(o.type==='hillLens'){block(c,x-18,y-19,36,30,13,'#8fa0a3','#5b7989','#d0ddde');ellipse(c,x,y-31,24,24,'#536e83');ellipse(c,x,y-31,18,18,s.flags.hillLens?'#ffe3a2':'#c0dae5');if(s.flags.hillLens)glow(c,x,y-31,60);}
   if(o.type==='hillBeacon'){
-   ellipse(c,x,y+7,39,14,'#52687855');block(c,x-24,y-95,48,100,20,'#9daeb0','#617f8f','#d8e4e1');rect(c,x-29,y-99,58,9,'#d7e3e2');poly(c,[[x-36,y-99],[x,y-131],[x+36,y-99]],'#eaf0ed');rect(c,x-13,y-82,26,34,s.flags.hillLit?'#ffdba1':'#536f85');
-   if(s.flags.hillLit){glow(c,x,y-60,160);poly(c,[[x-12,y-68],[x-660,y-28],[x-660,y+48],[x-12,y-49]],'#ffe8ae18');}
+   ellipse(c,x,y+7,39,14,'#52687855');block(c,x-24,y-95,48,100,20,'#9daeb0','#617f8f','#d8e4e1');rect(c,x-29,y-99,58,9,'#d7e3e2');poly(c,[[x-36,y-99],[x,y-131],[x+36,y-99]],'#eaf0ed');rect(c,x-13,y-82,26,34,beaconLit?'#ffdba1':'#536f85');
+   if(beaconLit){glow(c,x,y-60,160);poly(c,[[x-12,y-68],[x-660,y-28],[x-660,y+48],[x-12,y-49]],'#ffe8ae18');}
   }
   if(o.type==='waterGate'){
    rect(c,x-35,y-50,8,65,'#5b716e');rect(c,x+27,y-50,8,65,'#5b716e');
@@ -342,7 +345,7 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='mochi')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='crab')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='guardian')OkaeriCast.drawMap(c,o.type,x,y,t);
-  if(o.type==='tower'){ellipse(c,x,y+7,43,17,'#425e6555');block(c,x-25,y-83,50,89,22,'#a4b0a1','#677e7b','#d4dfcf');rect(c,x-33,y-86,66,12,'#b3bfb0');poly(c,[[x-39,y-84],[x,y-119],[x+39,y-84]],'#e5ece1');rect(c,x-14,y-66,28,38,s.flags.lit?'#ffd18a':'#405f67');if(s.flags.lit)glow(c,x,y-47,150);rect(c,x-10,y-20,20,27,'#5a6a61');}
+  if(o.type==='tower'){ellipse(c,x,y+7,43,17,'#425e6555');block(c,x-25,y-83,50,89,22,'#a4b0a1','#677e7b','#d4dfcf');rect(c,x-33,y-86,66,12,'#b3bfb0');poly(c,[[x-39,y-84],[x,y-119],[x+39,y-84]],'#e5ece1');rect(c,x-14,y-66,28,38,towerLit?'#ffd18a':'#405f67');if(towerLit)glow(c,x,y-47,150);rect(c,x-10,y-20,20,27,'#5a6a61');}
   if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':o.id==='ourHome'?'⌂':o.id==='houseExit'?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
   const ready=(['log','waterGate','windbreak'].includes(o.id)?s.lead==='touma':['repair','regulator','hillLens'].includes(o.id)?s.lead==='nina':true);const distance=Math.hypot(s.x-o.x,s.y-o.y);
   if(distance<2&&mode==='explore'){ellipse(c,x,y-(o.type==='guardian'?115:o.type==='npc'?82:56)+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(o.type==='guardian'?111:o.type==='npc'?78:52)+Math.sin(t*3)*2);}
@@ -358,7 +361,7 @@ Renderer.prototype.draw=function(s,time,mode){
  const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
  for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
- if(s.episode?.chapter===3&&s.scene==='canal'&&s.episode.step>=1&&s.episode.step<=3){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
+ if(s.scene==='canal'&&((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||D?.stage.over.flood)){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
  if(!['house','lampworkshop'].includes(s.scene))for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
  D?.light(c,s,time,this.lights?.[s.scene]||[]);D?.weatherLayer(c,s,time);
@@ -367,11 +370,11 @@ Renderer.prototype.draw=function(s,time,mode){
  // 感情の吹き出しは、話している人の頭上へ。同行者が画面にいない時は先頭の人に出す。
  const follower=s.lead==='touma'?'nina':'touma',objects=OkaeriStory.activeObjects(s);
  D?.post(c,time,who=>{
-  if(who===s.lead)return {x:this.p.x,y:this.p.y-82};
-  if(who===follower)return party.some(a=>a.id===who)&&drawnParty.includes(who)?{x:this.f.x,y:this.f.y-82}:null;
+  if(who===s.lead)return {x:this.p.x,y:this.p.y-82-lift};
+  if(who===follower)return drawnParty.includes(who)?{x:this.f.x,y:this.f.y-82-lift}:null;
   const id=D.speakerIds[who];if(!id)return null;
   const o=objects.find(o=>o.id===id||o.base?.id===id||(o.person===who)||(o.type==='journeyProp'&&o.kind===id));
-  return o?{x:o.x*T+24,y:o.y*T+24-96}:null;
+  return o?{x:o.x*T+24,y:o.y*T+24-96-lift}:null;
  });
 };
 function enemySvg(type){return OkaeriCast.battleArt(type);}

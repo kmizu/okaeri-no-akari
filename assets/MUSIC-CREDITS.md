@@ -1,12 +1,18 @@
-# 氷湖の小旅行の音楽
+# 音源のクレジット
 
-「湖面に届く手紙」「同じ灯りのそばで」は、このゲーム用に作曲・編曲した新しい旋律です。どちらも80秒、6/8拍子の32小節。二つの曲は和声と小節の位置を揃え、湖岸と小屋を切り替える時に再生位置を合わせてクロスフェードします。
+## assets/music/ の11曲
 
-ピアノ、ナイロン弦ギター、フルート、弦、チェロ、チェレスタ、ハープを、GeneralUser GS v2.0.3 by S. Christian Collins のSoundFontでレンダリングしています。ステレオの残響と音量を調整し、Vorbis形式で書き出しました。演奏はサンプル音源によるもので、生演奏の録音ではありません。
+このゲーム用に作曲した旋律を、**FluidR3_GM**（Frank Wen 作、MIT ライセンス）の SoundFont で演奏し、FluidSynth（LGPL）で録音しました。ゲームに同梱しているのは録音だけで、SoundFont 本体は含みません。作曲とレンダリングの手順は `tools/compose_music.py` にあります。
+
+- FluidR3_GM：Debian / Ubuntu の `fluid-soundfont-gm` パッケージ。ライセンスは同パッケージの copyright に記載（MIT）
+- FluidSynth：https://www.fluidsynth.org/
+
+## 氷湖の小旅行の2曲（以前の版から継続）
+
+「湖面に届く手紙」（lake-letters.ogg）と「同じ灯りのそばで」（beside-the-same-light.ogg）は、GeneralUser GS v2.0.3 by S. Christian Collins の SoundFont でレンダリングした録音です。どちらも80秒、6/8拍子の32小節で、和声と小節の位置をそろえてあり、切り替える時に再生位置を合わせてクロスフェードします。
 
 - 音源配布元：https://www.schristiancollins.com/generaluser.php
-- 作者のリポジトリ：https://github.com/mrbumpy409/GeneralUser-GS
 - 利用条件：https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/LICENSE.txt
 - レンダラー：TinySoundFont-pybind / TinySoundFont（MIT） https://github.com/nwhitehead/tinysoundfont-pybind
 
-ゲームに配布するのは作曲した音楽の録音のみで、SoundFont本体は同梱していません。制作スクリプトは `work/compose-lake-suite.py` にあります。
+いずれも演奏はサンプル音源によるもので、生演奏の録音ではありません。

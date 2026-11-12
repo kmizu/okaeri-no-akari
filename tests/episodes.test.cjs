@@ -13,10 +13,12 @@ test('all event targets can be approached and all episodes conclude at home',()=
  for(const ev of events){s.scene=ev.scene;const [sx,sy]=E.spawns[ev.scene],q=[[sx,sy]],seen=new Set();while(q.length){const [x,y]=q.shift(),k=x+','+y;if(seen.has(k))continue;seen.add(k);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(global.OkaeriStory.walkable(s,x+dx,y+dy))q.push([x+dx,y+dy]);}assert.ok([...seen].some(k=>{const [x,y]=k.split(',').map(Number);return Math.hypot(x-ev.x,y-ev.y)<1.5;}),n+':'+ev.label);}
  }
 });
-test('events persist only on completion; episode three reconciliation precedes next day',()=>{
+test('events persist only on completion; the quarrel stays open overnight and is mended in episode four',()=>{
  const s=E.create(3);let callback;const a={state:s,talk(l,cb){callback=cb;},save(){},updateHud(){},scene(n,x,y){Object.assign(s,{scene:n,x,y});},toast(){},openModal(){},closeModal(){},startBattle(){}};
  E.handle('episodeEvent',a);assert.equal(s.episode.step,0);callback();assert.equal(s.episode.step,1);assert.ok(C.restoreSave(JSON.stringify(s)));
- const lines=E.events(s).at(-1).lines.flat().join('');assert.match(lines,/温め直/);assert.match(lines,/怖/);
+ const text=l=>l.map(x=>x[1]).join('');
+ const night=text(E.events(s).at(-1).lines);assert.match(night,/温め直/);assert.doesNotMatch(night,/取り消/,'no apology on the night of the accident');
+ const mend=text(E.events(E.create(4)).at(-1).lines);assert.match(mend,/取り消/);assert.match(mend,/怖かった/);
 });
 test('all three routes can be completed from episode two with valid saves after every event',()=>{
  for(const r of ['touma','nina','friends']){
@@ -38,4 +40,18 @@ test('rescue refuses the wrong leader without advancing and transfers control to
  const a={state:s,talk(l,cb){callback=cb;},save(){},updateHud(){},scene(n,x,y){Object.assign(s,{scene:n,x,y});},toast(t){warning=t;}};
  E.handle('episodeEvent',a);assert.ok(warning);assert.equal(callback,undefined);assert.equal(s.episode.step,1);
  s.lead='touma';E.handle('episodeEvent',a);callback();assert.equal(s.lead,'nina');assert.equal(s.episode.step,2);assert.equal(s.x,14);
+});
+
+test('slots are filled or removed, never shown; townsfolk have something to say in every later chapter',()=>{
+ for(let n=2;n<=10;n++)for(const route of n===10?['touma','nina','friends']:[null]){
+  const plain=E.create(n,route),full=E.create(n,route);
+  full.memories={gift:'tea',ritsuReturn:'read',yuraRounds:'read',unsentLetter:'read',stormThanks:'read'};
+  for(const s of [plain,full])for(const ev of E.events(s))for(const line of ev.lines){assert.ok(line.length>=2,n+': marker left in '+ev.label);assert.equal(typeof line[1],'string');}
+  assert.ok(E.events(full).flatMap(e=>e.lines).length>=E.events(plain).flatMap(e=>e.lines).length);
+ }
+ const D=global.OkaeriEpisodesData;
+ for(let n=2;n<=10;n++)assert.ok(Object.keys(D.chatter[n]).length>=5,'chapter '+n);
+ const s=E.create(5);s.scene='town';let said;const a={state:s,talk(l){said=l;},toast(){},save(){},updateHud(){},scene(){}};
+ assert.equal(E.handle('sae',a),true);assert.equal(said,D.chatter[5].sae);
+ assert.equal(E.handle('board',a),true);assert.equal(said,D.idle.board);
 });

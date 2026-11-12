@@ -165,6 +165,7 @@
 | `sfx.js` | 効果音と環境音（WebAudio の合成） |
 | `music.js` | BGM。場面の曲と、物語が指定する曲の二層 |
 | `tools/compose_music.py` | BGMの作曲とレンダリング |
+| `scenery.js` | 風景の仕上げ。雪の起伏と風紋、踏み跡、茂み・岩・若木、木と家まわりの細部、町の井戸や荷車、煙突の煙 |
 | `world.js` / `sprites.js` / `cast.js` / `residents-art.js` | 探索画面と人物の描画 |
 | `battle-ui.js` / `core.js` | 戦闘画面 / 戦闘ルールと保存データの検査 |
 | `opening-film.js` | OP |

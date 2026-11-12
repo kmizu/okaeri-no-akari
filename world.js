@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const W=1152,H=768,T=48;
+let smokeLog=null; // 同じく、煙突の位置（煙に使う）
 let lightLog=null; // 背景を描く間、ともっている灯りの位置を控える（夜の光に使う）
 function Renderer(canvas){this.c=canvas.getContext('2d');this.t=0;this.p={x:600,y:504,dir:'down'};this.f={x:600,y:552,dir:'down'};this.target={x:600,y:504};this.follow={x:600,y:552};this.g={x:600,y:590,dir:'down'};this.follow2={x:600,y:590};this.cache={};}
 Renderer.prototype.reset=function(s){const x=s.x*48+24,y=s.y*48+24;this.p={x,y,dir:'down'};this.f={x:x-24,y:y+28,dir:'down'};this.target={x,y};this.follow={x:x-24,y:y+28};this.g={x:x+22,y:y+44,dir:'down'};this.follow2={x:x+22,y:y+44};};
@@ -15,7 +16,7 @@ function block(c,x,y,w,h,d=10,front='#8c8474',side='#5d6968',top='#c8d4d0'){
  rect(c,x,y,w,h,front);line(c,[[x,y],[x+w,y],[x+w+d,y-d*.55]],'#ffffff35',1);
 }
 function shadow(c,x,y,w,h){const g=c.createRadialGradient(x,y,2,x,y,w);g.addColorStop(0,'#233d4e45');g.addColorStop(1,'#233d4e00');c.save();c.translate(x,y);c.scale(1,h/w);c.fillStyle=g;c.translate(-x,-y);c.fillRect(x-w,y-w,w*2,w*2);c.restore();}
-function tree(c,x,y,s=1){c.save();c.translate(x,y);c.scale(s,s);
+function tree(c,x,y,s=1){if(root.OkaeriScenery){root.OkaeriScenery.tree(c,x,y,s);return;}c.save();c.translate(x,y);c.scale(s,s);
  poly(c,[[-15,0],[18,-5],[84,27],[38,38]],'#496d8026');ellipse(c,8,5,37,12,'#3e5e6e32');
  block(c,-5,-40,10,43,6,'#756754','#4b5551','#a4977b');
  for(let i=0;i<4;i++){const yy=-18-i*24,w=40-i*8,peak=yy-48;
@@ -111,6 +112,7 @@ function house(c,x,y,w,h,roof='#617b88',signKind='rest'){
  }
  poly(c,[[b[0]+2,b[1]-8],[far[0]+5,far[1]-8],[far[0]+5,far[1]+1],[b[0]+2,b[1]+2]],'#8daab9');
  for(let i=1;i<5;i++){const xx=x+i*w/5;poly(c,[[xx,eave-4],[xx+5,eave-4],[xx+2,eave+8+i%2*5]],'#d2e4e5');}
+ if(smokeLog)smokeLog.push([x+w*.68+10,y-34]);
  block(c,x+w*.68,y-25,17,39,10,'#82766d','#5e6870','#e9eee5');
  block(c,x+w*.68-4,y-29,25,7,10,'#d0dbd6','#a7bec8','#f8f5e9');
  for(let cy=y-18,row=0;cy<y+13;cy+=8,row++){
@@ -167,6 +169,7 @@ function house(c,x,y,w,h,roof='#617b88',signKind='rest'){
   }
   line(c,[[x+w+3,base-24],[x+w+35,base-24]],'#edf1e7',5);
  }
+ root.OkaeriScenery?.houseDetails(c,x,y,w,h);
 }
 function lantern(c,x,y,lit=true){
  if(lit&&lightLog)lightLog.push([x+20,y-16,150]);
@@ -181,8 +184,9 @@ function lantern(c,x,y,lit=true){
 
 Renderer.prototype.background=function(scene){
  if(this.cache[scene])return this.cache[scene];const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
- this.lights=this.lights||{};lightLog=this.lights[scene]=[];
- if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})||root.OkaeriFieldArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){lightLog=null;this.cache[scene]=cv;return cv;}
+ this.lights=this.lights||{};lightLog=this.lights[scene]=[];this.smoke=this.smoke||{};smokeLog=this.smoke[scene]=[];
+ const finish=()=>{lightLog=null;smokeLog=null;root.OkaeriScenery?.polish(c,scene);this.cache[scene]=cv;return cv;};
+ if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})||root.OkaeriFieldArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){return finish();}
  if(scene==='house'){
   rect(c,0,0,W,H,'#243c46');shadow(c,585,682,480,55);
   block(c,133,112,884,560,20,'#755b46','#35484a','#d5c6a5');
@@ -205,7 +209,7 @@ Renderer.prototype.background=function(scene){
   block(c,690,350,263,34,13,'#9a815d','#56645a','#d6c3a0');
   for(let i=0;i<5;i++){ellipse(c,718+i*39,349,11,5,'#eee2c4');rect(c,710+i*39,340,16,9,'#c4b99a');}
   c.font='bold 15px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f2dfb9';c.fillText('トウマの部屋',389,279);c.fillText('ニナの部屋',812,279);c.fillText('二人の家',590,709);
-  glow(c,275,445,170);glow(c,560,472,180);lightLog=null;this.cache[scene]=cv;return cv;
+  glow(c,275,445,170);glow(c,560,472,180);return finish();
  }
  let g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#bdd6df');g.addColorStop(.5,'#dce6df');g.addColorStop(1,'#9bbdc9');c.fillStyle=g;c.fillRect(0,0,W,H);
  const paths=[];const path=(p,w)=>paths.push([p,w]);
@@ -218,6 +222,7 @@ Renderer.prototype.background=function(scene){
   house(c,150,172,222,187,'#617b88','bread');house(c,779,150,225,170,'#657680','lamp');house(c,884,533,185,150,'#617b88','thread');house(c,68,551,108,95);
   for(let i=0;i<7;i++){rect(c,415+i*30,604,18,25,'#8c8270');rect(c,413+i*30,600,22,7,'#edf0e2');}line(c,[[420,615],[610,615]],'#7e8270',4);
   for(const [x,y] of [[439,354],[753,378],[867,475],[365,506],[626,182]])lantern(c,x,y);
+  root.OkaeriScenery?.townProps(c,{rect,poly,line,ellipse,block});
   for(let i=0;i<11;i++){ellipse(c,220+i*14,367,7,5,'#e2d1a7');}
   line(c,[[360,208],[480,248],[610,262],[738,233],[817,198]],'#7c887b',2);for(let i=0;i<8;i++){let x=400+i*51,y=230+Math.sin(i/7*Math.PI)*28;poly(c,[[x,y],[x+14,y+2],[x+7,y+22]],i%2?'#c8896a':'#648c89');}
   c.font='14px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f4deb3';c.fillText('マロのパン屋',260,346);c.fillStyle='#5e766f';c.fillText('灯守の共同所',887,338);
@@ -261,7 +266,7 @@ Renderer.prototype.background=function(scene){
   for(const [x,y] of [[321,600],[750,257],[906,269]])lantern(c,x,y,false);
  }
  let seed=491;for(let i=0;i<1600;i++){seed=(seed*16807)%2147483647;let x=seed%W;seed=(seed*16807)%2147483647;let y=seed%H;ellipse(c,x,y,1+(i%3),.65,i%2?'#ffffff20':'#345a7012');}
- lightLog=null;this.cache[scene]=cv;return cv;
+ return finish();
 };
 Renderer.prototype.draw=function(s,time,mode){
  const c=this.c,t=time*.001,D=root.OkaeriDirector;this.t=t;c.clearRect(0,0,W,H);c.fillStyle='#0b1c26';c.fillRect(0,0,W,H);c.save();D?.pre(c,time);
@@ -375,6 +380,7 @@ Renderer.prototype.draw=function(s,time,mode){
  }
  if(s.scene==='canal'&&((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||D?.stage.over.flood)){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
+ root.OkaeriScenery?.animate(c,s.scene,t,this.smoke?.[s.scene]||[]);
  if(!['house','lampworkshop'].includes(s.scene))for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
  D?.light(c,s,time,this.lights?.[s.scene]||[]);D?.weatherLayer(c,s,time);
  const vign=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);vign.addColorStop(0,'#071d3000');vign.addColorStop(1,'#071d3077');c.fillStyle=vign;c.fillRect(0,0,W,H);

@@ -15,9 +15,10 @@ test('green key removes backdrop but preserves teal coat and skin',()=>{
 
 // 夜の光に使う灯りの記録は、背景を描き終えたら必ず止まる（止め忘れると、毎フレーム灯りが増え続ける）。
 test('every exit of the background builder stops recording lights',()=>{
- const src=require('node:fs').readFileSync(require.resolve('../world.js'),'utf8');
+ const src=require('node:fs').readFileSync(require.resolve('../world.js'),'utf8'),assert=require('node:assert/strict');
  const body=src.slice(src.indexOf('Renderer.prototype.background='),src.indexOf('Renderer.prototype.draw='));
- const exits=body.match(/this\.cache\[scene\]=cv;return cv;/g)||[];
- const stopped=body.match(/lightLog=null;this\.cache\[scene\]=cv;return cv;/g)||[];
- require('node:assert/strict').ok(exits.length>=3);require('node:assert/strict').equal(stopped.length,exits.length);
+ // 出口はすべて finish() を通る。finish が記録を止め、仕上げを重ねてからキャッシュする。
+ assert.match(body,/const finish=\(\)=>\{lightLog=null;smokeLog=null;/);
+ assert.equal((body.match(/this\.cache\[scene\]=cv;return cv;/g)||[]).length,1,'only finish() may cache and return');
+ assert.ok((body.match(/return finish\(\);/g)||[]).length>=3);
 });

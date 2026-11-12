@@ -67,7 +67,7 @@ test('every still is cued somewhere in the script and has its web image',()=>{
  const fs=require('node:fs'),path=require('node:path'),Stills=require('../stills.js');
  const script=fs.readFileSync(path.join(__dirname,'..','episodes-data.js'),'utf8')+fs.readFileSync(path.join(__dirname,'..','game.js'),'utf8');
  assert.equal(Stills.list.length,15);
- for(const s of Stills.list){assert.ok(script.includes("still:'"+s.id+"'"),s.id);for(const f of [s.src,s.thumb])assert.ok(fs.existsSync(path.join(__dirname,'..',f)),f);}
+ for(const s of Stills.list){assert.match(script,new RegExp("still:\\s*'"+s.id+"'"),s.id);for(const f of [s.src,s.thumb])assert.ok(fs.existsSync(path.join(__dirname,'..',f)),f);}
 });
 
 test('every later chapter has a battle on its main road',()=>{

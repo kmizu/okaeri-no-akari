@@ -1,0 +1,22 @@
+# 台本と絵は、一行が長いのが自然な形なので整形しない
+script/
+episodes-data.js
+assets/
+home-art.js
+town-art.js
+scenery.js
+field-art.js
+journey-art.js
+# 台詞を多く含むファイルと、新旧の絵が同居している world.js は、あとで分けてから整形する
+story.js
+journey.js
+side-stories.js
+canal.js
+hill.js
+chapters.js
+world.js
+tests/
+*.html
+*.css
+*.md
+*.json

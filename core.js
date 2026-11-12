@@ -1,160 +1,636 @@
-(function(root){
-'use strict';
-const skills={
- touma:[{id:'attack',name:'斬る',cost:0,desc:'一体に20ダメージ。',target:'enemy'},{id:'break',name:'崩し斬り',cost:2,desc:'14ダメージ。次の一撃が1.5倍に。',target:'enemy'},{id:'protect',name:'かばう',cost:0,desc:'ニナへの単体攻撃を引き受け、半減。'},{id:'counter',name:'灯返し',cost:2,desc:'防御し、攻撃を受けると24で反撃。'},{id:'cheer',name:'励ます',cost:2,desc:'ニナを27回復。冷えも解除。'}],
- nina:[{id:'attack',name:'灯杖で打つ',cost:0,desc:'一体に14ダメージ。',target:'enemy'},{id:'fire',name:'火花',cost:2,desc:'氷殻を溶かし、22ダメージ。',target:'enemy'},{id:'ring',name:'灯の輪',cost:3,desc:'敵全体に14ダメージ。'},{id:'heal',name:'ぬくもり',cost:2,desc:'味方一人のHPを45％回復。冷え解除。',target:'ally'},{id:'buff',name:'灯を託す',cost:2,desc:'トウマの次の一撃を1.5倍に。氷殻も溶かす。'}]
- ,// コハルは剣も火も持たない。後ろから、薬草で二人を支える。
- koharu:[{id:'tend',name:'手当て',cost:0,desc:'味方一人のHPを12回復。冷えも解除。',target:'ally'},{id:'warm',name:'温め草',cost:2,desc:'味方一人のHPを40％回復。冷えも解除。',target:'ally'},{id:'tea',name:'薬草茶',cost:3,desc:'立っている全員のHPを18回復。冷えも解除。'},{id:'salve',name:'守りの軟膏',cost:1,desc:'味方一人がこのターン受けるダメージを半減。',target:'ally'},{id:'mint',name:'薄荷の息',cost:2,desc:'味方一人のMPを3回復。',target:'ally'},{id:'rouse',name:'気つけ草',cost:4,desc:'倒れた仲間をHP40％で起こす。',target:'ally'}]
-};
-const common=[{id:'guard',name:'防御',cost:0,desc:'このターン受けるダメージを半減。'},{id:'rescue',name:'手を貸す',cost:0,desc:'倒れた相手をHP30％で起こす。'},{id:'herb',name:'薬草',cost:0,desc:'味方一人のHPを45回復。冷えも解除。',target:'ally'}];
-// 第9話で選ぶ結末の一覧。結末を足す・変える時は、ここと台本（script/）だけを直す。
-//  select: 章選択での呼び名 / epilogue: 後日譚の呼び名（あれば後日譚つき） / flag: 旧来の結末フラグ
-//  koharu: コハルが最終話で同行し、食卓の椅子が三脚になる / night: 第9話の夜の台本の鍵 / ninaAway: 二人きりの場面と後日譚でニナを地図に出さない
-const routes=[
- {id:'touma',select:'トウマから告白して恋人',epilogue:'トウマから告白した二人',flag:'endingTouma'},
- {id:'nina',select:'ニナから告白して恋人',epilogue:'ニナから告白した二人',flag:'endingNina'},
- {id:'friends',select:'今の二人のまま',flag:'endingFriends'},
- {id:'koharu',select:'コハルと：三人で仲良く',koharu:true,night:'koharu'},
- {id:'both',select:'コハルと：コハルのことも選ぶ',epilogue:'コハルのことも選んだ三人',koharu:true,night:'both'},
- {id:'koharuLove',select:'コハルと：コハルひとりを選ぶ',epilogue:'コハルひとりを選んだ二人',koharu:true,night:'koharuLove',ninaAway:true}
-];
-const route=id=>routes.find(r=>r.id===id)||null;
-const clone=x=>JSON.parse(JSON.stringify(x));
-const enemy=(name,hp,type,ice=false)=>({name,hp,max:hp,type,ice,broken:0});
-function newBattle(kind,options={}){
- const groups={mochi:[enemy('こごえモチ',38,'mochi'),enemy('こごえモチ',38,'mochi')],crab:[enemy('こおりヤドカリ',65,'crab',true)],
-  hail:[0,1,2].map(()=>({...enemy('あられモチ',30,'mochi'),tint:'hail',scale:.85})),
-  sleet:[{...enemy('みぞれヤドカリ',85,'crab',true),tint:'sleet',refreeze:true}],
-  stray:[enemy('こごえモチ',38,'mochi')],
-  mix:[enemy('こごえモチ',38,'mochi'),enemy('こおりヤドカリ',65,'crab',true)],
-  echo:[{...enemy('こだま番人',125,'guardian'),tint:'echo',scale:.6}],
-  // 魔獣。精霊と違って、温めても落ち着かない。灯りを持つニナを狙う。
-  beast:[{...enemy('灯喰い',170,'guardian'),tint:'beast',beast:true}],guardian:[enemy('枝角の番人',230,'guardian')]};
- if(!groups[kind])throw Error('Unknown encounter');
- return {kind,turn:1,gauge:0,items:3,status:'active',logs:[],...(options.support?{support:options.support}:{}),enemies:groups[kind],heroes:{touma:{name:'トウマ',hp:120,max:120,sp:6,maxSp:6,chill:0,buff:0},nina:{name:'ニナ',hp:90,max:90,sp:8,maxSp:8,chill:0,buff:0},...(options.support==='koharu'?{koharu:{name:'コハル',hp:70,max:70,sp:10,maxSp:10,chill:0,buff:0}}:{})}};
-}
-function intentions(b){return b.enemies.map((e,i)=>{
- if(e.hp<=0)return null;const k=n=>Math.round(n*(e.scale||1));
- if(e.beast){const phase=(b.turn-1)%3;return phase===0?{target:'nina',damage:24,label:'灯りへ飛びかかる → ニナ 24'}:phase===1?{target:'nina',damage:30,label:'牙 → ニナ 30'}:{target:'all',damage:14,label:'咆哮 → 二人に14'};}
- if(e.type==='guardian'){
-  const phase=(b.turn-1)%3;
-  return phase===0?{target:'touma',damage:k(18),label:'枝の腕 → トウマ '+k(18)}:phase===1?{target:'nina',damage:k(32),label:'大きな踏み込み → ニナ '+k(32)}:{target:'all',damage:k(16),label:'木の葉の嵐 → 二人に'+k(16)};
- }
- if(e.type==='crab')return {target:b.turn%2?'touma':'nina',damage:16,chill:true,label:'冷たいしぶき → '+(b.turn%2?'トウマ':'ニナ')+' 16・冷え'};
- const target=(b.turn+i)%2?'touma':'nina';return {target,damage:k(12),label:'ぽよん体当たり → '+(target==='touma'?'トウマ':'ニナ')+' '+k(12)};
-});}
-function actions(actor){return actor==='koharu'?[...skills.koharu,...common.filter(a=>a.id!=='rescue')]:[...skills[actor],...common];}
-function resolveTurn(input,commands,order){
- if(input.status!=='active')throw Error('戦闘は終了しています');
- if(!Array.isArray(order)||new Set(order).size!==order.length||!['touma','nina'].every(x=>order.includes(x))||!order.every(x=>x==='touma'||x==='nina'||(x==='koharu'&&input.heroes.koharu)))throw Error('行動順が不正です');
- const pair=h=>[h.touma,h.nina];
- if(commands.team){if(commands.team!=='flare'||input.gauge<3||pair(input.heroes).some(h=>h.hp<=0))throw Error('連携には二人と灯り三つが必要です');}
- else for(const id of order){
-  const h=input.heroes[id];if(h.hp<=0)continue;
-  const a=actions(id).find(a=>a.id===commands[id]?.skill);if(!a)throw Error('技を選んでください');
-  if(h.sp<a.cost)throw Error('SPが足りません');
-  if(a.target==='enemy'&&(!Number.isInteger(commands[id].target)||!input.enemies[commands[id].target]||input.enemies[commands[id].target].hp<=0))throw Error('相手を選んでください');
-  if(a.target==='ally'&&!input.heroes[commands[id].target])throw Error('味方を選んでください');
-  if(a.id==='rouse'&&!(['touma','nina'].includes(commands[id].target)&&input.heroes[commands[id].target].hp<=0))throw Error('倒れている仲間はいません');
-  if(a.id==='rescue'&&(id==='koharu'||input.heroes[id==='touma'?'nina':'touma'].hp>0))throw Error('二人とも立っています');
- }
- if(!commands.team&&order.filter(id=>input.heroes[id].hp>0&&commands[id]?.skill==='herb').length>(input.items||0))throw Error('薬草が足りません');
- const b=clone(input),forecast=intentions(b),log=b.logs=[];let cooperation=false,protect=false;
- const events=[]; delete b.events; function emit(message,effect=null,actor=null){log.push(message);events.push({message,effect,...(actor?{actor}:{}),heroes:clone(b.heroes),enemies:clone(b.enemies),gauge:b.gauge,items:b.items});}
- const defending=new Set(),counters=new Set(),fallen=new Set(order.filter(id=>b.heroes[id].hp<=0));
- function hit(e,n,fire=false,who,style='slash',afterDamage=null){
-  if(e.hp<=0)return;
-  if(fire&&e.ice){e.ice=false;emit(e.name+'の氷殻が溶けた！');}
-  if(e.broken){n*=1.5;e.broken=0;if(who==='nina')cooperation=true;}
-  if(e.ice)n*=.5;
-  n=Math.round(n);e.hp=Math.max(0,e.hp-n);if(afterDamage)afterDamage();emit(e.name+'に '+n+'。'+(e.hp===0?(e.beast?'山の方へ退いていった。':'落ち着きを取り戻した。'):''),{type:who==='team'?'team':fire?'fire':style,enemy:b.enemies.indexOf(e),amount:n},who);
- }
- function heal(id,amount,actor){const h=b.heroes[id];if(h.hp<=0){emit('倒れている相手には「手を貸す」を使おう。');return;}const before=h.hp;if(actor!=='koharu')cooperation ||=h.hp<h.max||h.chill>0;h.hp=Math.min(h.max,h.hp+amount);h.chill=0;emit(h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before},actor);}
- if(commands.team){b.gauge=0;emit('「合わせるぞ！」「うん！」── 灯火の一閃！',null,'team');hit(b.enemies.find(e=>e.hp>0),75,true,'team');}
- else for(const id of order){
-  if(fallen.has(id))continue;
-  const h=b.heroes[id],c=commands[id],a=actions(id).find(a=>a.id===c.skill),other=id==='touma'?'nina':'touma';h.sp-=a.cost;
-  emit(h.name+'の「'+a.name+'」。',['protect','guard','counter'].includes(c.skill)?{type:'shield',hero:id}:null,id);
-  let e=b.enemies[c.target];if(a.target==='enemy'&&e?.hp<=0)e=b.enemies.find(e=>e.hp>0);
-  const power=n=>n*(h.chill?0.75:1)*(h.buff?1.5:1);
-  if(['attack','break','fire'].includes(c.skill)&&e){const buff=h.buff>0;hit(e,power(c.skill==='fire'?22:c.skill==='break'?14:id==='touma'?20:14),c.skill==='fire'||buff,id,'slash',()=>{h.buff=0;if(buff)cooperation=true;if(c.skill==='break'&&e.hp>0)e.broken=2;});}
-  if(c.skill==='ring')for(const foe of b.enemies)hit(foe,power(14),false,id,'ring');
-  if(c.skill==='protect')protect=true;
-  if(c.skill==='guard'||c.skill==='counter')defending.add(id);
-  if(c.skill==='counter')counters.add(id);
-  if(c.skill==='heal')heal(c.target,Math.round(b.heroes[c.target].max*.45),id);
-  if(c.skill==='herb'){b.items--;heal(c.target,45,id);}
-  if(c.skill==='cheer')heal('nina',27,id);
-  if(c.skill==='buff'){b.heroes.touma.buff=2;emit('トウマの剣に灯りが宿った。',{type:'heal',hero:'touma'},id);}
-  if(c.skill==='tend')heal(c.target,12,id);
-  if(c.skill==='warm')heal(c.target,Math.round(b.heroes[c.target].max*.4),id);
-  if(c.skill==='tea')for(const t of Object.keys(b.heroes))if(b.heroes[t].hp>0)heal(t,18,id);
-  if(c.skill==='salve'){defending.add(c.target);emit(b.heroes[c.target].name+'に軟膏を塗った。このターンの傷は半分で済む。',{type:'shield',hero:c.target},id);}
-  if(c.skill==='mint'){const t=b.heroes[c.target],before=t.sp;t.sp=Math.min(t.maxSp,t.sp+3);emit(t.name+'のMPが '+(t.sp-before)+' 戻った。',{type:'heal',hero:c.target},id);}
-  if(c.skill==='rouse'){const t=b.heroes[c.target];t.hp=Math.round(t.max*.4);emit('「起きて、お兄ちゃんたちの番だよ」── '+t.name+'が立ち上がった。',{type:'heal',hero:c.target,amount:t.hp},id);}
-  if(c.skill==='rescue'){b.heroes[other].hp=Math.round(b.heroes[other].max*.3);emit('「大丈夫。手、貸して」── '+b.heroes[other].name+'が立ち上がった。',{type:'heal',hero:other,amount:b.heroes[other].hp},id);}
- }
- if(b.enemies.every(e=>e.hp<=0))b.status='victory';
- else for(let i=0;i<b.enemies.length;i++){
-  const e=b.enemies[i],f=forecast[i];if(e.hp<=0||!f)continue;
-  for(let target of f.target==='all'?['touma','nina']:[f.target]){
-   if(b.heroes[target].hp<=0){if(f.target==='all')continue;target=target==='touma'?'nina':'touma';}
-   let covered=false;if(target==='nina'&&protect&&b.heroes.touma.hp>0&&f.target!=='all'){target='touma';covered=true;cooperation=true;}
-   const h=b.heroes[target];let n=Math.round(f.damage*((covered||defending.has(target))?.5:1));h.hp=Math.max(0,h.hp-n);if(f.chill)h.chill=3;
-   emit((covered?'トウマがニナをかばった！ ':'')+h.name+'に '+n+' ダメージ。',{type:'hurt',hero:target,source:i,amount:n,covered},'enemy:'+i);
-   if(counters.has(target)&&h.hp>0){hit(e,24,false,target);counters.delete(target);}
+(function (root) {
+  'use strict';
+  const skills = {
+    touma: [
+      { id: 'attack', name: '斬る', cost: 0, desc: '一体に20ダメージ。', target: 'enemy' },
+      { id: 'break', name: '崩し斬り', cost: 2, desc: '14ダメージ。次の一撃が1.5倍に。', target: 'enemy' },
+      { id: 'protect', name: 'かばう', cost: 0, desc: 'ニナへの単体攻撃を引き受け、半減。' },
+      { id: 'counter', name: '灯返し', cost: 2, desc: '防御し、攻撃を受けると24で反撃。' },
+      { id: 'cheer', name: '励ます', cost: 2, desc: 'ニナを27回復。冷えも解除。' }
+    ],
+    nina: [
+      { id: 'attack', name: '灯杖で打つ', cost: 0, desc: '一体に14ダメージ。', target: 'enemy' },
+      { id: 'fire', name: '火花', cost: 2, desc: '氷殻を溶かし、22ダメージ。', target: 'enemy' },
+      { id: 'ring', name: '灯の輪', cost: 3, desc: '敵全体に14ダメージ。' },
+      { id: 'heal', name: 'ぬくもり', cost: 2, desc: '味方一人のHPを45％回復。冷え解除。', target: 'ally' },
+      { id: 'buff', name: '灯を託す', cost: 2, desc: 'トウマの次の一撃を1.5倍に。氷殻も溶かす。' }
+    ], // コハルは剣も火も持たない。後ろから、薬草で二人を支える。
+    koharu: [
+      { id: 'tend', name: '手当て', cost: 0, desc: '味方一人のHPを12回復。冷えも解除。', target: 'ally' },
+      { id: 'warm', name: '温め草', cost: 2, desc: '味方一人のHPを40％回復。冷えも解除。', target: 'ally' },
+      { id: 'tea', name: '薬草茶', cost: 3, desc: '立っている全員のHPを18回復。冷えも解除。' },
+      { id: 'salve', name: '守りの軟膏', cost: 1, desc: '味方一人がこのターン受けるダメージを半減。', target: 'ally' },
+      { id: 'mint', name: '薄荷の息', cost: 2, desc: '味方一人のMPを3回復。', target: 'ally' },
+      { id: 'rouse', name: '気つけ草', cost: 4, desc: '倒れた仲間をHP40％で起こす。', target: 'ally' }
+    ]
+  };
+  const common = [
+    { id: 'guard', name: '防御', cost: 0, desc: 'このターン受けるダメージを半減。' },
+    { id: 'rescue', name: '手を貸す', cost: 0, desc: '倒れた相手をHP30％で起こす。' },
+    { id: 'herb', name: '薬草', cost: 0, desc: '味方一人のHPを45回復。冷えも解除。', target: 'ally' }
+  ];
+  // 第9話で選ぶ結末の一覧。結末を足す・変える時は、ここと台本（script/）だけを直す。
+  //  select: 章選択での呼び名 / epilogue: 後日譚の呼び名（あれば後日譚つき） / flag: 旧来の結末フラグ
+  //  koharu: コハルが最終話で同行し、食卓の椅子が三脚になる / night: 第9話の夜の台本の鍵 / ninaAway: 二人きりの場面と後日譚でニナを地図に出さない
+  const routes = [
+    { id: 'touma', select: 'トウマから告白して恋人', epilogue: 'トウマから告白した二人', flag: 'endingTouma' },
+    { id: 'nina', select: 'ニナから告白して恋人', epilogue: 'ニナから告白した二人', flag: 'endingNina' },
+    { id: 'friends', select: '今の二人のまま', flag: 'endingFriends' },
+    { id: 'koharu', select: 'コハルと：三人で仲良く', koharu: true, night: 'koharu' },
+    { id: 'both', select: 'コハルと：コハルのことも選ぶ', epilogue: 'コハルのことも選んだ三人', koharu: true, night: 'both' },
+    {
+      id: 'koharuLove',
+      select: 'コハルと：コハルひとりを選ぶ',
+      epilogue: 'コハルひとりを選んだ二人',
+      koharu: true,
+      night: 'koharuLove',
+      ninaAway: true
+    }
+  ];
+  const route = id => routes.find(r => r.id === id) || null;
+  const clone = x => JSON.parse(JSON.stringify(x));
+  const enemy = (name, hp, type, ice = false) => ({ name, hp, max: hp, type, ice, broken: 0 });
+  function newBattle(kind, options = {}) {
+    const groups = {
+      mochi: [enemy('こごえモチ', 38, 'mochi'), enemy('こごえモチ', 38, 'mochi')],
+      crab: [enemy('こおりヤドカリ', 65, 'crab', true)],
+      hail: [0, 1, 2].map(() => ({ ...enemy('あられモチ', 30, 'mochi'), tint: 'hail', scale: 0.85 })),
+      sleet: [{ ...enemy('みぞれヤドカリ', 85, 'crab', true), tint: 'sleet', refreeze: true }],
+      stray: [enemy('こごえモチ', 38, 'mochi')],
+      mix: [enemy('こごえモチ', 38, 'mochi'), enemy('こおりヤドカリ', 65, 'crab', true)],
+      echo: [{ ...enemy('こだま番人', 125, 'guardian'), tint: 'echo', scale: 0.6 }],
+      // 魔獣。精霊と違って、温めても落ち着かない。灯りを持つニナを狙う。
+      beast: [{ ...enemy('灯喰い', 170, 'guardian'), tint: 'beast', beast: true }],
+      guardian: [enemy('枝角の番人', 230, 'guardian')]
+    };
+    if (!groups[kind]) throw Error('Unknown encounter');
+    return {
+      kind,
+      turn: 1,
+      gauge: 0,
+      items: 3,
+      status: 'active',
+      logs: [],
+      ...(options.support ? { support: options.support } : {}),
+      enemies: groups[kind],
+      heroes: {
+        touma: { name: 'トウマ', hp: 120, max: 120, sp: 6, maxSp: 6, chill: 0, buff: 0 },
+        nina: { name: 'ニナ', hp: 90, max: 90, sp: 8, maxSp: 8, chill: 0, buff: 0 },
+        ...(options.support === 'koharu' ? { koharu: { name: 'コハル', hp: 70, max: 70, sp: 10, maxSp: 10, chill: 0, buff: 0 } } : {})
+      }
+    };
   }
-  const k=b.heroes.koharu;if(f.target==='all'&&k&&k.hp>0){const n=Math.round(f.damage*.5*(defending.has('koharu')?.5:1));k.hp=Math.max(0,k.hp-n);emit('後ろのコハルにも '+n+' ダメージ。'+(k.hp===0?'コハルは下がって、息を整える。':''),{type:'hurt',hero:'koharu',source:i,amount:n},'enemy:'+i);}
- }
- if(cooperation)b.gauge=Math.min(3,b.gauge+1);
- for(const h of Object.values(b.heroes)){h.chill=Math.max(0,h.chill-1);h.buff=Math.max(0,h.buff-1);}
- for(const e of b.enemies)e.broken=Math.max(0,e.broken-1);
- // みぞれヤドカリは、溶かした殻が三ターンごとに凍り直す。
- for(const e of b.enemies)if(e.refreeze&&e.hp>0&&!e.ice&&b.turn%3===0){e.ice=true;emit(e.name+'の殻が、また凍りついた。');}
- if(pair(b.heroes).every(h=>h.hp<=0))b.status='defeat';else if(b.enemies.every(e=>e.hp<=0))b.status='victory';
- if(cooperation)emit('二人の息が合った。灯りが一つ、ともった。');
- b.events=events;b.turn++;return b;
-}
-function journeyTile(scene,x,y){
- if(!Number.isInteger(x)||!Number.isInteger(y)||x<1||x>22||y<2||y>14)return false;
- if(scene==='lake')return (x>=2&&x<=8&&y>=10&&y<=13)||(x>=6&&x<=10&&y>=7&&y<=12)||(x>=8&&x<=17&&y>=6&&y<=8)||(x>=16&&x<=21&&y>=4&&y<=8);
- if(scene==='lakeside')return x>=2&&x<=21&&y>=4&&y<=14&&!((x>=3&&x<=7&&y<=5)||(x>=9&&x<=13&&y<=5)||(x>=15&&x<=20&&y<=6)||(y>=11&&x>=8&&!(x>=15&&x<=19)));
- if(scene==='lampworkshop')return x>=3&&x<=20&&y>=3&&y<=13&&!((x>=4&&x<=8&&y>=4&&y<=5)||(x>=16&&x<=18&&y>=4&&y<=5)||(x===10&&y===8)||(x>=18&&y>=10&&y<=11));
- return false;
-}
-function restoreSave(raw){try{
- const s=JSON.parse(raw);if(!s||s.version!==1||!['town','forest','canal','hill','house','lake','lakeside','lampworkshop','herbvale','oldpass'].includes(s.scene)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<1||s.x>22||s.y<2||s.y>14||!['touma','nina'].includes(s.lead)||!s.flags||typeof s.flags!=='object'||Array.isArray(s.flags))return null;
- let openingStage;
- if(s.openingStage!==undefined){if(!Number.isInteger(s.openingStage)||s.openingStage<0||s.openingStage>1||s.flags.board===true||s.journey||s.pendingEvening||(s.episode&&(s.episode.chapter!==1||s.episode.step!==0||s.episode.complete))||s.scene!==(s.openingStage===0?'house':'town'))return null;openingStage=s.openingStage;}
- if(s.openingPrelude!==undefined&&(s.openingPrelude!==true||openingStage!==0))return null;
- let memories;
- if(s.memories!==undefined){if(!s.memories||typeof s.memories!=='object'||Array.isArray(s.memories))return null;const allowed={gift:['tea','bookmark'],sled:['aligned'],window:['sealed'],signal:['waited'],ritsuReturn:['read'],yuraRounds:['read'],unsentLetter:['read'],stormThanks:['read']};memories={};for(const [k,v] of Object.entries(s.memories)){if(!allowed[k]?.includes(v))return null;memories[k]=v;}}
- let episode;
- if(s.episode!==undefined){const e=s.episode,counts=[0,0,4,6,4,4,4,4,5,4,4];if(!e||!Number.isInteger(e.chapter)||e.chapter<1||e.chapter>10||!Number.isInteger(e.step)||e.step<0||e.step>counts[e.chapter]||typeof e.complete!=='boolean'||!(e.route===null||route(e.route))||((e.chapter<9)&&e.route!==null)||(e.chapter===10&&!e.route)||(e.chapter===9&&((e.step>=3)!==!!e.route))||(e.chapter>1&&e.complete!==(e.step===counts[e.chapter])))return null;episode={chapter:e.chapter,step:e.step,route:e.route,complete:e.complete};}
- let journey;
- if(s.journey!==undefined){
-  const j=s.journey,keys=['mirror','prism','shutter','reply'];
-  if(!j||!Number.isInteger(j.step)||j.step<0||j.step>9||!episode||episode.chapter<6||keys.some(k=>typeof j[k]!=='boolean')||!j.positions)return null;
-  if((j.prism&&!j.mirror)||(j.shutter&&!j.prism)||(j.reply&&!j.shutter)||(j.step<4&&keys.some(k=>j[k]))||(j.step>=5&&!keys.every(k=>j[k])))return null;
-  if((j.step<9&&(episode.chapter!==6||episode.step!==2||episode.complete))||(j.step===9&&episode.chapter===6&&episode.step<3))return null;
-  const positions={};for(const actor of ['touma','nina']){const p=j.positions[actor];if(!p||p.scene!==(actor==='touma'?'lakeside':'lampworkshop')||!journeyTile(p.scene,p.x,p.y))return null;positions[actor]={scene:p.scene,x:p.x,y:p.y};}
-  if([4,5].includes(j.step)&&s.scene!==positions[s.lead].scene)return null;
-  journey={step:j.step,mirror:j.mirror,prism:j.prism,shutter:j.shutter,reply:j.reply,positions};
- }
- if(['lake','lakeside','lampworkshop'].includes(s.scene)&&(!journeyTile(s.scene,s.x,s.y)||!episode||episode.chapter<6||(!journey&&episode.chapter===6&&episode.step<3)))return null;
- const flags={};for(const key of ['board','bread','mochi','log','rest','repair','crab','guardian','lit','returned','lamp','sae','gift','canalStarted','waterGate','canalCrab','waterFlow','waterLit','canalRest','waterReturned','hillStarted','windbreak','hillGuardian','hillLens','hillLit','hillRest','festivalStarted','festivalMeal','festivalRibbon','endingTouma','endingNina','endingFriends','sewingAsked','sewingFound','sewingReturned','seamVisible','signAsked','signFixed','signReported','waitingPost','waitingLit','waitingRest','waitingReported','nightOne','nightTwo','nightThree','nightTouma','nightNina','nightFriends'])flags[key]=s.flags[key]===true;
- if((flags.lit&&!flags.guardian)||(flags.guardian&&!flags.repair)||(flags.repair&&!flags.log)||(flags.log&&!flags.mochi)||(s.scene==='forest'&&!flags.board))return null;
- if((s.scene==='canal'&&(!flags.canalStarted||!flags.returned||!flags.lit))||(flags.waterGate&&!flags.canalStarted)||(flags.canalCrab&&!flags.waterGate)||(flags.waterFlow&&!flags.canalCrab)||(flags.waterLit&&!flags.waterFlow)||(flags.waterReturned&&!flags.waterLit))return null;
- if((s.scene==='hill'&&!flags.hillStarted)||(flags.hillStarted&&!flags.waterReturned)||(flags.windbreak&&!flags.hillStarted)||(flags.hillGuardian&&!flags.windbreak)||(flags.hillLens&&!flags.hillGuardian)||(flags.hillLit&&!flags.hillLens)||(flags.festivalStarted&&!flags.hillLit)||((flags.festivalMeal||flags.festivalRibbon)&&!flags.festivalStarted))return null;
- if((flags.waitingLit&&!flags.waitingPost)||(flags.waitingReported&&!flags.waitingLit))return null;
- if((flags.sewingReturned&&!flags.sewingFound)||(flags.seamVisible&&!flags.sewingReturned)||(flags.signReported&&!flags.signFixed))return null;
- const endings=['endingTouma','endingNina','endingFriends'].filter(k=>flags[k]);if(endings.length>1||(endings.length&&(!flags.festivalMeal||!flags.festivalRibbon)))return null;
- const nightRequirements={one:'returned',two:'waterReturned',three:'festivalStarted',touma:'endingTouma',nina:'endingNina',friends:'endingFriends'};
- if(s.scene==='house'&&(s.x<3||s.x>20||s.y<3||s.y>13))return null;
- for(const [key,requirement] of Object.entries(nightRequirements))if(flags['night'+key[0].toUpperCase()+key.slice(1)]&&!flags[requirement])return null;
- if(s.pendingEvening&&(!nightRequirements[s.pendingEvening]||!flags[nightRequirements[s.pendingEvening]]||s.scene!=='house'))return null;
- return {...(s.openingPrelude?{openingPrelude:true}:{}),...(openingStage!==undefined?{openingStage}:{}),...(journey?{journey}:{}),...(memories?{memories}:{}),...(episode?{episode}:{}),...(s.pendingEvening?{pendingEvening:s.pendingEvening}:{}),version:1,scene:s.scene,x:s.x,y:s.y,lead:s.lead,flags,courage:Math.max(0,Math.min(3,Number(s.courage)||0))};
- }catch{return null;}}
-function chooseEnding(choice,courage,response){if(choice==='confess')return 'touma';if(choice==='stay')return 'friends';if(choice==='wait'){if(courage<2)return 'ask';return response==='yes'?'nina':response==='notYet'?'friends':'confession';}return 'friends';}
-const C={routes,route,newBattle,actions,resolveTurn,intentions,restoreSave,chooseEnding,journeyTile};if(typeof module!=='undefined')module.exports=C;root.OkaeriCore=C;
+  function intentions(b) {
+    return b.enemies.map((e, i) => {
+      if (e.hp <= 0) return null;
+      const k = n => Math.round(n * (e.scale || 1));
+      if (e.beast) {
+        const phase = (b.turn - 1) % 3;
+        return phase === 0
+          ? { target: 'nina', damage: 24, label: '灯りへ飛びかかる → ニナ 24' }
+          : phase === 1
+            ? { target: 'nina', damage: 30, label: '牙 → ニナ 30' }
+            : { target: 'all', damage: 14, label: '咆哮 → 二人に14' };
+      }
+      if (e.type === 'guardian') {
+        const phase = (b.turn - 1) % 3;
+        return phase === 0
+          ? { target: 'touma', damage: k(18), label: '枝の腕 → トウマ ' + k(18) }
+          : phase === 1
+            ? { target: 'nina', damage: k(32), label: '大きな踏み込み → ニナ ' + k(32) }
+            : { target: 'all', damage: k(16), label: '木の葉の嵐 → 二人に' + k(16) };
+      }
+      if (e.type === 'crab')
+        return {
+          target: b.turn % 2 ? 'touma' : 'nina',
+          damage: 16,
+          chill: true,
+          label: '冷たいしぶき → ' + (b.turn % 2 ? 'トウマ' : 'ニナ') + ' 16・冷え'
+        };
+      const target = (b.turn + i) % 2 ? 'touma' : 'nina';
+      return { target, damage: k(12), label: 'ぽよん体当たり → ' + (target === 'touma' ? 'トウマ' : 'ニナ') + ' ' + k(12) };
+    });
+  }
+  function actions(actor) {
+    return actor === 'koharu' ? [...skills.koharu, ...common.filter(a => a.id !== 'rescue')] : [...skills[actor], ...common];
+  }
+  function resolveTurn(input, commands, order) {
+    if (input.status !== 'active') throw Error('戦闘は終了しています');
+    if (
+      !Array.isArray(order) ||
+      new Set(order).size !== order.length ||
+      !['touma', 'nina'].every(x => order.includes(x)) ||
+      !order.every(x => x === 'touma' || x === 'nina' || (x === 'koharu' && input.heroes.koharu))
+    )
+      throw Error('行動順が不正です');
+    const pair = h => [h.touma, h.nina];
+    if (commands.team) {
+      if (commands.team !== 'flare' || input.gauge < 3 || pair(input.heroes).some(h => h.hp <= 0))
+        throw Error('連携には二人と灯り三つが必要です');
+    } else
+      for (const id of order) {
+        const h = input.heroes[id];
+        if (h.hp <= 0) continue;
+        const a = actions(id).find(a => a.id === commands[id]?.skill);
+        if (!a) throw Error('技を選んでください');
+        if (h.sp < a.cost) throw Error('SPが足りません');
+        if (
+          a.target === 'enemy' &&
+          (!Number.isInteger(commands[id].target) || !input.enemies[commands[id].target] || input.enemies[commands[id].target].hp <= 0)
+        )
+          throw Error('相手を選んでください');
+        if (a.target === 'ally' && !input.heroes[commands[id].target]) throw Error('味方を選んでください');
+        if (a.id === 'rouse' && !(['touma', 'nina'].includes(commands[id].target) && input.heroes[commands[id].target].hp <= 0))
+          throw Error('倒れている仲間はいません');
+        if (a.id === 'rescue' && (id === 'koharu' || input.heroes[id === 'touma' ? 'nina' : 'touma'].hp > 0))
+          throw Error('二人とも立っています');
+      }
+    if (!commands.team && order.filter(id => input.heroes[id].hp > 0 && commands[id]?.skill === 'herb').length > (input.items || 0))
+      throw Error('薬草が足りません');
+    const b = clone(input),
+      forecast = intentions(b),
+      log = (b.logs = []);
+    let cooperation = false,
+      protect = false;
+    const events = [];
+    delete b.events;
+    function emit(message, effect = null, actor = null) {
+      log.push(message);
+      events.push({
+        message,
+        effect,
+        ...(actor ? { actor } : {}),
+        heroes: clone(b.heroes),
+        enemies: clone(b.enemies),
+        gauge: b.gauge,
+        items: b.items
+      });
+    }
+    const defending = new Set(),
+      counters = new Set(),
+      fallen = new Set(order.filter(id => b.heroes[id].hp <= 0));
+    function hit(e, n, fire = false, who, style = 'slash', afterDamage = null) {
+      if (e.hp <= 0) return;
+      if (fire && e.ice) {
+        e.ice = false;
+        emit(e.name + 'の氷殻が溶けた！');
+      }
+      if (e.broken) {
+        n *= 1.5;
+        e.broken = 0;
+        if (who === 'nina') cooperation = true;
+      }
+      if (e.ice) n *= 0.5;
+      n = Math.round(n);
+      e.hp = Math.max(0, e.hp - n);
+      if (afterDamage) afterDamage();
+      emit(
+        e.name + 'に ' + n + '。' + (e.hp === 0 ? (e.beast ? '山の方へ退いていった。' : '落ち着きを取り戻した。') : ''),
+        { type: who === 'team' ? 'team' : fire ? 'fire' : style, enemy: b.enemies.indexOf(e), amount: n },
+        who
+      );
+    }
+    function heal(id, amount, actor) {
+      const h = b.heroes[id];
+      if (h.hp <= 0) {
+        emit('倒れている相手には「手を貸す」を使おう。');
+        return;
+      }
+      const before = h.hp;
+      if (actor !== 'koharu') cooperation ||= h.hp < h.max || h.chill > 0;
+      h.hp = Math.min(h.max, h.hp + amount);
+      h.chill = 0;
+      emit(h.name + 'のHPが ' + (h.hp - before) + ' 回復。', { type: 'heal', hero: id, amount: h.hp - before }, actor);
+    }
+    if (commands.team) {
+      b.gauge = 0;
+      emit('「合わせるぞ！」「うん！」── 灯火の一閃！', null, 'team');
+      hit(
+        b.enemies.find(e => e.hp > 0),
+        75,
+        true,
+        'team'
+      );
+    } else
+      for (const id of order) {
+        if (fallen.has(id)) continue;
+        const h = b.heroes[id],
+          c = commands[id],
+          a = actions(id).find(a => a.id === c.skill),
+          other = id === 'touma' ? 'nina' : 'touma';
+        h.sp -= a.cost;
+        emit(
+          h.name + 'の「' + a.name + '」。',
+          ['protect', 'guard', 'counter'].includes(c.skill) ? { type: 'shield', hero: id } : null,
+          id
+        );
+        let e = b.enemies[c.target];
+        if (a.target === 'enemy' && e?.hp <= 0) e = b.enemies.find(e => e.hp > 0);
+        const power = n => n * (h.chill ? 0.75 : 1) * (h.buff ? 1.5 : 1);
+        if (['attack', 'break', 'fire'].includes(c.skill) && e) {
+          const buff = h.buff > 0;
+          hit(
+            e,
+            power(c.skill === 'fire' ? 22 : c.skill === 'break' ? 14 : id === 'touma' ? 20 : 14),
+            c.skill === 'fire' || buff,
+            id,
+            'slash',
+            () => {
+              h.buff = 0;
+              if (buff) cooperation = true;
+              if (c.skill === 'break' && e.hp > 0) e.broken = 2;
+            }
+          );
+        }
+        if (c.skill === 'ring') for (const foe of b.enemies) hit(foe, power(14), false, id, 'ring');
+        if (c.skill === 'protect') protect = true;
+        if (c.skill === 'guard' || c.skill === 'counter') defending.add(id);
+        if (c.skill === 'counter') counters.add(id);
+        if (c.skill === 'heal') heal(c.target, Math.round(b.heroes[c.target].max * 0.45), id);
+        if (c.skill === 'herb') {
+          b.items--;
+          heal(c.target, 45, id);
+        }
+        if (c.skill === 'cheer') heal('nina', 27, id);
+        if (c.skill === 'buff') {
+          b.heroes.touma.buff = 2;
+          emit('トウマの剣に灯りが宿った。', { type: 'heal', hero: 'touma' }, id);
+        }
+        if (c.skill === 'tend') heal(c.target, 12, id);
+        if (c.skill === 'warm') heal(c.target, Math.round(b.heroes[c.target].max * 0.4), id);
+        if (c.skill === 'tea') for (const t of Object.keys(b.heroes)) if (b.heroes[t].hp > 0) heal(t, 18, id);
+        if (c.skill === 'salve') {
+          defending.add(c.target);
+          emit(b.heroes[c.target].name + 'に軟膏を塗った。このターンの傷は半分で済む。', { type: 'shield', hero: c.target }, id);
+        }
+        if (c.skill === 'mint') {
+          const t = b.heroes[c.target],
+            before = t.sp;
+          t.sp = Math.min(t.maxSp, t.sp + 3);
+          emit(t.name + 'のMPが ' + (t.sp - before) + ' 戻った。', { type: 'heal', hero: c.target }, id);
+        }
+        if (c.skill === 'rouse') {
+          const t = b.heroes[c.target];
+          t.hp = Math.round(t.max * 0.4);
+          emit('「起きて、お兄ちゃんたちの番だよ」── ' + t.name + 'が立ち上がった。', { type: 'heal', hero: c.target, amount: t.hp }, id);
+        }
+        if (c.skill === 'rescue') {
+          b.heroes[other].hp = Math.round(b.heroes[other].max * 0.3);
+          emit(
+            '「大丈夫。手、貸して」── ' + b.heroes[other].name + 'が立ち上がった。',
+            { type: 'heal', hero: other, amount: b.heroes[other].hp },
+            id
+          );
+        }
+      }
+    if (b.enemies.every(e => e.hp <= 0)) b.status = 'victory';
+    else
+      for (let i = 0; i < b.enemies.length; i++) {
+        const e = b.enemies[i],
+          f = forecast[i];
+        if (e.hp <= 0 || !f) continue;
+        for (let target of f.target === 'all' ? ['touma', 'nina'] : [f.target]) {
+          if (b.heroes[target].hp <= 0) {
+            if (f.target === 'all') continue;
+            target = target === 'touma' ? 'nina' : 'touma';
+          }
+          let covered = false;
+          if (target === 'nina' && protect && b.heroes.touma.hp > 0 && f.target !== 'all') {
+            target = 'touma';
+            covered = true;
+            cooperation = true;
+          }
+          const h = b.heroes[target];
+          let n = Math.round(f.damage * (covered || defending.has(target) ? 0.5 : 1));
+          h.hp = Math.max(0, h.hp - n);
+          if (f.chill) h.chill = 3;
+          emit(
+            (covered ? 'トウマがニナをかばった！ ' : '') + h.name + 'に ' + n + ' ダメージ。',
+            { type: 'hurt', hero: target, source: i, amount: n, covered },
+            'enemy:' + i
+          );
+          if (counters.has(target) && h.hp > 0) {
+            hit(e, 24, false, target);
+            counters.delete(target);
+          }
+        }
+        const k = b.heroes.koharu;
+        if (f.target === 'all' && k && k.hp > 0) {
+          const n = Math.round(f.damage * 0.5 * (defending.has('koharu') ? 0.5 : 1));
+          k.hp = Math.max(0, k.hp - n);
+          emit(
+            '後ろのコハルにも ' + n + ' ダメージ。' + (k.hp === 0 ? 'コハルは下がって、息を整える。' : ''),
+            { type: 'hurt', hero: 'koharu', source: i, amount: n },
+            'enemy:' + i
+          );
+        }
+      }
+    if (cooperation) b.gauge = Math.min(3, b.gauge + 1);
+    for (const h of Object.values(b.heroes)) {
+      h.chill = Math.max(0, h.chill - 1);
+      h.buff = Math.max(0, h.buff - 1);
+    }
+    for (const e of b.enemies) e.broken = Math.max(0, e.broken - 1);
+    // みぞれヤドカリは、溶かした殻が三ターンごとに凍り直す。
+    for (const e of b.enemies)
+      if (e.refreeze && e.hp > 0 && !e.ice && b.turn % 3 === 0) {
+        e.ice = true;
+        emit(e.name + 'の殻が、また凍りついた。');
+      }
+    if (pair(b.heroes).every(h => h.hp <= 0)) b.status = 'defeat';
+    else if (b.enemies.every(e => e.hp <= 0)) b.status = 'victory';
+    if (cooperation) emit('二人の息が合った。灯りが一つ、ともった。');
+    b.events = events;
+    b.turn++;
+    return b;
+  }
+  function journeyTile(scene, x, y) {
+    if (!Number.isInteger(x) || !Number.isInteger(y) || x < 1 || x > 22 || y < 2 || y > 14) return false;
+    if (scene === 'lake')
+      return (
+        (x >= 2 && x <= 8 && y >= 10 && y <= 13) ||
+        (x >= 6 && x <= 10 && y >= 7 && y <= 12) ||
+        (x >= 8 && x <= 17 && y >= 6 && y <= 8) ||
+        (x >= 16 && x <= 21 && y >= 4 && y <= 8)
+      );
+    if (scene === 'lakeside')
+      return (
+        x >= 2 &&
+        x <= 21 &&
+        y >= 4 &&
+        y <= 14 &&
+        !(
+          (x >= 3 && x <= 7 && y <= 5) ||
+          (x >= 9 && x <= 13 && y <= 5) ||
+          (x >= 15 && x <= 20 && y <= 6) ||
+          (y >= 11 && x >= 8 && !(x >= 15 && x <= 19))
+        )
+      );
+    if (scene === 'lampworkshop')
+      return (
+        x >= 3 &&
+        x <= 20 &&
+        y >= 3 &&
+        y <= 13 &&
+        !(
+          (x >= 4 && x <= 8 && y >= 4 && y <= 5) ||
+          (x >= 16 && x <= 18 && y >= 4 && y <= 5) ||
+          (x === 10 && y === 8) ||
+          (x >= 18 && y >= 10 && y <= 11)
+        )
+      );
+    return false;
+  }
+  function restoreSave(raw) {
+    try {
+      const s = JSON.parse(raw);
+      if (
+        !s ||
+        s.version !== 1 ||
+        !['town', 'forest', 'canal', 'hill', 'house', 'lake', 'lakeside', 'lampworkshop', 'herbvale', 'oldpass'].includes(s.scene) ||
+        !Number.isFinite(s.x) ||
+        !Number.isFinite(s.y) ||
+        s.x < 1 ||
+        s.x > 22 ||
+        s.y < 2 ||
+        s.y > 14 ||
+        !['touma', 'nina'].includes(s.lead) ||
+        !s.flags ||
+        typeof s.flags !== 'object' ||
+        Array.isArray(s.flags)
+      )
+        return null;
+      let openingStage;
+      if (s.openingStage !== undefined) {
+        if (
+          !Number.isInteger(s.openingStage) ||
+          s.openingStage < 0 ||
+          s.openingStage > 1 ||
+          s.flags.board === true ||
+          s.journey ||
+          s.pendingEvening ||
+          (s.episode && (s.episode.chapter !== 1 || s.episode.step !== 0 || s.episode.complete)) ||
+          s.scene !== (s.openingStage === 0 ? 'house' : 'town')
+        )
+          return null;
+        openingStage = s.openingStage;
+      }
+      if (s.openingPrelude !== undefined && (s.openingPrelude !== true || openingStage !== 0)) return null;
+      let memories;
+      if (s.memories !== undefined) {
+        if (!s.memories || typeof s.memories !== 'object' || Array.isArray(s.memories)) return null;
+        const allowed = {
+          gift: ['tea', 'bookmark'],
+          sled: ['aligned'],
+          window: ['sealed'],
+          signal: ['waited'],
+          ritsuReturn: ['read'],
+          yuraRounds: ['read'],
+          unsentLetter: ['read'],
+          stormThanks: ['read']
+        };
+        memories = {};
+        for (const [k, v] of Object.entries(s.memories)) {
+          if (!allowed[k]?.includes(v)) return null;
+          memories[k] = v;
+        }
+      }
+      let episode;
+      if (s.episode !== undefined) {
+        const e = s.episode,
+          counts = [0, 0, 4, 6, 4, 4, 4, 4, 5, 4, 4];
+        if (
+          !e ||
+          !Number.isInteger(e.chapter) ||
+          e.chapter < 1 ||
+          e.chapter > 10 ||
+          !Number.isInteger(e.step) ||
+          e.step < 0 ||
+          e.step > counts[e.chapter] ||
+          typeof e.complete !== 'boolean' ||
+          !(e.route === null || route(e.route)) ||
+          (e.chapter < 9 && e.route !== null) ||
+          (e.chapter === 10 && !e.route) ||
+          (e.chapter === 9 && e.step >= 3 !== !!e.route) ||
+          (e.chapter > 1 && e.complete !== (e.step === counts[e.chapter]))
+        )
+          return null;
+        episode = { chapter: e.chapter, step: e.step, route: e.route, complete: e.complete };
+      }
+      let journey;
+      if (s.journey !== undefined) {
+        const j = s.journey,
+          keys = ['mirror', 'prism', 'shutter', 'reply'];
+        if (
+          !j ||
+          !Number.isInteger(j.step) ||
+          j.step < 0 ||
+          j.step > 9 ||
+          !episode ||
+          episode.chapter < 6 ||
+          keys.some(k => typeof j[k] !== 'boolean') ||
+          !j.positions
+        )
+          return null;
+        if (
+          (j.prism && !j.mirror) ||
+          (j.shutter && !j.prism) ||
+          (j.reply && !j.shutter) ||
+          (j.step < 4 && keys.some(k => j[k])) ||
+          (j.step >= 5 && !keys.every(k => j[k]))
+        )
+          return null;
+        if (
+          (j.step < 9 && (episode.chapter !== 6 || episode.step !== 2 || episode.complete)) ||
+          (j.step === 9 && episode.chapter === 6 && episode.step < 3)
+        )
+          return null;
+        const positions = {};
+        for (const actor of ['touma', 'nina']) {
+          const p = j.positions[actor];
+          if (!p || p.scene !== (actor === 'touma' ? 'lakeside' : 'lampworkshop') || !journeyTile(p.scene, p.x, p.y)) return null;
+          positions[actor] = { scene: p.scene, x: p.x, y: p.y };
+        }
+        if ([4, 5].includes(j.step) && s.scene !== positions[s.lead].scene) return null;
+        journey = { step: j.step, mirror: j.mirror, prism: j.prism, shutter: j.shutter, reply: j.reply, positions };
+      }
+      if (
+        ['lake', 'lakeside', 'lampworkshop'].includes(s.scene) &&
+        (!journeyTile(s.scene, s.x, s.y) || !episode || episode.chapter < 6 || (!journey && episode.chapter === 6 && episode.step < 3))
+      )
+        return null;
+      const flags = {};
+      for (const key of [
+        'board',
+        'bread',
+        'mochi',
+        'log',
+        'rest',
+        'repair',
+        'crab',
+        'guardian',
+        'lit',
+        'returned',
+        'lamp',
+        'sae',
+        'gift',
+        'canalStarted',
+        'waterGate',
+        'canalCrab',
+        'waterFlow',
+        'waterLit',
+        'canalRest',
+        'waterReturned',
+        'hillStarted',
+        'windbreak',
+        'hillGuardian',
+        'hillLens',
+        'hillLit',
+        'hillRest',
+        'festivalStarted',
+        'festivalMeal',
+        'festivalRibbon',
+        'endingTouma',
+        'endingNina',
+        'endingFriends',
+        'sewingAsked',
+        'sewingFound',
+        'sewingReturned',
+        'seamVisible',
+        'signAsked',
+        'signFixed',
+        'signReported',
+        'waitingPost',
+        'waitingLit',
+        'waitingRest',
+        'waitingReported',
+        'nightOne',
+        'nightTwo',
+        'nightThree',
+        'nightTouma',
+        'nightNina',
+        'nightFriends'
+      ])
+        flags[key] = s.flags[key] === true;
+      if (
+        (flags.lit && !flags.guardian) ||
+        (flags.guardian && !flags.repair) ||
+        (flags.repair && !flags.log) ||
+        (flags.log && !flags.mochi) ||
+        (s.scene === 'forest' && !flags.board)
+      )
+        return null;
+      if (
+        (s.scene === 'canal' && (!flags.canalStarted || !flags.returned || !flags.lit)) ||
+        (flags.waterGate && !flags.canalStarted) ||
+        (flags.canalCrab && !flags.waterGate) ||
+        (flags.waterFlow && !flags.canalCrab) ||
+        (flags.waterLit && !flags.waterFlow) ||
+        (flags.waterReturned && !flags.waterLit)
+      )
+        return null;
+      if (
+        (s.scene === 'hill' && !flags.hillStarted) ||
+        (flags.hillStarted && !flags.waterReturned) ||
+        (flags.windbreak && !flags.hillStarted) ||
+        (flags.hillGuardian && !flags.windbreak) ||
+        (flags.hillLens && !flags.hillGuardian) ||
+        (flags.hillLit && !flags.hillLens) ||
+        (flags.festivalStarted && !flags.hillLit) ||
+        ((flags.festivalMeal || flags.festivalRibbon) && !flags.festivalStarted)
+      )
+        return null;
+      if ((flags.waitingLit && !flags.waitingPost) || (flags.waitingReported && !flags.waitingLit)) return null;
+      if (
+        (flags.sewingReturned && !flags.sewingFound) ||
+        (flags.seamVisible && !flags.sewingReturned) ||
+        (flags.signReported && !flags.signFixed)
+      )
+        return null;
+      const endings = ['endingTouma', 'endingNina', 'endingFriends'].filter(k => flags[k]);
+      if (endings.length > 1 || (endings.length && (!flags.festivalMeal || !flags.festivalRibbon))) return null;
+      const nightRequirements = {
+        one: 'returned',
+        two: 'waterReturned',
+        three: 'festivalStarted',
+        touma: 'endingTouma',
+        nina: 'endingNina',
+        friends: 'endingFriends'
+      };
+      if (s.scene === 'house' && (s.x < 3 || s.x > 20 || s.y < 3 || s.y > 13)) return null;
+      for (const [key, requirement] of Object.entries(nightRequirements))
+        if (flags['night' + key[0].toUpperCase() + key.slice(1)] && !flags[requirement]) return null;
+      if (s.pendingEvening && (!nightRequirements[s.pendingEvening] || !flags[nightRequirements[s.pendingEvening]] || s.scene !== 'house'))
+        return null;
+      return {
+        ...(s.openingPrelude ? { openingPrelude: true } : {}),
+        ...(openingStage !== undefined ? { openingStage } : {}),
+        ...(journey ? { journey } : {}),
+        ...(memories ? { memories } : {}),
+        ...(episode ? { episode } : {}),
+        ...(s.pendingEvening ? { pendingEvening: s.pendingEvening } : {}),
+        version: 1,
+        scene: s.scene,
+        x: s.x,
+        y: s.y,
+        lead: s.lead,
+        flags,
+        courage: Math.max(0, Math.min(3, Number(s.courage) || 0))
+      };
+    } catch {
+      return null;
+    }
+  }
+  function chooseEnding(choice, courage, response) {
+    if (choice === 'confess') return 'touma';
+    if (choice === 'stay') return 'friends';
+    if (choice === 'wait') {
+      if (courage < 2) return 'ask';
+      return response === 'yes' ? 'nina' : response === 'notYet' ? 'friends' : 'confession';
+    }
+    return 'friends';
+  }
+  const C = { routes, route, newBattle, actions, resolveTurn, intentions, restoreSave, chooseEnding, journeyTile };
+  if (typeof module !== 'undefined') module.exports = C;
+  root.OkaeriCore = C;
 })(globalThis);

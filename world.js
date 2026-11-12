@@ -185,8 +185,9 @@ function lantern(c,x,y,lit=true){
 Renderer.prototype.background=function(scene){
  if(this.cache[scene])return this.cache[scene];const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
  this.lights=this.lights||{};lightLog=this.lights[scene]=[];this.smoke=this.smoke||{};smokeLog=this.smoke[scene]=[];
- const finish=()=>{lightLog=null;smokeLog=null;root.OkaeriScenery?.polish(c,scene);this.cache[scene]=cv;return cv;};
+ let vector=false;const finish=()=>{lightLog=null;smokeLog=null;if(!vector)root.OkaeriScenery?.polish(c,scene);this.cache[scene]=cv;return cv;}; // vector: 描画エンジンの絵は仕上げ込みなので重ねない
  if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})||root.OkaeriFieldArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){return finish();}
+ if(scene==='house'&&root.OkaeriHomeArt?.background(c)){const tmp=document.createElement('canvas').getContext('2d');glow(tmp,240,440,190);glow(tmp,600,410,170);vector=true;return finish();}
  if(scene==='house'){
   rect(c,0,0,W,H,'#243c46');shadow(c,585,682,480,55);
   block(c,133,112,884,560,20,'#755b46','#35484a','#d5c6a5');
@@ -209,7 +210,7 @@ Renderer.prototype.background=function(scene){
   block(c,690,350,263,34,13,'#9a815d','#56645a','#d6c3a0');
   for(let i=0;i<5;i++){ellipse(c,718+i*39,349,11,5,'#eee2c4');rect(c,710+i*39,340,16,9,'#c4b99a');}
   c.font='bold 15px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f2dfb9';c.fillText('トウマの部屋',389,279);c.fillText('ニナの部屋',812,279);c.fillText('二人の家',590,709);
-  glow(c,275,445,170);glow(c,560,472,180);return finish();
+  glow(c,275,445,170);glow(c,560,472,180);finish();if(root.OkaeriHomeArt&&!root.OkaeriHomeArt.failed())delete this.cache[scene];return cv;
  }
  let g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#bdd6df');g.addColorStop(.5,'#dce6df');g.addColorStop(1,'#9bbdc9');c.fillStyle=g;c.fillRect(0,0,W,H);
  const paths=[];const path=(p,w)=>paths.push([p,w]);
@@ -287,6 +288,7 @@ Renderer.prototype.draw=function(s,time,mode){
   const o=source.base||source;
   const x=o.x*T+24,y=o.y*T+24;drawables.push({y,draw:()=>{
   if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
+  if(o.type?.startsWith('home')&&root.OkaeriHomeArt?.ready()){root.OkaeriHomeArt.object(c,o,x,y,s,t);return;}
   if(!['exit','npc','mochi','crab','guardian','camp','fieldSpirit','fieldProp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
   root.OkaeriJourneyArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
   root.OkaeriFieldArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});

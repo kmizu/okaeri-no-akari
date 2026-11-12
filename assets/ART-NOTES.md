@@ -85,3 +85,11 @@ Prompt: Match the existing cozy watercolor RPG atlas, exact 3x2 grid, 1536x1024.
 4. **町に立つ姿**（residents-atlas.png と同じ作り）：全身の静止画1枚。薬草屋の前に立つ用。
 
 台本での表情の指定は、通常=neutral、笑顔=happy/joy、照れ=shy/fluster、ふくれ顔=angry、泣きそう=sad。ふくれ顔と泣きそうの絵が来るまでは、通常の顔に記号を重ねて表示する。
+
+## 描画エンジン（draw-engine.js）
+
+背景や家具を図形の積み重ねではなくベクター（SVG）で組み立てるための小さなエンジン。
+素材（木目・布目・漆喰・石・鉄＝乱流ノイズ）、立体（箱・円柱・球）、ぼかした影、乗算／スクリーンの光を部品として持ち、
+`OkaeriDraw.define(name, [minX,minY,w,h], body)` で登録した絵を一度だけラスタライズしてスプライトにする。
+二人の家の中（home-art.js）がこれで描かれている。火・湯気・灯りの揺れだけはキャンバスで毎フレーム重ねる。
+読み込み前や SVG 画像が使えない環境では、world.js の従来の描画にそのまま戻る。

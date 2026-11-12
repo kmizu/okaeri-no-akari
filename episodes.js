@@ -61,7 +61,10 @@ function handle(id,a){const s=a.state;if(!s.episode)return false;
  const e=current(s);if(!e||e.scene!==s.scene)return true;
  if(e.lead&&s.lead!==e.lead){a.toast((e.lead==='nina'?'ニナ':'トウマ')+'の出番です。Qで交代しよう。');return true;}
  if(root.OkaeriActivities?.run(a,e,()=>finishEvent(a)))return true;
- a.talk(e.lines,()=>{if(e.choice){choose(a);return;}if(e.battle){a.startBattle(e.battle);return;}if(offerDetour(a,()=>finishEvent(a)))return;finishEvent(a);});return true;
+ // 戦闘つきの出来事。battleIntro があれば「導入 → 戦闘 → 本編」、なければ「本編 → 戦闘」の順。
+ const fight=()=>a.startBattle?a.startBattle(e.battle):won(a);
+ if(e.battleIntro){a.talk(e.battleIntro,fight);return true;}
+ a.talk(e.lines,()=>{if(e.choice){choose(a);return;}if(e.battle){fight();return;}if(offerDetour(a,()=>finishEvent(a)))return;finishEvent(a);});return true;
  }
  // Ordinary household interactions remain available; old main-quest handlers cannot jump ahead.
  if(s.scene==='house'||id==='ourHome')return false;
@@ -74,7 +77,7 @@ function handle(id,a){const s=a.state;if(!s.episode)return false;
  if(chat){a.talk(chat);return true;}
  a.talk([['nina',s.episode.complete?'今日の話は、家でゆっくりしよう。':'今は「'+current(s).label+'」だったね。'],['touma','ああ。行こう。']]);return true;
 }
-function won(a){const e=current(a.state);if(!e?.battle)return false;a.talk([['','荒れていた角の光が、ゆっくり静まった。\n番人は灯台へ続く道をあけ、雪の上に伏せる。'],['nina','ありがとう。あとは、私たちが届けるね。']],()=>finishEvent(a));return true;}
+function won(a){const e=current(a.state);if(!e?.battle)return false;if(e.battleIntro){a.talk(e.lines,()=>finishEvent(a));return true;}if(e.after){a.talk(e.after,()=>finishEvent(a));return true;}a.talk([['','荒れていた角の光が、ゆっくり静まった。\n番人は灯台へ続く道をあけ、雪の上に伏せる。'],['nina','ありがとう。あとは、私たちが届けるね。']],()=>finishEvent(a));return true;}
 const originalObjects=S.activeObjects;
 S.activeObjects=function(s){let list=originalObjects(s);if(!s.episode)return list;
  // 第8話のオルフは丘の小屋にいる。全員が帰るまで、広場には立っていない。

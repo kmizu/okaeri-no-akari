@@ -89,7 +89,7 @@ class BattleUI{
   if(this.phase==='root'){
    title.textContent='コマンド';add('たたかう',()=>{this.phase='actor';this.message=nm(actor)+'は どうする？';this.render();});
    add('れんけい',()=>this.callbacks.onTurn({},true),b.gauge<3||Object.values(b.heroes).some(h=>h.hp===0),'二人の行動で「灯火の一閃」。灯り三つを使う。');
-   add('にげる',()=>{if(b.kind==='guardian'){this.message='番人を落ち着かせなければ 灯台へ進めない！';this.render();}else this.callbacks.onEscape();},false,'通常の戦闘からは確実に離脱できます。');
+   add('にげる',()=>{if(b.kind==='beast'){this.message='背を向ければ、灯喰いは小屋へ向かう。ここで押し返すしかない！';this.render();}else if(b.kind==='guardian'){this.message='番人を落ち着かせなければ 灯台へ進めない！';this.render();}else this.callbacks.onEscape();},false,'通常の戦闘からは確実に離脱できます。');
   }else if(this.phase==='actor'){
    title.textContent=nm(actor);add('こうげき',()=>this.selectSkill('attack'));
    add(actor==='nina'?'じゅもん':'とくぎ',()=>{this.phase='skills';this.render();});

@@ -77,3 +77,6 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
 .tint-hail .enemy-art{filter:sepia(.55) hue-rotate(165deg) saturate(2.2) brightness(1.02)}.tint-hail{--unit-size:clamp(84px,15cqw,130px)}
 .tint-sleet .enemy-art{filter:hue-rotate(70deg) saturate(1.25)}
 .tint-echo .enemy-art{filter:hue-rotate(55deg) saturate(1.2) brightness(1.08)}.tint-echo{--unit-size:clamp(86px,15cqw,132px)}
+
+/* 魔獣（専用の絵が来るまで、番人の絵を暗く赤くして見分ける） */
+.tint-beast .enemy-art{filter:brightness(.38) sepia(1) hue-rotate(-38deg) saturate(3.4) contrast(1.15)}

@@ -126,6 +126,13 @@ function handle(id,a){
   ['touma','「ミナモ」の先にも、町の名前が続いてる。ここは終点じゃないんだな。'],
   ['nina','帰りは、この矢印を頼りにしよう。']
  ],1);
+ if(id==='journeyShoreLight'&&j.step===1&&s.lead==='nina'&&!s.flags.calm_lakeSleet&&a.startBattle){
+  a.talk([
+   ['','湖岸の迎え灯。その根元の水たまりに、ヤドカリが一匹いた。\n殻の氷が、溶けては凍り、溶けては凍りしている。'],
+   ['nina','みぞれヤドカリだ。迎え灯の熱で溶けて、湖の風でまた凍るんだね。'],
+   ['touma','灯りを調べる前に、どいてもらおう。溶けた隙に、一気に行く。']
+  ],()=>a.startBattle('sleet',()=>{s.flags.calm_lakeSleet=true;a.save();handle(id,a);}));return true;
+ }
  if(id==='journeyShoreLight')return stage(1,'nina',[
   ['','湖岸に立つ迎え灯。硝子の覆いには、細い筋が何重にも刻まれている。\nユキネの帰り灯には、ない細工だ。'],
   ['nina','芯はうちのと同じ。でも、この筋は初めて見た。……火、近づけてみるね。'],

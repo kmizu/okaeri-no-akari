@@ -43,3 +43,14 @@ test('the guide points at the goal on this map, or at the exit that leads to it'
  const one=E.create(1);one.flags.board=true;assert.equal(D.guide(one).via,'森へ続く道');one.scene='forest';assert.deepEqual(D.guide(one),{x:5,y:11,via:null});
  one.openingStage=0;assert.equal(D.guide(one),null);
 });
+test('a beast goes for the lamp-bearer, cannot be calmed, and can be driven off by guarding her',()=>{
+ let b=C.newBattle('beast',{support:'koharu'});assert.equal(b.enemies[0].beast,true);
+ assert.deepEqual(C.intentions(b).map(i=>i.target),['nina']);
+ for(let t=0;t<40&&b.status==='active';t++){
+  const aim=C.intentions(b)[0].target,ready=b.gauge>=3&&Object.values(b.heroes).every(h=>h.hp>0);
+  const cmd=ready?{team:'flare'}:{touma:{skill:aim==='nina'?'protect':'attack',target:0},nina:b.heroes.nina.hp<40&&b.heroes.nina.sp>=2?{skill:'heal',target:'nina'}:b.heroes.nina.sp>=2?{skill:'fire',target:0}:{skill:'attack',target:0}};
+  b=C.resolveTurn(b,cmd,['touma','nina']);
+ }
+ assert.equal(b.status,'victory');assert.ok(b.logs.some(l=>l.includes('退いていった')));assert.ok(!b.logs.some(l=>l.includes('落ち着きを取り戻した')));
+ const ev=E.events(E.create(8))[2];assert.equal(ev.battle,'beast');assert.ok(ev.after.some(l=>l[1].includes('追わない')));
+});

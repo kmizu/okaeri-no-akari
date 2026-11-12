@@ -15,7 +15,7 @@ test('all event targets can be approached and all episodes conclude at home',()=
 });
 test('events persist only on completion; the quarrel stays open overnight and is mended in episode four',()=>{
  const s=E.create(3);let callback;const a={state:s,talk(l,cb){callback=cb;},save(){},updateHud(){},scene(n,x,y){Object.assign(s,{scene:n,x,y});},toast(){},openModal(){},closeModal(){},startBattle(){}};
- E.handle('episodeEvent',a);assert.equal(s.episode.step,0);callback();assert.equal(s.episode.step,1);assert.ok(C.restoreSave(JSON.stringify(s)));
+ E.handle('episodeEvent',a);assert.equal(s.episode.step,0);callback();assert.equal(s.episode.step,0,'the spirits on the plank come first');E.won(a);callback();assert.equal(s.episode.step,1);assert.ok(C.restoreSave(JSON.stringify(s)));
  const text=l=>l.map(x=>x[1]).join('');
  const night=text(E.events(s).at(-1).lines);assert.match(night,/温め直/);assert.doesNotMatch(night,/取り消/,'no apology on the night of the accident');
  const mend=text(E.events(E.create(4)).at(-1).lines);assert.match(mend,/取り消/);assert.match(mend,/怖かった/);
@@ -32,7 +32,7 @@ test('all five routes can be completed from episode two with valid saves after e
  assert.ok(C.restoreSave(JSON.stringify(s)));
  if(s.episode.complete){if(s.episode.chapter===10)break;E.next(a);}
  }
- assert.equal(s.episode.route,r);assert.equal(battles,1);
+ assert.equal(s.episode.route,r);assert.equal(battles,8,'episodes two to ten each have a battle; six has its own on the lake road');
  }
 });
 test('rescue refuses the wrong leader without advancing and transfers control to Nina',()=>{
@@ -68,4 +68,13 @@ test('every still is cued somewhere in the script and has its web image',()=>{
  const script=fs.readFileSync(path.join(__dirname,'..','episodes-data.js'),'utf8')+fs.readFileSync(path.join(__dirname,'..','game.js'),'utf8');
  assert.equal(Stills.list.length,15);
  for(const s of Stills.list){assert.ok(script.includes("still:'"+s.id+"'"),s.id);for(const f of [s.src,s.thumb])assert.ok(fs.existsSync(path.join(__dirname,'..',f)),f);}
+});
+
+test('every later chapter has a battle on its main road',()=>{
+ for(let n=2;n<=10;n++)for(const route of n===10?['touma','nina','friends','koharu','both']:[null]){
+  if(n===6)continue; // 第6話の戦闘は小旅行（journey.js）の迎え灯
+  const fights=E.events(E.create(n,route)).filter(e=>e.battle);assert.ok(fights.length>=1,n+':'+route);
+  for(const e of fights){assert.doesNotThrow(()=>C.newBattle(e.battle));if(e.battleIntro)assert.ok(e.battleIntro.length>=2);}
+ }
+ assert.match(require('node:fs').readFileSync(require.resolve('../journey.js'),'utf8'),/startBattle\('sleet'/);
 });

@@ -11,13 +11,17 @@ function newBattle(kind,options={}){
  const groups={mochi:[enemy('こごえモチ',38,'mochi'),enemy('こごえモチ',38,'mochi')],crab:[enemy('こおりヤドカリ',65,'crab',true)],
   hail:[0,1,2].map(()=>({...enemy('あられモチ',30,'mochi'),tint:'hail',scale:.85})),
   sleet:[{...enemy('みぞれヤドカリ',85,'crab',true),tint:'sleet',refreeze:true}],
+  stray:[enemy('こごえモチ',38,'mochi')],
   mix:[enemy('こごえモチ',38,'mochi'),enemy('こおりヤドカリ',65,'crab',true)],
-  echo:[{...enemy('こだま番人',125,'guardian'),tint:'echo',scale:.6}],guardian:[enemy('枝角の番人',230,'guardian')]};
+  echo:[{...enemy('こだま番人',125,'guardian'),tint:'echo',scale:.6}],
+  // 魔獣。精霊と違って、温めても落ち着かない。灯りを持つニナを狙う。
+  beast:[{...enemy('灯喰い',170,'guardian'),tint:'beast',beast:true}],guardian:[enemy('枝角の番人',230,'guardian')]};
  if(!groups[kind])throw Error('Unknown encounter');
  return {kind,turn:1,gauge:0,items:3,status:'active',logs:[],...(options.support?{support:options.support}:{}),enemies:groups[kind],heroes:{touma:{name:'トウマ',hp:120,max:120,sp:6,maxSp:6,chill:0,buff:0},nina:{name:'ニナ',hp:90,max:90,sp:8,maxSp:8,chill:0,buff:0}}};
 }
 function intentions(b){return b.enemies.map((e,i)=>{
  if(e.hp<=0)return null;const k=n=>Math.round(n*(e.scale||1));
+ if(e.beast){const phase=(b.turn-1)%3;return phase===0?{target:'nina',damage:24,label:'灯りへ飛びかかる → ニナ 24'}:phase===1?{target:'nina',damage:30,label:'牙 → ニナ 30'}:{target:'all',damage:14,label:'咆哮 → 二人に14'};}
  if(e.type==='guardian'){
   const phase=(b.turn-1)%3;
   return phase===0?{target:'touma',damage:k(18),label:'枝の腕 → トウマ '+k(18)}:phase===1?{target:'nina',damage:k(32),label:'大きな踏み込み → ニナ '+k(32)}:{target:'all',damage:k(16),label:'木の葉の嵐 → 二人に'+k(16)};
@@ -47,7 +51,7 @@ function resolveTurn(input,commands,order){
   if(fire&&e.ice){e.ice=false;emit(e.name+'の氷殻が溶けた！');}
   if(e.broken){n*=1.5;e.broken=0;if(who==='nina')cooperation=true;}
   if(e.ice)n*=.5;
-  n=Math.round(n);e.hp=Math.max(0,e.hp-n);if(afterDamage)afterDamage();emit(e.name+'に '+n+'。'+(e.hp===0?'落ち着きを取り戻した。':''),{type:who==='team'?'team':fire?'fire':style,enemy:b.enemies.indexOf(e),amount:n},who);
+  n=Math.round(n);e.hp=Math.max(0,e.hp-n);if(afterDamage)afterDamage();emit(e.name+'に '+n+'。'+(e.hp===0?(e.beast?'山の方へ退いていった。':'落ち着きを取り戻した。'):''),{type:who==='team'?'team':fire?'fire':style,enemy:b.enemies.indexOf(e),amount:n},who);
  }
  function heal(id,amount,actor){const h=b.heroes[id];if(h.hp<=0){emit('倒れている相手には「手を貸す」を使おう。');return;}const before=h.hp;cooperation ||=h.hp<h.max||h.chill>0;h.hp=Math.min(h.max,h.hp+amount);h.chill=0;emit(h.name+'のHPが '+(h.hp-before)+' 回復。',{type:'heal',hero:id,amount:h.hp-before},actor);}
  if(commands.team){b.gauge=0;emit('「合わせるぞ！」「うん！」── 灯火の一閃！',null,'team');hit(b.enemies.find(e=>e.hp>0),75,true,'team');}

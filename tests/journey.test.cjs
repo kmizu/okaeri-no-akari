@@ -6,13 +6,13 @@ const E=global.OkaeriEpisodes,S=global.OkaeriStory;
 function setup(){
  const state=E.create(6);state.episode.step=2;let callback,warning,buttons;
  const api={state,talk(lines,cb){callback=cb;},save(){global.OkaeriJourney?.capture(state);assert.ok(C.restoreSave(JSON.stringify(state)),JSON.stringify(state));},
-  scene(scene,x,y){Object.assign(state,{scene,x,y});this.save();},updateHud(){},toast(t){warning=t;},openModal(html,b){buttons=b;},closeModal(){},startBattle(){}};
+  scene(scene,x,y){Object.assign(state,{scene,x,y});this.save();},updateHud(){},toast(t){warning=t;},openModal(html,b){buttons=b;},closeModal(){},startBattle(kind,onWin){onWin?.();}};
  const read=()=>{const cb=callback;callback=null;cb?.();};
  const act=id=>{assert.equal(global.OkaeriJourney.handle(id,api),true,id);read();};
  return {state,api,read,act,warning:()=>warning,buttons:()=>buttons};
 }
 function toSplit(h){
- E.finishEvent(h.api);h.read();h.act('journeyTrail');h.state.lead='nina';h.act('journeyShoreLight');
+ E.finishEvent(h.api);h.read();h.act('journeyTrail');h.state.lead='nina';h.act('journeyShoreLight');h.read();
  h.act('lakeToVillage');h.act('journeyOrlf');h.act('villageToWorkshop');h.act('journeyDesk');
 }
 function cooperate(h){

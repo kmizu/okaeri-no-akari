@@ -42,7 +42,7 @@ function view(id){
  v.addEventListener('click',close);doc.addEventListener('keydown',key,true);doc.getElementById('stage').append(v);v.querySelector('button').focus();
 }
 // 人物紹介。背景を切り替えて、立ち絵と名前を大きく見せる。台詞のきっかけ {intro:'koharu'} で出し、{intro:null} か会話の終わりで消える。
-const people={koharu:{name:'コハル',kana:'KOHARU',role:'薬草屋の見習い',img:'assets/koharu-town-cut.png',notes:['トウマとニナの妹分。二人より半年遅く生まれた','子どもの頃から、二人のあとをついて歩いてきた','かじかんだ指を戻す「温め草」を、いつも籠に入れている']}};
+const people={koharu:{name:'コハル',kana:'KOHARU',role:'薬草屋の見習い',img:'assets/koharu-town-cut.png',notes:['十八歳。トウマとニナの二つ年下の妹分','子どもの頃から、二人のあとをついて歩いてきた','かじかんだ指を戻す「温め草」を、いつも籠に入れている']}};
 let card=null;
 function intro(id){
  const doc=root.document,stage=doc?.getElementById('stage');if(!stage||!stage.append)return;

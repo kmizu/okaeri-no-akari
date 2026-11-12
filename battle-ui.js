@@ -204,7 +204,8 @@
         }
         if (target) this.highlight(...target);
       };
-      b.onmouseenter = () => {
+      b.onmousemove = () => { // 置きっぱなしのマウスに選択を奪われないよう、実際に動かした時だけ反応する
+        if (document.activeElement === b) return;
         if (!b.disabled) b.focus({ preventScroll: true });
       };
       return b;
@@ -476,13 +477,13 @@
           const id = Number(node.dataset.fieldEnemy);
           node.onclick = () => this.commit({ skill: this.selected.id, target: id });
           node.onfocus = () => this.highlight('enemy', id);
-          node.onmouseenter = () => node.focus({ preventScroll: true });
+          node.onmousemove = () => document.activeElement !== node && node.focus({ preventScroll: true });
         }
         for (const node of this.el.querySelectorAll('[data-field-hero]:not(:disabled)')) {
           const id = node.dataset.fieldHero;
           node.onclick = () => this.commit({ skill: this.selected.id, target: id });
           node.onfocus = () => this.highlight('hero', id);
-          node.onmouseenter = () => node.focus({ preventScroll: true });
+          node.onmousemove = () => document.activeElement !== node && node.focus({ preventScroll: true });
         }
       }
       const enabled = [...options.querySelectorAll('button:not(:disabled)')];

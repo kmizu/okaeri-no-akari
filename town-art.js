@@ -303,5 +303,78 @@ function bridgeBody(w,h){
  return s;
 }
 function bridge(c,x,y,w,h){const name=`out/bridge-${w}x${h}`;return D.want(name,[-26,-36,w+60,h+70],()=>bridgeBody(w,h))&&D.draw(c,name,x,y);}
-root.OkaeriTownArt={house,tree,lantern,ground,props,object,water,sheet,lands,trail,bridge};
+// ---------------------------------------------------------------- 渡し場の桟橋・小舟・木箱、干し小屋、石垣、柵
+function crate(x,y,w=35){const h=w;return R(x+5,y+h-3,w+8,12,SHADE,5,{opacity:.3,filter:'url(#b2)'})+wood(R(x,y,w,h,'#a4825b',2)+P(pts([[x+w,y],[x+w+11,y-8],[x+w+11,y+h-8],[x+w,y+h]]),'#6a5540')+P(pts([[x,y],[x+11,y-8],[x+w+11,y-8],[x+w,y]]),'#c9ab7c'))
+ +R(x,y,w,h,'url(#fsh)',2)+S(`M${x+4},${y+4}L${x+w-4},${y+h-4}M${x+w-4},${y+4}L${x+4},${y+h-4}`,'#6c5a3e',2.4)+R(x,y,w,h,'none',2,{stroke:'#6c5a3e','stroke-width':2.4})+P(`M${x-1},${y-1}Q${x+w*.5+5},${y-15} ${x+w+12},${y-9}Q${x+w*.5+6},${y-3} ${x-1},${y-1}Z`,'url(#snowsh)');}
+function dockBody(){
+ let s=EXTRA,x=744,y=439,w=218,h=242;const r=rng(61);
+ s+=R(x+10,y+30,w+14,h+10,'#17344a',4,{opacity:.45,filter:'url(#b8)'});
+ let pl='';for(let yy=0;yy<h;yy+=17)pl+=R(x,y+yy,w,Math.min(16.4,h-yy),mix('#b69a75','#9a8060',r()),1);
+ s+=wood(pl)+R(x,y,w,h,'url(#tsh)')+R(x,y+h,w,17,'#5a4a3a')+R(x,y+h,w,17,'url(#fsh)')+P(pts([[x+w,y],[x+w+12,y-8],[x+w+12,y+h+9],[x+w,y+h+17]]),'#4a3e32');
+ for(let yy=8;yy<h;yy+=17)for(const px of [x+12,x+w-12])s+=E(px,y+yy,1.4,1.4,'#3a3026');
+ s+=E(x+70,y+60,54,22,'#fff',{opacity:.2,filter:'url(#b8)'})+E(x+150,y+170,60,24,'#fff',{opacity:.16,filter:'url(#b8)'});
+ for(const px of [x-4,x+w-5])for(const py of [447,538,639])s+=R(px+4,py+50,10,14,SHADE,3,{opacity:.3,filter:'url(#b2)'})+cyl(px,py,11,62,'#7a6c52',2)+P(`M${px-3},${py+1}Q${px+5.5},${py-11} ${px+14},${py+1}Q${px+5.5},${py+5} ${px-3},${py+1}Z`,'url(#snowsh)');
+ s+=E(x+w-34,y+h-30,13,7,'none',{stroke:'#d6c8a5','stroke-width':4})+E(x+w-34,y+h-30,7,3.4,'none',{stroke:'#bfae86','stroke-width':3});
+ // 小舟
+ s+=P('M982,612Q1040,596 1104,606Q1130,616 1104,640Q1040,660 990,652Q968,632 982,612Z','#17344a',{opacity:.4,filter:'url(#b4)',transform:'translate(8,10)'})
+  +wood(P('M982,606Q1040,588 1100,596Q1126,608 1100,632Q1040,652 992,646Q968,626 982,606Z','#8a6e4c'))+P('M990,608Q1040,594 1094,601Q1112,609 1094,626Q1040,642 998,638Q980,624 990,608Z','#5a4632')
+  +wood(P('M1004,604l10,-2l4,38l-10,1zM1050,598l11,-1l3,38l-11,1z','#b0926a'),'v')+P('M990,606Q1040,588 1098,597Q1040,604 996,620Z','url(#snowsh)',{opacity:.9})+S('M1004,634Q970,616 950,566','#d6c8a5',2.6);
+ s+=crate(388,389)+crate(415,372)+crate(1047,368);
+ return s;
+}
+const dock=c=>once(c,'out/dock',dockBody);
+function shedBody(){
+ let s=EXTRA+P('M-60,14L60,10L110,34L-10,40Z',SHADE,{opacity:.2,filter:'url(#b4)'});
+ for(const dx of [-58,52])s+=cyl(dx,-70,8,86,'#8b7658',2)+drift(dx+4,16,10,4);
+ s+=wood(R(-62,-52,124,5,'#5d4d3a',2));
+ for(let i=0;i<7;i++){const x=-52+i*17.3;s+=L(x,-48,x,-34,'#6d5a40',1.4)+[-3,-1.5,0,1.5,3].map(k=>S(`M${x},-34q${k*1.2},10 ${k*2},${20-Math.abs(k)*1.5}`,i%2?'#8fa860':'#a9bd72',2)).join('')+L(x-3,-33,x+3,-33,'#d9c79e',2);}
+ s+=P(pts([[-78,-70],[0,-110],[78,-70],[70,-58],[-70,-58]]),'#6f6a58')+wood(P(pts([[-70,-58],[70,-58],[64,-50],[-64,-50]]),'#8c8a74'))
+  +P('M-82,-72Q-40,-96 0,-116Q40,-96 82,-72Q66,-68 54,-76Q40,-68 26,-78Q12,-68 0,-80Q-14,-68 -28,-78Q-42,-68 -56,-76Q-68,-67 -82,-72Z','url(#snowsh)')+icicles(-66,66,-57,31,7);
+ return s;
+}
+function shed(c,x,y){return D.want('out/shed',[-100,-130,230,190],shedBody)&&D.draw(c,'out/shed',x,y);}
+function wallBody(len){let s=EXTRA+R(6,16,len+10,14,SHADE,6,{opacity:.28,filter:'url(#b4)'}),st='';const r=rng(len);
+ for(let row=0;row<2;row++){let x=row?-8:0;while(x<len){const w=18+r()*20,x0=Math.max(0,x),x1=Math.min(len,x+w);if(x1-x0>4)st+=R(x0+.6,row*11-6+r()*2,x1-x0-1.2,11,['#aab7b5','#98a6a6','#b9c4c0','#8c9b9c'][Math.floor(r()*4)],4);x+=w;}}
+ s+=R(0,-6,len,24,'#5f7479',5)+stone(st)+R(0,-6,len,24,'url(#fsh)',5,{opacity:.7});
+ let top=`M-3,-5`;for(let x=0;x<len;x+=22)top+=`Q${x+11},${-16-r()*6} ${Math.min(len+3,x+22)},-5`;return s+P(top+`Q${len/2},2 -3,-5Z`,'url(#snowsh)')+drift(10,20,14,4)+drift(len-14,20,16,5);}
+function wall(c,x,y,len){const name='out/wall'+len;return D.want(name,[-20,-40,len+50,80],()=>wallBody(len))&&D.draw(c,name,x,y);}
+function fenceBody(len){let s=EXTRA,r=rng(len+1);s+=R(4,26,len,8,SHADE,4,{opacity:.22,filter:'url(#b2)'})+S(`M0,8Q${len/2},-2 ${len},2`,'#7d705a',3.4)+S(`M0,18Q${len/2},10 ${len},13`,'#7d705a',3);
+ for(let x=0;x<=len;x+=40){const lean=(r()-.5)*14,h=30+r()*6;s+=G(cyl(-3,-4,6.5,h,'#84775f',2)+P('M-6,-3Q0.5,-12 7,-3Q0.5,0 -6,-3Z','url(#snowsh)'),{transform:`translate(${x},0) rotate(${n(lean)} 0 ${h})`})+drift(x,h-3,8,3);}return s;}
+function fence(c,x,y,len){const name='out/fence'+len;return D.want(name,[-24,-30,len+50,76],()=>fenceBody(len))&&D.draw(c,name,x,y);}
+
+// ---------------------------------------------------------------- 野道・待ち場・旅先の小物
+const benchBody=()=>EXTRA+R(-30,10,70,10,SHADE,5,{opacity:.28,filter:'url(#b2)'})+cyl(-27,-9,7,22,'#756c52',1)+cyl(20,-9,7,22,'#756c52',1)+wood(R(-33,-17,66,11,'#a08a66',2)+R(-33,-40,66,17,'#8f7a5a',2))+R(-33,-17,66,11,'url(#fsh)',2)+R(-33,-40,66,17,'url(#tsh)',2)+[-11,11].map(x=>R(x-.6,-40,1.2,17,'#1c0e05',0,{opacity:.3})).join('')+P('M-35,-40Q0,-50 35,-40Q0,-36 -35,-40Z','url(#snowsh)')+P('M-34,-17Q-10,-24 14,-18Q-10,-13 -34,-17Z','url(#snowsh)');
+const signBody=(label,col)=>EXTRA+P('M-4,8L10,6L34,16L18,20Z',SHADE,{opacity:.22,filter:'url(#b2)'})+cyl(-4,-46,8,56,'#8b7c60',2)+wood(P('M-30,-46H20L32,-36L20,-26H-30Z',col))+P('M-30,-46H20L32,-36L20,-26H-30Z','url(#fsh)')+(label?D.text(-4,-32,label,10,'#fff0ca'):S('M-22,-39h34M-22,-33h26','#3a2c1c',1.4,{opacity:.6}))+P('M-32,-47Q-5,-56 22,-47Q-5,-43 -32,-47Z','url(#snowsh)')+drift(0,9,10,3.6);
+Object.assign(MISC,{
+ bench:benchBody,
+ post:f=>signBody('町へ',f?'#b3a17a':'#7c8678'),
+ fsign:()=>signBody('', '#9c8f72'),
+ rsign:f=>EXTRA+cyl(-3,-36,6,44,'#6e7467',1)+S('M0,-33h20v11','#b8a278',2)+R(8,-22,26,24,'#1c0e05',2,{opacity:.3,transform:'translate(2,2)'})+wood(R(8,-22,26,24,f?'#ece5d2':'#b77865',2))+S('M12,-15h18M12,-9h13','#7d8477',1.6)+(f?ball(21,-2,2.4,2.4,'#b5544a'):'')+P('M-6,-36Q0,-44 6,-36Q0,-33 -6,-36Z','url(#snowsh)')+drift(0,9,9,3.4),
+ sbox:f=>EXTRA+R(-16,6,40,10,SHADE,5,{opacity:.28,filter:'url(#b2)'})+(f?'':light(0,-8,34,'#ffd27a',.55))+wood(R(-19,-13,38,22,'#947a55',3)+P(pts([[-21,-19],[19,-19],[19,-11],[-21,-11]]),'#b4a58b'))+R(-19,-13,38,22,'url(#fsh)',3)+R(-5,-10,10,9,'#d6bd82',2)+ball(0,-5.5,2,2,'#7a5a3c')+P('M-22,-19Q0,-29 20,-19Q0,-15 -22,-19Z','url(#snowsh)'),
+ cairn:f=>{let s=EXTRA+E(4,10,44,12,SHADE,{opacity:.3,filter:'url(#b4)'}),r=rng(12);for(const [dx,dy,w] of [[-32,-6,64],[-25,-21,50],[-18,-35,36],[-11,-48,22]]){let st='';for(let x=0;x<w;x+=11+r()*6)st+=R(dx+x+.5,dy+.5,Math.min(13,w-x)-1,13,['#a7b2ae','#96a4a2','#b6c0ba'][Math.floor(r()*3)],4);s+=R(dx,dy,w,14,'#62777c',5)+stone(st)+R(dx,dy,w,14,'url(#fsh)',5,{opacity:.6})+P(`M${dx-2},${dy+1}Q${dx+w*.3},${dy-7} ${dx+w*.62},${dy+1}Q${dx+w*.3},${dy+4} ${dx-2},${dy+1}Z`,'url(#snowsh)');}
+  return s+(f?light(0,-60,120,'#ffd27a',.5)+light(0,-60,40,'#fff0c0',.5):'')+R(-10,-72,20,26,'#2f3f3b',3)+R(-7,-69,14,19,f?'url(#warm)':'#7f9fad',1)+R(-.8,-69,1.6,19,'#2f3f3b')+(f?E(0,-59,2.6,6,'#fff8dc',{filter:'url(#b1)'}):'')+P('M-14,-72L0,-84L14,-72Z','#3a4a46')+P('M-16,-72Q0,-92 16,-72Q0,-76 -16,-72Z','url(#snowsh)');},
+ mstone:()=>EXTRA+E(4,8,22,7,SHADE,{opacity:.3,filter:'url(#b2)'})+stone(P('M-14,6V-24Q-12,-40 0,-40Q12,-40 14,-24V6Z','#8f9c8c'))+P('M-14,6V-24Q-12,-40 0,-40Q12,-40 14,-24V6Z','url(#cyl)',{opacity:.5})+S('M-6,-22h12M-6,-14h9M-6,-6h11','#4f5f55',1.6,{opacity:.7})+ball(-7,-30,6,3.4,'#6f8a55')+ball(6,-2,5,3,'#7d9a62')+P('M-13,-30Q0,-48 13,-30Q0,-36 -13,-30Z','url(#snowsh)')+drift(-12,8,9,3.4),
+ cargo:()=>EXTRA+crate(-24,-18,31)+crate(0,-28,31),
+ jdesk:()=>EXTRA+R(-30,-26,56,30,'#1c0e05',2,{opacity:.3,transform:'translate(2,3)'})+R(-30,-26,56,30,'#eadbb9',2)+R(-3,-26,2,30,'#b9a47a')+[0,1,2,3].map(k=>L(-24,-20+k*5.6,-8,-20+k*5.6,'#8b876c',1)+L(3,-20+k*5.6,20-k*3,-20+k*5.6,'#8b876c',1)).join('')+S('M20,-30l10,22','#5a4130',2.4)+P('M29,-9l2,5l-4,-3z','#2c1f15'),
+ jprism:f=>{let s=EXTRA+R(-40,2,90,12,SHADE,5,{opacity:.3,filter:'url(#b4)'})+wood(R(-44,-24,88,30,'#b29b6b',4))+R(-44,-24,88,30,'url(#fsh)',4)+R(-44,-36,88,14,'#e5d0a1',4)+R(-44,-36,88,14,'url(#tsh)',4);
+  for(let i=0;i<3;i++){const px=-26+i*26,col=f?['#e8d099','#a5d2bb','#abc9dd'][i]:'#8cacae';s+=(f?light(px,-50,30,col,.6):'')+cyl(px-3,-38,6,8,'#6a5a30',1)+P(`M${px},-74L${px+11},-52L${px},-36L${px-11},-52Z`,col)+P(`M${px},-74L${px+11},-52L${px},-36Z`,'#1c0e05',{opacity:.16})+P(`M${px},-74L${px-11},-52L${px},-36L${px+11},-52Z`,'url(#glass)',{opacity:.7})+S(`M${px},-74L${px+11},-52L${px},-36L${px-11},-52Z`,'#fff',1,{opacity:.5});}return s;},
+ jreply:f=>EXTRA+(f?light(0,-62,150,'#ffd27a',.5)+light(0,-62,54,'#fff0c0',.55):'')+cyl(-7,-32,14,20,'#667e73',2)+R(-16,-16,32,6,'#4f6058',2)+E(0,-58,30,38,'#3a4a46')+E(0,-58,27,35,'#c9a25c')+E(0,-58,23,30,f?'url(#warm)':'#aac9cd')+E(0,-58,23,30,'url(#glass)',{opacity:.8})+E(0,-58,14,19,'none',{stroke:'#fff','stroke-opacity':.4,'stroke-width':1})+E(0,-58,6,8,'none',{stroke:'#fff','stroke-opacity':.4,'stroke-width':1})+(f?E(0,-56,4,9,'#fff8dc',{filter:'url(#b2)'}):''),
+ jmap:()=>EXTRA+R(-34,-6,70,10,SHADE,5,{opacity:.28,filter:'url(#b2)'})+S('M-30,-76L-38,4M30,-74L38,4M0,-70L4,-2','#6b4d33',4)+R(-35,-74,68,60,'#1c0e05',2,{opacity:.3,transform:'translate(3,3)'})+G(R(-35,-74,68,60,'#e4d2a2',2)+S('M-24,-26Q-10,-52 -2,-48T12,-40T26,-62','#829a86',2.4)+S('M-28,-58q10,6 20,0t22,4','#b98a6a',1,{'stroke-dasharray':'3 2'})+[[-24,-26],[-2,-48],[12,-40],[26,-62]].map(([a,b])=>ball(a,b,3,3,'#bc8a52')).join('')+S('M18,-28l4,7l-8,0z','#3f5f66',1.2),{transform:'rotate(-2)'})+ball(-30,-70,2,2,'#b5544a')+ball(28,-70,2,2,'#b5544a'),
+});
+Object.assign(BOX,{bench:[-50,-64,110,96],post:[-50,-72,110,104],fsign:[-50,-72,110,104],rsign:[-24,-60,80,84],sbox:[-46,-52,92,80],cairn:[-130,-190,260,224],mstone:[-36,-64,76,86],cargo:[-40,-60,100,90],jdesk:[-44,-46,96,64],jprism:[-70,-100,146,132],jreply:[-160,-222,320,246],jmap:[-56,-96,116,124]});
+const _object=object;
+function object2(c,o,x,y,s,t,st){
+ const f=s.flags||{};
+ switch(o.type){
+  case 'waitingBench':return misc(c,'bench',0,x,y);
+  case 'waitingPost':return misc(c,'post',!!f.waitingPost,x,y);
+  case 'returnSign':return misc(c,'rsign',!!f.signFixed,x,y);
+  case 'sewingBox':return misc(c,'sbox',!!f.sewingFound,x,y);
+ }
+ return _object(c,o,x,y,s,t,st);
+}
+// 野道の置き物（field-art.js から）と、旅先の小物（journey-art.js から）。
+function fieldProp(c,o,x,y,f){const k={cairn:['cairn',!!f.passLit],stone:['mstone',0],sign:['fsign',0]}[o.kind];return !!k&&misc(c,k[0],k[1],x,y);}
+function jprop(c,key,flag,x,y){return misc(c,key,flag,x,y);}
+root.OkaeriTownArt={house,tree,lantern,ground,props,object:object2,water,sheet,lands,trail,bridge,dock,shed,wall,fence,fieldProp,jprop};
 })(globalThis);

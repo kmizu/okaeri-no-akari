@@ -23,9 +23,9 @@ function background(c,scene,h){
   if(!root.OkaeriTownArt?.bridge(c,P(12)-34,P(10)-16,70,42)){for(let i=0;i<4;i++)block(c,P(12)-34+i*18,P(10)-12,15,34,6,'#a58a63','#5f6a58','#d6c39b');}
   for(const [x,y,s] of [[70,120,1.3],[170,70,1.1],[300,60,1],[1010,330,1.2],[1090,440,1.3],[930,620,1.2],[760,660,1.1],[110,650,1.25],[1040,90,1]])tree(c,x,y,s);
   // 干し小屋（屋根だけ）
-  const hx=P(19),hy=P(3);for(const dx of [-58,52])block(c,hx+dx,hy-70,7,84,6,'#8b7658','#4f625a','#c9b68e');
-  poly(c,[[hx-78,hy-72],[hx,hy-112],[hx+78,hy-72],[hx+70,hy-60],[hx-70,hy-60]],'#e9efe4');poly(c,[[hx-70,hy-60],[hx+70,hy-60],[hx+62,hy-50],[hx-62,hy-50]],'#8c8a74');
-  for(let i=0;i<7;i++){const x=hx-52+i*17;line(c,[[x,hy-50],[x,hy-28]],'#7d8a5c',2);ellipse(c,x,hy-22,6,10,i%2?'#9db06a':'#b7c67f');}
+  const hx=P(19),hy=P(3);const vhut=root.OkaeriTownArt?.shed(c,hx,hy);if(!vhut)for(const dx of [-58,52])block(c,hx+dx,hy-70,7,84,6,'#8b7658','#4f625a','#c9b68e');
+  if(!vhut){poly(c,[[hx-78,hy-72],[hx,hy-112],[hx+78,hy-72],[hx+70,hy-60],[hx-70,hy-60]],'#e9efe4');poly(c,[[hx-70,hy-60],[hx+70,hy-60],[hx+62,hy-50],[hx-62,hy-50]],'#8c8a74');}
+  if(!vhut){for(let i=0;i<7;i++){const x=hx-52+i*17;line(c,[[x,hy-50],[x,hy-28]],'#7d8a5c',2);ellipse(c,x,hy-22,6,10,i%2?'#9db06a':'#b7c67f');}}
   lantern(c,P(17)-10,P(4));
   text('薬草の谷',P(6),P(14)+6);text('温め草の畑',P(6),P(8)-6,11,'#5f7a4c');
  }else{
@@ -41,8 +41,8 @@ function background(c,scene,h){
   // 雪に埋もれた轍の跡
   for(let i=0;i<14;i++){const x=P(8)+18+i*26,y=P(8)-6;ellipse(c,x,y,7,2,'#b5c6c655');ellipse(c,x,y+16,7,2,'#b5c6c644');}
   // 古い石垣と、傾いた柵
-  for(let i=0;i<8;i++)block(c,P(9)+i*44,P(9)+18,36,14,8,'#aab7b5','#73898f','#e6ece6');
-  for(let i=0;i<6;i++){const x=P(3)+i*40,y=P(10)-10-(i%2)*4;block(c,x,y,5,30,4,'#84775f','#4f6460','#c8c2a8');}line(c,[[P(3),P(10)-4],[P(7)+10,P(10)-12]],'#8c7f66',3);
+  if(!root.OkaeriTownArt?.wall(c,P(9),P(9)+18,348)){for(let i=0;i<8;i++)block(c,P(9)+i*44,P(9)+18,36,14,8,'#aab7b5','#73898f','#e6ece6');}
+  if(!root.OkaeriTownArt?.fence(c,P(3),P(10)-12,200)){for(let i=0;i<6;i++){const x=P(3)+i*40,y=P(10)-10-(i%2)*4;block(c,x,y,5,30,4,'#84775f','#4f6460','#c8c2a8');}line(c,[[P(3),P(10)-4],[P(7)+10,P(10)-12]],'#8c7f66',3);}
   for(const [x,y,s] of [[60,430,1.3],[150,520,1.1],[1090,330,1.1],[330,250,.9],[980,640,1.2]])tree(c,x,y,s);
   // 町の灯り（曲がり角から見下ろす）
   for(let i=0;i<9;i++){const x=470+i*23,y=250+Math.sin(i*1.3)*9;rect(c,x,y,9,7,'#5f7686');rect(c,x+2,y+2,4,3,'#ffe3a4');}
@@ -60,6 +60,7 @@ function object(c,o,x,y,s,t,h){
   c.restore();return;
  }
  if(o.type!=='fieldProp')return;
+ if(root.OkaeriTownArt?.fieldProp(c,o,x,y,f))return;
  if(o.kind==='exit'||o.kind==='gate'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='valeGate'?'←':o.id==='passGate'?'→':'↓',x,y);return;}
  if(o.kind==='herb'){for(const [dx,dy] of [[-14,2],[0,-6],[13,3],[-4,8]]){ellipse(c,x+dx,y+dy,9,5,'#8fae68');ellipse(c,x+dx-3,y+dy-3,5,3,'#b9cf8a');}const k=(Math.sin(t*1.4)+1)/2;ellipse(c,x,y-20-k*8,7,10,'rgba(255,255,255,'+(.16*(1-k))+')');}
  if(o.kind==='stream'){for(let i=0;i<3;i++){const k=((t*.5+i*.33)%1);ellipse(c,x-14+i*14,y-12-k*26,8,12,'rgba(255,255,255,'+(.2*(1-k))+')');}}

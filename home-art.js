@@ -59,12 +59,7 @@ function coat(x,y,body,trim,scarf){const d=`M${x+2},${y}Q${x+11},${y-4} ${x+20},
   +[14,24,34].map(k=>ball(x+11,y+k,1.5,1.5,'#e3c489')).join('')+(scarf?cloth(P(`M${x+3},${y+2}q4,3 7,1l-1,22q-4,2 -7,0Z`,scarf)):'');}
 
 // ---------------------------------------------------------------- 部屋（背景）
-function room(){
- const r=rng(8128);let s='';
- // 家の外（屋根を外して見下ろす暗がり）
- s+=`<radialGradient id="out" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#2b434b"/><stop offset="1" stop-color="#101d24"/></radialGradient>`+R(0,0,1152,768,'url(#out)');
- s+=shadow(110,30,950,690,.6,'b16');
- s+=wood(R(120,20,912,676,'#3f2e21',4));
+function floorPlanks(r){let s='';
  // ---- 床：一枚ずつ色の違う板。行ごとに木目を切り替えて、継ぎ目で流れが切れるように。
  const tones=['#b98f61','#b0875a','#c1996b','#a98054','#b68c5f','#c59e71','#ad8559','#bb9364'];const rows=['',''];let seams='';
  for(let row=0;row<22;row++){const y=144+row*24;let x=144-Math.floor(r()*90);
@@ -75,17 +70,30 @@ function room(){
    x+=w;}
   seams+=R(144,y+22.8,864,1.4,'#2e1c0e',0,{opacity:.5})+R(144,y,864,1,'#fff3d6',0,{opacity:.13});}
  s+=wood(rows[0],'h')+wood(rows[1],'h2')+seams;
- // よく歩く道筋のつや（戸口→食卓→寝室の戸口）
- s+=S('M600,660C600,560 470,540 400,470C340,410 312,380 312,330','#fff0d0',34,{opacity:.10,filter:'url(#b16)'})+S('M600,640C640,540 800,470 840,340','#fff0d0',34,{opacity:.09,filter:'url(#b16)'});
- // ---- 敷物
- s+=rug(304,222,112,58,'#2f5f66','#d9cfb2','#c98f5a','diamond')+rug(656,226,112,56,'#8a4a52','#f0e2c8','#6f8f8a','star');
- s+=rug(432,366,246,150,'#7a4a44','#e2cfa6','#5f8f8c','diamond')+braided(250,532,70,27)+rug(840,540,128,54,'#6f7f5a','#ead9b4','#b5645a','star');
+ return s;
+}
+function backWall(r){let s='';
  // ---- 奥の壁：梁、漆喰、腰板、巾木
  s+=plaster(R(144,44,864,64,'#eadcbd'))+`<linearGradient id="wallsh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c0e05" stop-opacity=".34"/><stop offset=".35" stop-color="#1c0e05" stop-opacity="0"/><stop offset="1" stop-color="#1c0e05" stop-opacity=".12"/></linearGradient>`+R(144,44,864,64,'url(#wallsh)');
  let boards='';for(let i=0;i<36;i++)boards+=R(144+i*24,104,24,36,['#9a744c','#8f6a44','#a47d54','#946f48'][Math.floor(r()*4)]);
  s+=wood(boards,'v');for(let i=1;i<36;i++)s+=R(144+i*24-.7,106,1.4,34,'#2e1c0e',0,{opacity:.45})+R(144+i*24+.8,106,.9,34,'#fff3d6',0,{opacity:.12});
  s+=wood(R(144,100,864,7,'#b08a5c',1)+R(144,136,864,8,'#5e4530')+R(144,40,864,11,'#4d3725'))+R(144,100,864,1.6,'#fff3d6',0,{opacity:.4})+R(144,107,864,4,'url(#drop)',0,{opacity:.6})+R(144,51,864,7,'url(#drop)',0,{opacity:.55});
  for(const px of [144,996])s+=wood(R(px,40,12,104,TIMBER),'v')+R(px,40,12,104,'url(#cyl)',0,{opacity:.5});
+ return s;
+}
+function room(){
+ const r=rng(8128);let s='';
+ // 家の外（屋根を外して見下ろす暗がり）
+ s+=`<radialGradient id="out" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#2b434b"/><stop offset="1" stop-color="#101d24"/></radialGradient>`+R(0,0,1152,768,'url(#out)');
+ s+=shadow(110,30,950,690,.6,'b16');
+ s+=wood(R(120,20,912,676,'#3f2e21',4));
+ s+=floorPlanks(r);
+ // よく歩く道筋のつや（戸口→食卓→寝室の戸口）
+ s+=S('M600,660C600,560 470,540 400,470C340,410 312,380 312,330','#fff0d0',34,{opacity:.10,filter:'url(#b16)'})+S('M600,640C640,540 800,470 840,340','#fff0d0',34,{opacity:.09,filter:'url(#b16)'});
+ // ---- 敷物
+ s+=rug(304,222,112,58,'#2f5f66','#d9cfb2','#c98f5a','diamond')+rug(656,226,112,56,'#8a4a52','#f0e2c8','#6f8f8a','star');
+ s+=rug(432,366,246,150,'#7a4a44','#e2cfa6','#5f8f8c','diamond')+braided(250,532,70,27)+rug(840,540,128,54,'#6f7f5a','#ead9b4','#b5645a','star');
+ s+=backWall(r);
  // 壁の飾り：トウマ側（見回りの地図、灯りの部品の棚）
  s+=shadow(176,60,58,36,.35,'b2')+wood(R(172,54,62,40,'#6b4d33',2))+R(176,58,54,32,'#e9dcba')+S('M180,82q8,-14 16,-8t12,-6t14,-8','#6f8f8a',1.4)+S('M182,66q14,6 22,2t22,10','#b98a6a',1,{'stroke-dasharray':'3 2'})+E(214,72,2.4,2.4,'#c85a4c')+S('M222,62l3,5l-6,0z','#3f5f66',1)+R(176,58,54,32,'url(#glass)',0,{opacity:.25});
  s+=shadow(516,74,54,8,.35,'b2')+wood(R(512,70,56,5,'#7a5a3c',1))+pot(524,70,10,12,'#8b9498')+P('M536,70h14l-2,-14h-10z','#c9a25c')+R(540,52,6,5,'#5a4130')+R(538,60,10,7,'#ffe9a8',1,{opacity:.85})+ball(560,65,4.5,5,'#5f7f8c');
@@ -141,6 +149,45 @@ function room(){
  return s;
 }
 
+
+// ---------------------------------------------------------------- 渡し場の灯守小屋（背景）
+function workshop(){
+ const r=rng(4242);let s='';
+ s+=`<radialGradient id="out" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#2b434b"/><stop offset="1" stop-color="#101d24"/></radialGradient>`+R(0,0,1152,768,'url(#out)')+shadow(110,30,950,690,.6,'b16')+wood(R(120,20,912,676,'#3f2e21',4));
+ s+=floorPlanks(r)+S('M360,660C360,560 420,470 500,440C640,400 760,380 830,300','#fff0d0',34,{opacity:.10,filter:'url(#b16)'});
+ s+=rug(410,356,190,104,'#2f5f66','#d9cfb2','#c98f5a','diamond');
+ s+=backWall(r)+windowAt(452,'#5f7f9c','w1')+windowAt(630,'#5f7f9c','w2');
+ // 壁：部品の棚（レンズ、芯、油差し）と、巻いた綱、柱時計
+ s+=shadow(180,74,150,8,.35,'b2')+wood(R(176,70,156,5,'#7a5a3c',1))+[0,1,2,3].map(i=>ball(196+i*22,60,8,8,['#bcd8e4','#e9c26a','#a5d2bb','#abc9dd'][i])+E(196+i*22,60,8,8,'url(#glass)')).join('')+pot(292,70,13,12,'#8b9498')+S('M298,62l9,-5','#8b9498',2.5)+S('M312,70v-10m3,10v-11m3,11v-9','#efe6d0',1.6);
+ s+=E(770,82,17,17,'none',{stroke:'#c9a56e','stroke-width':5})+E(770,82,11,11,'none',{stroke:'#b08a5a','stroke-width':4})+ball(770,62,2.6,2.6,'#2c1f15');
+ s+=shadow(906,60,34,58,.35,'b2')+wood(R(902,52,34,62,'#6b4d33',4),'v')+E(919,70,11,11,'#f1e6cd')+S('M919,70v-7M919,70l5,3','#3a2414',1.4)+L(919,84,919,104,'#c9a25c',1.6)+ball(919,106,3.4,3.4,'#c9a25c');
+ s+=R(144,144,864,26,'url(#drop)',0,{opacity:.75});
+ for(const wx of [452,630])s+=G(P(`M${wx},146h92l44,104h-108z`,'#d6ebf7')+S(`M${wx+46},146l30,104M${wx+14},198h106`,'#5a4130',5,{opacity:.5}),{filter:'url(#b4)',opacity:.34,style:'mix-blend-mode:screen'});
+ // 真鍮の導光管（共鳴灯から応答灯へ）
+ const pipe='M504,392H696V230H800';s+=S(pipe,'#1c0e05',16,{opacity:.3,filter:'url(#b4)',transform:'translate(4,7)'})+S(pipe,'#6a5a30',13)+S(pipe,'#c9b06a',9)+S(pipe,'#fff0b8',2.4,{opacity:.7,transform:'translate(-1,-2.6)'});
+ for(const [x,y] of [[560,392],[640,392],[696,392],[696,310],[696,230],[760,230]])s+=cyl(x-9,y-9,18,18,'#8a7a44',4)+E(x,y,3,3,'#3a2c18');
+ // 作業台（左奥）：引き出し、万力、レンズ、設計図、卓上の灯り
+ s+=box(196,206,232,52,30,'#b78d5c','#7a5a3c')+[0,1,2,3].map(i=>drawer(202+i*56,264,52,18)).join('');
+ s+=G(R(206,212,58,36,'#7fa3b5',1)+S('M212,220h40M212,227h30M216,240q10,-12 20,-4t18,-8','#eef4f6',1.2),{transform:'rotate(-4 235 230)'})+ball(292,232,13,9,'#bcd8e4')+E(292,232,13,9,'url(#glass)')+ball(322,238,9,6,'#e9c26a')+E(322,238,9,6,'url(#glass)')
+  +cyl(388,206,13,20,'#4c5558',2)+R(384,203,21,5,'#7f8b8a',1.5)+L(394,228,408,228,'#2b3032',3)+S('M346,216l16,22M352,214l-4,26','#c9d0d2',2)
+  +contact(412,236,9,3,.5,'b2')+cyl(405,230,14,5,'#5a4a36',2)+R(407,214,10,16,'#fff0b8',2,{opacity:.9})+R(407,214,10,16,'none',2,{stroke:'#5a4a36','stroke-width':1.4})+P('M404,214l8,-8l8,8z','#5a4a36')+stool(310,306,'#4f8a88');
+ // 応答灯の台座（右奥）
+ s+=shadow(776,270,136,18,.45)+stone(R(772,200,136,84,'#7b766e',8))+R(772,200,136,84,'url(#tsh)',8)+R(772,272,136,14,'#55514b',6)+R(772,272,136,14,'url(#fsh)',6);
+ // 本と瓶の長い棚（右手前）
+ s+=box(868,458,138,56,56,'#a47d54','#7a5a3c')+R(874,520,126,44,'#2c1f15',2)+books(878,560,118,91,26)+R(874,520,126,9,'url(#drop)',0,{opacity:.6})
+  +jar(884,500,'#b0705a')+jar(900,502,'#7f9a72')+jar(916,500,MUSTARD)+pot(952,504,22,16,'#6f8fa0')+G(R(966,474,28,20,'#e8dcbd',1)+S('M970,480h20M970,485h14','#807761',1),{transform:'rotate(6 980 484)'});
+ // 戸口（下）：敷居と敷物、濡れた長靴
+ s+=shadow(316,662,92,8,.3,'b2')+cloth(R(312,630,96,34,'#5c5040',3)+R(316,634,88,26,'#8a7a62',2))+[[640,'#5c5040'],[647,'#c9b48a'],[654,'#5c5040']].map(([y,c])=>L(320,y,400,y,c,2,{'stroke-dasharray':'6 4'})).join('');
+ for(const [bx,c] of [[424,'#5c4433'],[438,'#5c4433']])s+=contact(bx+6,668,8,3,.4,'b2')+cyl(bx,646,11,18,c,3)+E(bx+6.5,665,7.5,4,dark(c,.2))+R(bx,646,11,4,'#efe6d0',2);
+ s+=shadow(150,470,46,10,.45)+logs(156,468,3,5)+wood(R(148,412,4,60,'#4d3725',1)+R(190,412,4,60,'#4d3725',1)+R(148,470,46,5,'#4d3725',1),'v');
+ // 光
+ s+=light(412,236,230,'#ffd9a0',.36,'soft-light',190)+light(412,230,110,'#ffe0a8',.16,'screen',80)+light(840,250,240,'#ffe6b0',.26,'soft-light',200)+light(550,400,260,'#ffd9a0',.18,'soft-light',200);
+ s+=`<radialGradient id="vig" cx=".5" cy=".52" r=".72"><stop offset=".45" stop-color="#1c0e05" stop-opacity="0"/><stop offset="1" stop-color="#1c0e05" stop-opacity=".5"/></radialGradient>`+R(144,40,864,632,'url(#vig)',0,{style:'mix-blend-mode:multiply'});
+ s+=R(144,144,20,528,'url(#dropR)',0,{opacity:.6})+wood(R(120,20,24,676,'#3f2e21')+R(1008,20,24,676,'#35261b')+R(120,20,912,22,'#3f2e21')+R(120,672,212,24,'#3f2e21')+R(388,672,644,24,'#3f2e21'),'v')
+  +wood(R(332,672,56,24,'#8a6846'))+R(332,672,56,3,'#fff3d6',0,{opacity:.3})+R(336,688,48,8,'#d9ecf5',0,{opacity:.5,filter:'url(#b2)'})+R(141,42,3,630,'#fff3d6',0,{opacity:.16})+R(120,20,912,676,'none',4,{stroke:'#0c151a','stroke-width':2,'stroke-opacity':.7});
+ return s;
+}
+function workshopBg(c){if(!D.want('home/workshop',[0,0,1152,768],workshop))return false;D.draw(c,'home/workshop',0,0);D.release('home/workshop');return true;}
 // ---------------------------------------------------------------- 家具（基準点＝タイルの中心）
 function bed(bx,quilt,accent,extra,id){
  let q='';const cols=[quilt,accent,lite(quilt,.5),dark(quilt,.15),CREAM];
@@ -275,5 +322,5 @@ function object(c,o,x,y,s,t){
  return true;
 }
 function background(c){return D.ready()&&D.draw(c,'home/room',0,0);}
-root.OkaeriHomeArt={background,object,ready:()=>D.ready(),failed:()=>D.failed()};
+root.OkaeriHomeArt={workshop:workshopBg,background,object,ready:()=>D.ready(),failed:()=>D.failed()};
 })(globalThis);

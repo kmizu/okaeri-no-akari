@@ -54,6 +54,7 @@ function offerDetour(a,done){
 }
 function handle(id,a){const s=a.state;if(!s.episode)return false;
  if(root.OkaeriJourney?.handle(id,a))return true;
+ if(s.episode.chapter===1&&id==='koharu'){a.talk(s.flags.lit?D.chatter[1].koharuAfter:D.chatter[1].koharu);return true;}
  if(s.episode.chapter===1){if(id==='ritsu'||id==='yura'){a.talk(id==='ritsu'?[['','広場の東で、見慣れない外套の男が水路の石組みをのぞきこんでいる。図面を片手に、何か数えているようだ。'],['nina','……誰だろ。旅の人かな。'],['touma','仕事中みたいだ。帰ってきたら声をかけよう。今は森が先だ。']]:[['ユラ','おや、二人とも。今日から森は二人だけだってね。自分の家を持っても、食事は抜かないこと。'],['touma','今日は弁当があります。ニナが作りました。'],['ユラ','よろしい。怪我をしてもしなくても、帰ったら顔を見せにおいで。','happy']]);return true;}return false;}
  if(s.episode.complete&&id==='homeTable'){endDay(a);return true;}
  if(id==='episodeEvent'){
@@ -79,8 +80,8 @@ S.activeObjects=function(s){let list=originalObjects(s);if(!s.episode)return lis
  // 第8話のオルフは丘の小屋にいる。全員が帰るまで、広場には立っていない。
  if(s.scene==='town'&&s.episode.chapter===8&&!s.episode.complete)list=list.filter(o=>o.id!=='orlf');
  if(s.scene==='town')list=[...list,{id:'ritsu',type:'episodeNpc',x:20,y:9,label:'水番のリツ'},{id:'yura',type:'episodeNpc',x:11,y:11,label:'診療所のユラ'}];
- // コハルは第4話から、薬草の籠を提げて広場に立つ。二人と一緒に歩いている間と、丘へ登っている間はいない。
- if(s.scene==='town'&&s.episode.chapter>=4&&!root.OkaeriDirector?.companion(s)&&!(s.episode.chapter===8&&s.episode.step>=1&&!s.episode.complete))list=[...list,{id:'koharu',type:'episodeNpc',x:13,y:12,label:'薬草屋のコハル'}];
+ // コハルは第1話から、薬草の籠を提げて広場に立つ。二人と一緒に歩いている間と、丘へ登っている間はいない。
+ if(s.scene==='town'&&!root.OkaeriDirector?.companion(s)&&!(s.episode.chapter===8&&s.episode.step>=1&&!s.episode.complete))list=[...list,{id:'koharu',type:'episodeNpc',x:13,y:12,label:'薬草屋のコハル'}];
  const e=current(s);if(!s.episode.complete&&e?.scene===s.scene){const base=list.find(o=>o.x===e.x&&o.y===e.y);list=list.filter(o=>o!==base);list.push({id:'episodeEvent',type:'episodeEvent',x:e.x,y:e.y,label:e.label,base,person:e.scene==='town'&&e.x===20?'リツ':e.scene==='town'&&e.x===11?'ユラ':e.lines[0][0]});}return list;};
 root.OkaeriEpisodes={create,events,current,title,objective,handle,won,spawns,endDay,next,finishEvent,detour,expand};
 })(globalThis);

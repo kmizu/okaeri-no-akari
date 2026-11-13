@@ -1543,7 +1543,7 @@
     if (!M) return;
     const svg = which === 'world' ? M.world(state || {}) : M.local(state || {});
     openModal(
-      '<div class="map-sheet" role="img" aria-label="' + (which === 'world' ? '世界の中のユキネの地図' : 'ユキネのまわりの地図') + '">' + svg + '</div>',
+      '<div class="map-sheet" role="img" aria-label="' + (which === 'world' ? '世界の中のユキネの地図' : 'ユキネのまわりの地図') + '">' + svg + '</div>' + (which === 'world' ? M.lore() : ''),
       [
         [which === 'world' ? '町のまわりを見る' : '世界を見る', () => showMap(which === 'world' ? 'local' : 'world'), true],
         ['閉じる', closeModal]

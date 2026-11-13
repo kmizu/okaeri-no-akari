@@ -67,41 +67,72 @@ function local(s={}){
  return frame(W,H,'ユキネのまわり','灯りの輪は、町と道を囲んで魔獣を寄せつけない',b);
 }
 
-// ---------------------------------------------------------------- 世界
+// ---------------------------------------------------------------- 世界（大陸と諸国）
+const castle=(x,y,s=1)=>E(x,y-12*s,26*s,22*s,'#ffcf7a',{opacity:.45,filter:'url(#b4)'})
+ +R(x-13*s,y-10*s,26*s,12*s,'#f1e6cb',0,{stroke:INK,'stroke-width':1.1})+R(x-17*s,y-16*s,7*s,18*s,'#f1e6cb',0,{stroke:INK,'stroke-width':1.1})+R(x+10*s,y-16*s,7*s,18*s,'#f1e6cb',0,{stroke:INK,'stroke-width':1.1})
+ +P(`M${x-18*s},${y-16*s}l${4.5*s},${-8*s}l${4.5*s},${8*s}zM${x+9*s},${y-16*s}l${4.5*s},${-8*s}l${4.5*s},${8*s}z`,RED,{stroke:INK,'stroke-width':.9})
+ +R(x-3*s,y-30*s,6*s,22*s,'#f6efdb',0,{stroke:INK,'stroke-width':1.1})+R(x-4.5*s,y-36*s,9*s,6*s,'#ffd98a',1,{stroke:INK,'stroke-width':1})+P(`M${x-6*s},${y-36*s}L${x},${y-44*s}L${x+6*s},${y-36*s}Z`,RED,{stroke:INK,'stroke-width':.9})+R(x-2.5*s,y-4*s,5*s,6*s,INK);
+const city=(x,y,roof='#8a6a52')=>house(x-7,y,.8,roof)+house(x+6,y+2,.9)+house(x,y-7,.7,roof);
+const tent=(x,y)=>P(`M${x-8},${y}L${x},${y-13}L${x+8},${y}Z`,'#efe2c0',{stroke:INK,'stroke-width':1})+L(x,y-13,x,y-17,INK,1)+P(`M${x},${y-17}l6,2l-6,2z`,RED)+P(`M${x-2},${y}L${x},${y-6}L${x+2},${y}Z`,INK);
+const mill=(x,y)=>R(x-4,y-12,8,12,'#f1e6cb',0,{stroke:INK,'stroke-width':1})+P(`M${x-5},${y-12}L${x},${y-18}L${x+5},${y-12}Z`,'#8a6a52',{stroke:INK,'stroke-width':.9})+S(`M${x-9},${y-21}L${x+9},${y-9}M${x+9},${y-21}L${x-9},${y-9}`,INK,1.3);
+const ship=(x,y)=>P(`M${x-9},${y}h18l-4,6h-10z`,'#8a6a52',{stroke:INK,'stroke-width':.9})+L(x,y,x,y-13,INK,1)+P(`M${x},${y-13}l8,7h-8z`,'#f6efdb',{stroke:INK,'stroke-width':.7});
+const grass=(cx,cy,rx,ry,count,seed)=>{const r=rng(seed);let s='';for(let i=0;i<count;i++){const x=cx+(r()*2-1)*rx,y=cy+(r()*2-1)*ry;s+=S(`M${n(x-3)},${n(y)}l2,-5M${n(x)},${n(y)}l0,-6M${n(x+3)},${n(y)}l-2,-5`,'#7f8f5a',.9,{opacity:.7});}return s;};
+const nation=(x,y,name,sub,color,size=22,rot=0)=>label(x,y,name,size,{weight:700,spacing:10,fill:color,rot,halo:5})+(sub?label(x,y+16,sub,10,{weight:500,spacing:2,fill:color,rot,halo:3}):'');
+// 国の成り立ち。地図の下に添える。
+const NATIONS=[
+ ['ヒノワ王国','#8a5a20','ユキネの属する国。王都セイカの大灯台を芯に、国じゅうの町が「灯りの輪」でつながっている。灯守は王の名で任じられ、道具と技はカルデの灯工房が支える。'],
+ ['ミズハ連邦','#3f6a80','西の水の都市連合。運河と水門の技はここから来た。リツが修業した水番の流儀も、もとはミズハのもの。'],
+ ['カザネ氏族領','#6f7f3a','東の草原。風を読む遊牧の氏族がゆるくまとまる。丘の「風待ち」の名は、カザネの商人が残していった。'],
+ ['コガネ公国','#9a7a2a','南西の麦の国。粉ひき小屋へ届く小麦は、ここから荷車で来る。'],
+ ['サザナ諸島','#3f7a7a','南の海の島々。南の港と船で行き来する。温め草の仲間の薬草も、島から渡ってくる。'],
+ ['白嶺と果ての氷原','#a5503c','北の山脈と、その向こう。精霊と魔獣の棲む所で、どの国の地図もここで終わっている。']
+];
 function world(s={}){
  const W=900,H=620;let b='';
  // 海
  b+=G(R(16,16,W-32,H-32,'#c4d9dc',6),{filter:'url(#paper)'});
- for(let i=0;i<34;i++){const r=rng(i+3),x=40+r()*820,y=40+r()*540;b+=S(`M${n(x)},${n(y)}q6,-5 12,0t12,0`,INK,.7,{opacity:.28});}
- // 大陸
- const land='M120,96Q260,40 430,58Q620,36 770,92Q850,150 820,260Q860,350 800,430Q770,520 640,548Q520,596 400,560Q300,580 220,520Q120,470 110,360Q70,260 120,96Z';
- b+=G(P(land,'#5a3a1c',{opacity:.25,transform:'translate(5,7)'})+P(land,PAPER,{stroke:INK,'stroke-width':1.8}),{filter:'url(#rough)'})+G(P(land,PAPER),{filter:'url(#paper)',opacity:.9});
- // 雪の国（一年の半分が雪）
- b+=P('M150,120Q300,70 450,84Q620,66 760,120Q800,190 770,250Q600,300 430,286Q260,300 150,250Q110,190 150,120Z','#fbf8ee',{opacity:.75,filter:'url(#b8)'});
- b+=S('M150,262Q290,304 430,292Q600,306 772,258',BLUE,1.6,{'stroke-dasharray':'8 6'})+label(250,300,'雪線　ここから北は、一年の半分が雪',10,{weight:500,fill:'#3f6a80',rot:7});
- // 山脈
- b+=range(170,760,128,41,56)+label(460,58,'白嶺',22,{weight:700,spacing:14})+label(700,160,'魔獣の棲む山',11,{fill:RED,weight:500});
- // 森と丘
- b+=woods(470,196,70,26,26,5)+woods(330,330,90,40,24,8)+woods(620,380,70,36,18,12)+woods(260,440,60,30,12,15);
- // 氷湖と川
- b+=G(P('M520,286Q560,250 620,262Q680,258 690,310Q670,350 600,346Q530,350 520,286Z','#b9d5df',{stroke:INK,'stroke-width':1.4}),{filter:'url(#rough)'})+label(606,308,'氷湖',14,{fill:'#3f6a80',spacing:5});
- b+=water('M600,346Q590,400 540,440T470,560',6)+water('M690,150Q660,190 640,262',4);
- // 道：ユキネ → ミナモ → カルデ → 南の港
- b+=road('M470,226Q520,250 560,270')+road('M606,346Q560,390 520,430',{dash:'6 5'})+road('M520,430Q500,490 462,540')+road('M470,226Q380,230 300,214',{dash:'3 5'})+road('M520,430Q640,430 720,400',{dash:'3 5',o:.5})+road('M520,430Q400,440 300,470',{dash:'3 5',o:.5});
- // 町
- b+=E(470,222,34,22,'#ffcf7a',{opacity:.5,filter:'url(#b4)'})+E(470,222,24,16,'none',{stroke:GOLD,'stroke-width':2,'stroke-dasharray':'2 5','stroke-linecap':'round'})+house(470,228,1.1,RED)+label(470,256,'ユキネ',18,{weight:700,spacing:5,fill:RED})+label(470,272,'灯りの輪の町',10,{weight:500,fill:'#8a6420'});
- b+=house(300,216,.8)+label(300,196,'丘向こうの集落',11,{weight:500});
- b+=house(574,280,.9,'#6f8fa0')+label(548,266,'ミナモ',13,{anchor:'end'});
- b+=house(510,432,1.2)+house(534,438,1)+house(520,418,.9,'#6f8fa0')+label(520,468,'カルデ',18,{weight:700,spacing:5})+label(520,484,'灯工房と水番の修業場',10,{weight:500})+label(420,412,'カルデ盆地',12,{spacing:4,rot:-8,weight:500});
- b+=house(456,546,1.1,'#6f8fa0')+P('M474,548h16l-3,6h-10z',INK)+L(482,548,482,536,INK,1)+P('M482,537l8,6h-8z','#f1e6cb',{stroke:INK,'stroke-width':.7})+label(410,552,'南の港',15,{spacing:4})+label(730,560,'南の海',15,{fill:'#3f6a80',spacing:8});
- b+=label(730,392,'東の街道',10,{weight:500})+label(286,490,'西の村々',10,{weight:500});
- // 町のまわりの地図の範囲
- b+=R(396,170,236,170,'none',3,{stroke:RED,'stroke-width':1.3,'stroke-dasharray':'5 4'})+label(402,334,'「ユキネのまわり」の範囲',10,{weight:500,fill:RED,anchor:'start',halo:3});
- // いまここ
- const j=['lake','lakeside','lampworkshop'].includes(s.scene);b+=here(j?574:470,j?262:200,j?'いまここ（旅の途中）':'いまここ');
- b+=compass(800,500)+G(L(0,0,110,0,INK,2)+L(0,-4,0,4,INK,1.5)+L(55,-3,55,3,INK,1.2)+L(110,-4,110,4,INK,1.5)+label(55,18,'荷車で三日',11,{weight:500}),{transform:'translate(60,574)'});
- return frame(W,H,'世界の中のユキネ','雪の国の北の端。山のすぐふもと',b);
+ for(let i=0;i<46;i++){const r=rng(i+3),x=40+r()*820,y=40+r()*540;b+=S(`M${n(x)},${n(y)}q6,-5 12,0t12,0`,INK,.7,{opacity:.25});}
+ // 大陸（西に半島、南に湾）と島々
+ const land='M90,150Q150,70 300,62Q460,40 620,58Q790,60 850,150Q880,250 840,340Q830,430 740,470Q680,520 590,492Q540,470 500,492Q470,520 420,500Q360,470 320,520Q270,572 190,548Q110,520 96,430Q50,360 70,270Q60,200 90,150Z';
+ b+=G(P(land,'#5a3a1c',{opacity:.25,transform:'translate(5,7)'})+P(land,PAPER,{stroke:INK,'stroke-width':1.8}),{filter:'url(#rough)'});
+ // 国ごとの色
+ const tint=(d,c)=>G(P(d,c,{opacity:.34}),{filter:'url(#rough)'});
+ b+=tint('M330,150Q470,130 610,150Q640,260 600,360Q590,440 520,486Q470,516 420,498Q380,470 350,430Q300,330 330,150Z','#f1c56a')   // ヒノワ
+  +tint('M96,170Q200,130 328,152Q300,330 348,430Q300,440 250,420Q150,430 100,400Q52,340 72,268Q62,210 96,170Z','#8fc0d6')        // ミズハ
+  +tint('M612,150Q760,120 846,170Q878,250 840,338Q828,420 742,468Q660,470 602,362Q642,260 612,150Z','#b9cf7a')                   // カザネ
+  +tint('M100,402Q150,432 250,422Q300,442 348,432Q372,470 322,520Q272,570 192,548Q112,520 100,402Z','#e6cf6a');                  // コガネ
+ // 北の山脈と、雪
+ b+=P('M110,150Q300,96 470,104Q650,90 830,150Q850,200 800,226Q620,250 470,236Q300,252 150,226Q96,200 110,150Z','#fbf8ee',{opacity:.7,filter:'url(#b8)'});
+ b+=range(120,820,124,41,54)+nation(170,60,'果ての氷原','',RED,13)+label(300,152,'白　嶺',20,{weight:700,spacing:16})+label(640,172,'魔獣の棲む山',10,{fill:RED,weight:500});
+ // 川と湖、草原、森、麦畑
+ b+=water('M560,150Q540,190 536,214',4)+G(P('M506,214Q530,196 566,206Q590,214 580,238Q556,250 524,244Q500,236 506,214Z','#b9d5df',{stroke:INK,'stroke-width':1.2}),{filter:'url(#rough)'})+water('M540,246Q520,300 470,340T450,490',5)
+  +water('M250,170Q230,240 200,300T130,420',5)+water('M200,300Q260,310 300,290',3)+water('M720,170Q700,260 730,330T700,460',4);
+ b+=grass(730,290,90,90,60,4)+woods(420,220,60,40,20,5)+woods(560,330,40,50,12,8)+woods(160,230,40,30,10,12)+woods(640,410,34,26,8,15);
+ for(let i=0;i<26;i++){const r=rng(i*7+2),x=140+r()*170,y=450+r()*80;b+=S(`M${n(x)},${n(y)}v-6m-2,2l2,-2l2,2`,'#b08a2a',1,{opacity:.8});}
+ // 国境
+ for(const d of ['M329,152Q300,330 349,431Q372,470 420,498','M611,150Q642,260 602,362Q590,440 520,486','M100,402Q150,432 250,422Q300,442 349,431'])b+=S(d,INK,1.4,{'stroke-dasharray':'9 4 2 4',opacity:.6});
+ // 街道
+ b+=road('M470,176Q500,196 530,214')+road('M540,246Q520,270 492,290')+road('M492,290Q470,340 450,378')+road('M450,378Q460,430 468,480')+road('M450,378Q340,360 214,336',{dash:'3 5'})+road('M450,378Q590,340 712,296',{dash:'3 5'})+road('M450,378Q360,430 250,486',{dash:'3 5'});
+ // 島々と船の道
+ const isle=(d)=>G(P(d,PAPER,{stroke:INK,'stroke-width':1.4})+P(d,'#8fd0c0',{opacity:.34}),{filter:'url(#rough)'});
+ b+=isle('M600,548Q630,528 664,540Q680,560 650,572Q614,576 600,548Z')+isle('M700,556Q722,544 742,556Q744,574 720,578Q700,574 700,556Z')+isle('M560,580Q580,570 596,582Q590,596 570,594Z')
+  +S('M474,492Q540,540 610,552',BLUE,1.4,{'stroke-dasharray':'2 6'})+ship(540,530)+house(634,556,.8,'#6f8fa0');
+ // 国の名
+ b+=nation(470,446,'ヒノワ王国','灯りの輪の国','#8a5a20',20)+nation(196,250,'ミズハ連邦','水と運河の都市連合','#3f6a80',18)+nation(730,222,'カザネ氏族領','風を読む草原の民','#6f7f3a',17)+nation(214,518,'コガネ公国','麦の国','#9a7a2a',16)+nation(700,522,'サザナ諸島','海の商人','#3f7a7a',14);
+ // 都と町
+ b+=castle(450,384,1)+label(450,404,'王都セイカ',15,{weight:700,spacing:3})+label(450,418,'大灯台',9,{weight:500,fill:'#8a5a20',halo:3});
+ b+=city(492,292,'#6f8fa0')+label(520,286,'カルデ',12,{anchor:'start'})+label(520,299,'灯工房',9,{weight:500,anchor:'start',halo:3})+house(548,226,.7,'#6f8fa0')+label(596,232,'ミナモ',10,{weight:500,anchor:'start',halo:3})+label(540,206,'氷湖',9,{weight:500,fill:'#3f6a80',halo:3});
+ b+=city(468,484,'#6f8fa0')+label(430,490,'南の港',12,{anchor:'end'});
+ b+=city(210,340,'#6f8fa0')+S('M196,348h30M200,354h22',BLUE,1.6)+label(210,372,'水都ミズハ',13,{weight:700,spacing:2})+house(140,300,.7)+label(140,286,'堰の町',9,{weight:500,halo:3});
+ b+=tent(712,300)+tent(728,306)+tent(700,310)+label(716,330,'風の市カザネ',13,{weight:700,spacing:2})+tent(790,380)+label(790,398,'夏の野営地',9,{weight:500,halo:3});
+ b+=mill(250,490)+house(266,492,.8)+label(256,470,'麦の都コガネ',12,{weight:700,spacing:2});
+ // ユキネ
+ b+=E(470,172,26,18,'#ffcf7a',{opacity:.6,filter:'url(#b4)'})+E(470,172,15,10,'none',{stroke:GOLD,'stroke-width':1.8,'stroke-dasharray':'2 4','stroke-linecap':'round'})+house(470,177,.9,RED)+label(426,180,'ユキネ',14,{weight:700,fill:RED,anchor:'end',spacing:3});
+ const j=['lake','lakeside','lampworkshop'].includes(s.scene);b+=here(j?548:470,j?212:152,j?'いまここ（旅の途中）':'いまここ');
+ b+=compass(810,520)+G(L(0,0,110,0,INK,2)+L(0,-4,0,4,INK,1.5)+L(55,-3,55,3,INK,1.2)+L(110,-4,110,4,INK,1.5)+label(55,18,'荷車で十日',11,{weight:500}),{transform:'translate(56,582)'});
+ return frame(W,H,'世界の中のユキネ','',b);
 }
-root.OkaeriMaps={local,world,SPOTS};
+const lore=()=>'<div class="map-lore">'+NATIONS.map(([name,color,text])=>'<p><b style="color:'+color+'">'+name+'</b>　'+text+'</p>').join('')+'</div>';
+root.OkaeriMaps={local,world,lore,NATIONS,SPOTS};
 if(typeof module!=='undefined')module.exports=root.OkaeriMaps;
 })(typeof globalThis!=='undefined'?globalThis:this);

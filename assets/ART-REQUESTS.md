@@ -97,7 +97,7 @@
 | `assets/stills/epilogue-pair-gate.png` | トウマから／ニナから（共通） | 春の夕暮れ、町の門の手前。トウマが両手でニナの頬を包み、「おかえり」。門の帰り灯が二人の影をひとつにする。足元に下ろした旅の荷物 |
 | `assets/stills/epilogue-pair-lamp.png` | 同上 | 夜の家の戸口。森の灯台を小さくした形の玄関灯の下で、飛びこんできたニナをトウマが抱きとめる |
 | `assets/stills/epilogue-koharu-kitchen.png` | コハルひとり | 朝の台所。大きめの前掛けをしたコハルの後ろから、トウマがおたまを持つ手ごと支えている。コハルは真っ赤 |
-| `assets/stills/epilogue-koharu-coat.png` | コハルひとり | 森の雪の上。トウマの外套の中にコハルが入り、冷えた両手を胸元に押しあてている。そばに温め草の籠 |
+| `assets/stills/epilogue-koharu-coat.png` | コハルひとり | 森の雪の上。トウマの外套の中にコハルが入り、冷えた両手を胸元に押しあてている。そばに薬草の籠 |
 | `assets/stills/epilogue-both-blanket.png` | 二人とも | 夜のストーブ前。二枚つないだ毛布の真ん中にトウマ、右肩にニナ、左肩にコハル。二人が同時に頬へ口づける |
 
 ## 6. 精霊と魔獣（前からの依頼・未着）

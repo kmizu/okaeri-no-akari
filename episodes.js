@@ -404,7 +404,7 @@
       !(s.episode.chapter === 2 && s.episode.step >= 1 && !s.episode.complete) &&
       !(s.episode.chapter === 3 && s.episode.step < 4)
     )
-      list = [...list, { id: 'koharu', type: 'episodeNpc', x: 13, y: 12, label: '薬草屋のコハル' }];
+      list = [...list, { id: 'koharu', type: 'episodeNpc', x: 13, y: 12, label: '薬師見習いのコハル' }];
     const e = current(s);
     if (!s.episode.complete && e?.scene === s.scene) {
       const base = list.find(o => o.x === e.x && o.y === e.y);

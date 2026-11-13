@@ -136,7 +136,7 @@
     if (!ep || ep.complete || ['house', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
     if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && !(ep.chapter === 2 && ep.step === 0) && ep.chapter !== 4;
     // 薬の番として加わった第2話からは、当番の日は町の中も三人で歩く。
-    // 朝のうちは薬草屋の仕事があるので、その日の最初の用事にはいないことがある。
+    // 朝のうちは診療所の仕事があるので、その日の最初の用事にはいないことがある。
     if (ep.chapter === 2) return ep.step >= 1;
     if (ep.chapter === 3) return ep.step === 0 || ep.step === 4; // 事故の間（1〜3）は一人ずつ動く
     if (ep.chapter === 5) return ep.step >= 1;

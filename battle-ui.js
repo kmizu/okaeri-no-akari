@@ -409,7 +409,7 @@
       } else if (this.phase === 'actor') {
         title.textContent = nm(actor);
         add(actor === 'koharu' ? 'てあて' : 'こうげき', () => this.selectSkill(actor === 'koharu' ? 'tend' : 'attack'));
-        add(actor === 'nina' ? 'じゅもん' : actor === 'koharu' ? 'やくそう' : 'とくぎ', () => {
+        add(actor === 'nina' ? 'じゅもん' : actor === 'koharu' ? 'くすり' : 'とくぎ', () => {
           this.phase = 'skills';
           this.render();
         });
@@ -420,7 +420,7 @@
         add('ぼうぎょ', () => this.commit({ skill: 'guard' }));
         add('もどる', () => this.back());
       } else if (this.phase === 'skills') {
-        title.textContent = nm(actor) + ' · ' + (actor === 'nina' ? 'じゅもん' : actor === 'koharu' ? 'やくそう' : 'とくぎ');
+        title.textContent = nm(actor) + ' · ' + (actor === 'nina' ? 'じゅもん' : actor === 'koharu' ? 'くすり' : 'とくぎ');
         for (const a of OkaeriCore.actions(actor).filter(a => !['attack', 'tend', 'guard', 'herb'].includes(a.id))) {
           const unavailable =
             this.b.heroes[actor].sp < a.cost ||

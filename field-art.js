@@ -25,7 +25,7 @@ function background(c,scene,h){
   // 干し小屋（屋根だけ）
   const hx=P(19),hy=P(3);root.OkaeriTownArt?.shed(c,hx,hy);
   lantern(c,P(17)-10,P(4));
-  text('薬草の谷',P(6),P(14)+6);text('温め草の畑',P(6),P(8)-6,11,'#5f7a4c');
+  text('薬草の谷',P(6),P(14)+6);text('薬草の畑',P(6),P(8)-6,11,'#5f7a4c');
  }else{
   const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#8ea6c2');sky.addColorStop(.45,'#cdd9de');sky.addColorStop(1,'#b3c6cf');c.fillStyle=sky;c.fillRect(0,0,W,H);
   // 遠い稜線と、足元の谷

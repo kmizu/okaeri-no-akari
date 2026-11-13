@@ -14,14 +14,14 @@
       { id: 'ring', name: '灯の輪', cost: 3, desc: '敵全体に14ダメージ。' },
       { id: 'heal', name: 'ぬくもり', cost: 2, desc: '味方一人のHPを45％回復。冷え解除。', target: 'ally' },
       { id: 'buff', name: '灯を託す', cost: 2, desc: 'トウマの次の一撃を1.5倍に。氷殻も溶かす。' }
-    ], // コハルは剣も火も持たない。後ろから、薬草で二人を支える。
+    ], // コハルは剣も火も持たない。薬師見習いとして、後ろから薬で二人を支える。
     koharu: [
       { id: 'tend', name: '手当て', cost: 0, desc: '味方一人のHPを12回復。冷えも解除。', target: 'ally' },
-      { id: 'warm', name: '温め草', cost: 2, desc: '味方一人のHPを40％回復。冷えも解除。', target: 'ally' },
-      { id: 'tea', name: '薬草茶', cost: 3, desc: '立っている全員のHPを18回復。冷えも解除。' },
+      { id: 'warm', name: '傷薬', cost: 2, desc: '味方一人のHPを40％回復。冷えも解除。', target: 'ally' },
+      { id: 'tea', name: '薬湯', cost: 3, desc: '立っている全員のHPを18回復。冷えも解除。' },
       { id: 'salve', name: '守りの軟膏', cost: 1, desc: '味方一人がこのターン受けるダメージを半減。', target: 'ally' },
-      { id: 'mint', name: '薄荷の息', cost: 2, desc: '味方一人のMPを3回復。', target: 'ally' },
-      { id: 'rouse', name: '気つけ草', cost: 4, desc: '倒れた仲間をHP40％で起こす。', target: 'ally' }
+      { id: 'mint', name: '滋養丸', cost: 2, desc: '味方一人のMPを3回復。', target: 'ally' },
+      { id: 'rouse', name: '気付け薬', cost: 4, desc: '倒れた仲間をHP40％で起こす。', target: 'ally' }
     ]
   };
   const common = [

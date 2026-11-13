@@ -160,3 +160,9 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
  .modal{padding:8px}.modal-card{padding:14px 18px;max-height:100%;width:min(720px,100%)}.modal-card h2{font-size:19px;margin-bottom:8px}.modal-card p,.modal-card ul{font-size:13px;line-height:1.6}.modal-card button{font-size:13px;padding:8px 12px}.modal-card .actions{margin-top:10px;gap:7px}
  .title-copy{top:6%}.title-actions{margin-top:8px}.title-actions button{font-size:13px;padding:7px 14px;width:210px}.title-description{font-size:12px;line-height:1.5}.title-note,.title-bottom,.eyebrow{display:none}h1{font-size:34px;margin:4px 0}
 }
+
+/* ===== 地図 ===== */
+.modal-card.map-card{width:min(1000px,100%);padding:14px 14px 12px;background:#12292f}
+.map-sheet svg{display:block;width:100%;height:auto;border-radius:8px;box-shadow:0 6px 24px #0006}
+.modal-card.map-card .actions{margin-top:10px;justify-content:center}
+@media(max-width:600px) and (orientation:portrait){.modal-card.map-card{padding:8px}.masthead nav button{padding:6px 7px;font-size:11px}}

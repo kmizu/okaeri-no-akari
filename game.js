@@ -145,6 +145,7 @@
     $('modal').hidden = false;
   }
   function closeModal() {
+    $('modalContent').parentElement?.classList.remove('map-card');
     $('modal').hidden = true;
     mode = modalReturn;
     canvas.focus();
@@ -1530,6 +1531,28 @@
   $('interactButton').onclick = interact;
   $('interactPrompt').onclick = interact; // スマホでは、この札をそのまま押して調べられる
   $('journalButton').onclick = journal;
+  // 地図。町のまわりと、世界の中のユキネ。会話や戦闘の外で、いつでも開ける。
+  function showMap(which = 'local') {
+    if (mode === 'dialogue' || mode === 'battle') {
+      toast('会話や戦闘が終わってから開けます');
+      return;
+    }
+    if (mode === 'modal') closeModal();
+    const M = globalThis.OkaeriMaps,
+      back = mode;
+    if (!M) return;
+    const svg = which === 'world' ? M.world(state || {}) : M.local(state || {});
+    openModal(
+      '<div class="map-sheet" role="img" aria-label="' + (which === 'world' ? '世界の中のユキネの地図' : 'ユキネのまわりの地図') + '">' + svg + '</div>',
+      [
+        [which === 'world' ? '町のまわりを見る' : '世界を見る', () => showMap(which === 'world' ? 'local' : 'world'), true],
+        ['閉じる', closeModal]
+      ],
+      back
+    );
+    $('modalContent').parentElement?.classList.add('map-card');
+  }
+  $('mapButton').onclick = () => showMap();
   $('menuButton').onclick = menu;
   $('soundButton').onclick = toggleSound;
 
@@ -1577,6 +1600,7 @@
     }
     if (key === 'q') switchLead();
     if (key === 'j') journal();
+    if (key === 'm') showMap();
     if (key === 'Escape') {
       if (mode === 'modal') {
         if (modalReturn === 'battle') toast('下のボタンから戦闘を進めてください');

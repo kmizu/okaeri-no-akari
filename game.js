@@ -1236,7 +1236,7 @@
         ['friends', 'endingFriends', '最終話 · 明日の席']
       ].filter(([, flag]) => state.flags[flag]);
       openModal(
-        '<h2>二人の食卓</h2><p>今日のことを、少し話そう。終えた章の夜を読み返せます。</p>',
+        '<h2>食卓</h2><p>今日のことを、少し話そう。終えた章の夜を読み返せます。</p>',
         [
           ...options.map(([key, , label]) => [
             label,
@@ -1528,6 +1528,7 @@
   $('nextDialogue').onclick = nextDialogue;
   $('leadButton').onclick = switchLead;
   $('interactButton').onclick = interact;
+  $('interactPrompt').onclick = interact; // スマホでは、この札をそのまま押して調べられる
   $('journalButton').onclick = journal;
   $('menuButton').onclick = menu;
   $('soundButton').onclick = toggleSound;

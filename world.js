@@ -119,7 +119,7 @@ Renderer.prototype.background=function(scene){
 };
 Renderer.prototype.draw=function(s,time,mode){
  const c=this.c,t=time*.001,D=root.OkaeriDirector;this.t=t;c.clearRect(0,0,W,H);c.fillStyle='#0b1c26';c.fillRect(0,0,W,H);c.save();D?.pre(c,time);
- const wantLift=mode==='dialogue'?Math.max(0,Math.min(170,this.p.y-400)):0;this.lift=(this.lift||0)+(wantLift-(this.lift||0))*.1;if(this.lift<.5&&!wantLift)this.lift=0;const lift=this.lift;c.translate(0,-lift);
+ const wantLift=mode==='dialogue'&&!root.matchMedia?.('(orientation:portrait) and (max-width:600px)').matches?Math.max(0,Math.min(170,this.p.y-400)):0;this.lift=(this.lift||0)+(wantLift-(this.lift||0))*.1;if(this.lift<.5&&!wantLift)this.lift=0;const lift=this.lift;c.translate(0,-lift);
  const litNow=!!D?.stage.over.lit,beaconLit=(s.flags.hillLit&&!(s.episode?.chapter===8&&s.episode.step<=3))||(litNow&&s.scene==='hill'),towerLit=s.flags.lit||(litNow&&s.scene==='forest');
  c.drawImage(this.background(s.scene),0,0);
  if(s.scene==='town'&&s.flags.festivalStarted&&(!s.episode||s.episode.chapter===9)){

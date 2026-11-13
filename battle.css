@@ -84,7 +84,7 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
 .own-art.tint-beast{--unit-size:clamp(150px,25cqw,240px)}.own-art.tint-sleet{--unit-size:clamp(110px,19cqw,180px)}.own-art.tint-echo{--unit-size:clamp(110px,18cqw,170px)}
 
 /* ===== 文字を大きく（2026-11-12）。広い画面では、戦闘の文字もおよそ1.6倍にする。 ===== */
-@media(min-width:900px){
+@media(min-width:900px) and (min-height:600px){
  .quarter-battle{grid-template-rows:minmax(190px,1fr) 256px 20px;gap:10px}
  .classic-lower{grid-template-columns:minmax(270px,27%) minmax(0,1fr) minmax(300px,29%)}
  .classic-menu-title{font-size:14px}.classic-options .classic-command{font-size:18px;min-height:30px;padding:4px 6px 4px 26px;white-space:nowrap}
@@ -96,4 +96,23 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
  .classic-help{font-size:12px}
  .battle-place{font-size:15px}.classic-battle-info{font-size:15px}.classic-battle-info span{font-size:13px}
  .combatant-label{font-size:14px;bottom:-24px}.actor-command{font-size:13px}.foe-health{bottom:-31px;height:5px}.condition-badge{font-size:11px}.condition-badge b{font-size:14px}
+}
+
+/* ===== スマホ横持ち：戦闘の下の欄を低くして、戦場を広く取る ===== */
+@media(max-height:520px) and (orientation:landscape){
+ .quarter-battle{grid-template-rows:minmax(110px,1fr) 178px 0;padding:5px;gap:4px}.classic-help{display:none}
+ .classic-lower{grid-template-columns:minmax(150px,24%) minmax(0,1fr) minmax(190px,28%);gap:5px}
+ .classic-options .classic-command{font-size:13px;min-height:24px;padding:2px 4px 2px 20px;line-height:1.3}.classic-menu{padding:5px}.classic-menu-title{font-size:9px;padding:0 6px 2px;margin-bottom:2px}
+ .classic-text{padding:8px 10px}.classic-message{font-size:14px;min-height:38px;line-height:1.5;margin-bottom:4px}.classic-forecast{font-size:11px;line-height:1.5}.classic-description{font-size:11px;margin-top:4px}
+ .classic-status,.classic-status:has(.face-koharu){padding:3px 5px;gap:1px;justify-content:space-evenly}.status-box,.classic-status:has(.face-koharu) .status-box{padding:1px 5px;gap:6px}.status-face,.classic-status:has(.face-koharu) .status-face{width:26px;height:30px;flex-basis:26px}.status-details strong{font-size:11px}.status-details strong small{display:none}.status-line{font-size:10px;line-height:1.2}.status-meter{margin:0;height:2px}
+ .battle-combatant{--unit-size:clamp(70px,13cqw,110px)}.foe{--unit-size:clamp(60px,11cqw,96px)}.foe-crab{--unit-size:clamp(76px,13cqw,116px)}.foe-guardian{--unit-size:clamp(100px,17cqw,150px)}
+}
+/* スマホ縦持ち：戦場を上に、コマンドと状態を下に */
+@media(max-width:600px) and (orientation:portrait){
+ .quarter-battle{grid-template-rows:minmax(200px,42%) 1fr 0;padding:6px;gap:6px}.classic-help{display:none}
+ .classic-lower{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:6px}
+ .classic-menu{grid-column:1;grid-row:1}.classic-text{grid-column:2;grid-row:1}.classic-status{grid-column:1/-1;grid-row:2;flex-direction:row;gap:6px;padding:5px}
+ .classic-options .classic-command{font-size:17px;min-height:38px;padding:7px 6px 7px 26px;white-space:normal}.classic-menu-title{font-size:11px}
+ .classic-message{font-size:15px;line-height:1.55;min-height:0}.classic-forecast{font-size:12px;line-height:1.6}.classic-description{font-size:12px}
+ .status-box{flex:1;padding:4px;gap:5px}.status-face{width:30px;height:36px;flex-basis:30px}.status-details strong{font-size:12px}.status-details strong small{display:none}.status-line{font-size:11px}
 }

@@ -79,7 +79,7 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 @media(max-width:600px){.intro-bust{width:52%}}
 
 /* ===== 文字を大きく（2026-11-12）。広い画面では、会話・案内・選択の文字をおよそ1.6倍にする。狭い画面は上の指定のまま。 ===== */
-@media(min-width:900px){
+@media(min-width:900px) and (min-height:600px){
  .masthead nav button{font-size:14px;padding:11px 18px}.masthead .brand{font-size:21px}.masthead .edition{font-size:11px}
  #controls{font-size:12px}#controls kbd{font-size:11px}#controls button{font-size:14px;padding:8px 15px}#saveStatus{font-size:11px}
  /* 会話 */
@@ -115,3 +115,48 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 }
 
 @media(max-height:860px){.title-bottom{display:none}}
+
+/* ===== スマホ（2026-11-13）===== */
+#interactPrompt{pointer-events:auto;cursor:pointer}
+/* 縦持ち：地図は上に 3:2 のまま置き、案内・会話・操作はその下に並べる。画面は流れない。 */
+@media(max-width:600px) and (orientation:portrait){
+ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+ #app{display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+ .masthead{height:42px;flex:none;padding:0 8px}.brand{font-size:15px}.masthead nav button{font-size:12px;padding:6px 9px}.masthead kbd{display:none}
+ #stage{width:100vw;flex:1 1 auto;min-height:0;aspect-ratio:auto;border-radius:0;border-left:0;border-right:0;margin:0;container-type:size;background:#0b1e27}
+ #stage canvas#world{width:100%;height:auto;aspect-ratio:3/2;object-fit:contain}
+ .location{top:5px;left:5px;padding:4px 12px 4px 7px;background:linear-gradient(90deg,#0c253ae0,#0c253a55)}.location small{font-size:9px;letter-spacing:1px}.location strong{font-size:15px;margin:1px 0;letter-spacing:2px}.location>span{font-size:9px}
+ .objective{top:calc(66.667cqw + 8px);left:8px;right:8px;bottom:auto;max-width:none;font-size:14px;line-height:1.45;padding:9px 12px}.objective small{font-size:10px}
+ .lead{top:calc(66.667cqw + 96px);left:8px;bottom:auto;font-size:14px;padding:9px 12px}
+ #interactPrompt{top:calc(66.667cqw + 96px);bottom:auto;left:auto;right:8px;transform:none;font-size:15px;padding:10px 16px;max-width:60%;white-space:normal}
+ .dialogue{top:calc(66.667cqw + 6px);left:6px;right:6px;bottom:6px;min-height:0;padding:12px;gap:10px;overflow:auto}
+ .dialogue.narration{min-height:0;align-items:flex-start}
+ #speaker{font-size:15px;margin-bottom:5px}#dialogueText,.dialogue.narration #dialogueText{font-size:17px;line-height:1.65;text-align:left}
+ #nextDialogue{font-size:14px;padding:8px 10px}#nextDialogue kbd{display:none}
+ #choices button{font-size:16px;padding:11px 14px;width:100%}
+ .portrait{display:block;flex:0 0 60px;height:60px;border-radius:8px}
+ .modal{padding:8px}.modal-card{padding:16px;max-height:100%}.modal-card h2{font-size:22px;margin-bottom:10px}.modal-card p,.modal-card ul{font-size:15px;line-height:1.7}.modal-card button{font-size:15px;padding:11px 14px}.modal-card h3{font-size:16px}
+ #toast{top:calc(66.667cqw - 44px);font-size:14px}
+ .still{background-size:contain;background-repeat:no-repeat;background-position:center 8%;background-color:#0b1e27}
+ .title-copy{top:8%}.title-actions button{width:100%;font-size:16px;padding:12px 16px}.title-description{font-size:14px}.title-note{font-size:11px}
+ #controls{flex:none;margin:6px auto 8px;justify-content:center;padding:0 8px}#saveStatus{display:none}
+ .touch-controls{gap:8px}.touch-controls button{font-size:20px;padding:0;width:54px;height:50px}.touch-controls #interactButton{width:auto;padding:0 18px;font-size:16px}
+}
+/* 横持ち：地図を画面いっぱいに。上のボタンは小さく重ね、下の操作欄は出さない（地面と札を押して遊ぶ）。 */
+@media(max-height:520px) and (orientation:landscape){
+ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#091a22}
+ #app{height:100dvh;display:grid;place-items:center}
+ .masthead{position:fixed;top:calc(4px + env(safe-area-inset-top));right:calc(6px + env(safe-area-inset-right));height:auto;max-width:none;margin:0;padding:0;z-index:60}
+ .masthead .brand{display:none}.masthead nav button{font-size:11px;padding:5px 8px;background:#102c39cc}.masthead kbd{display:none}
+ #controls{display:none}
+ #stage{width:min(100vw,calc(100dvh * 1.5));height:min(100dvh,calc(100vw / 1.5));aspect-ratio:auto;margin:0;border:0;border-radius:0}
+ .location{top:6px;left:8px;padding:5px 16px 5px 9px}.location small{font-size:9px}.location strong{font-size:16px;margin:2px 0}.location>span{font-size:9px}
+ .objective{top:38px;right:8px;max-width:240px;font-size:12px;padding:7px 10px}.objective small{font-size:9px}
+ .lead{left:8px;bottom:8px;font-size:12px;padding:7px 10px}#interactPrompt{bottom:8px;font-size:14px;padding:8px 16px}
+ .dialogue{left:8px;right:8px;bottom:8px;min-height:0;padding:10px 12px;gap:10px}.dialogue.narration{min-height:0}
+ #speaker{font-size:13px;margin-bottom:3px}#dialogueText,.dialogue.narration #dialogueText{font-size:15px;line-height:1.55}
+ #nextDialogue{font-size:12px}#nextDialogue kbd{display:none}#choices button{font-size:14px;padding:8px 12px}
+ .portrait{flex:0 0 72px;height:72px;border-radius:8px}
+ .modal{padding:8px}.modal-card{padding:14px 18px;max-height:100%;width:min(720px,100%)}.modal-card h2{font-size:19px;margin-bottom:8px}.modal-card p,.modal-card ul{font-size:13px;line-height:1.6}.modal-card button{font-size:13px;padding:8px 12px}.modal-card .actions{margin-top:10px;gap:7px}
+ .title-copy{top:6%}.title-actions{margin-top:8px}.title-actions button{font-size:13px;padding:7px 14px;width:210px}.title-description{font-size:12px;line-height:1.5}.title-note,.title-bottom,.eyebrow{display:none}h1{font-size:34px;margin:4px 0}
+}

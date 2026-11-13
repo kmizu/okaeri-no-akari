@@ -13,7 +13,7 @@ test('Koharu joins as a commanded healer: she heals, revives, shields, and never
  helped.heroes.touma.hp=60;
  let b=C.resolveTurn(helped,{...pairCmd,koharu:{skill:'warm',target:'touma'}},order);
  assert.ok(b.events.some(e=>e.actor==='koharu'&&e.effect?.type==='heal'&&e.effect.hero==='touma'&&e.effect.amount===48));assert.equal(b.heroes.koharu.sp,8);assert.equal(b.gauge,0,'her healing does not charge the pair gauge');
- // 守りの軟膏はそのターンの傷を半分にする（2ターン目はニナへ32）
+ // 守りの塗り薬はそのターンの傷を半分にする（2ターン目はニナへ32）
  const salved=C.resolveTurn(b,{...pairCmd,koharu:{skill:'salve',target:'nina'}},order),bare=C.resolveTurn(b,{...pairCmd,koharu:{skill:'guard'}},order);
  assert.equal(b.heroes.nina.hp-salved.heroes.nina.hp,16);assert.equal(b.heroes.nina.hp-bare.heroes.nina.hp,32);
  // 3ターン目の全体攻撃は、後ろのコハルにも半分届く

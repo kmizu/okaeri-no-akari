@@ -17,9 +17,9 @@
     ], // コハルは剣も火も持たない。薬師見習いとして、後ろから薬で二人を支える。
     koharu: [
       { id: 'tend', name: '手当て', cost: 0, desc: '味方一人のHPを12回復。冷えも解除。', target: 'ally' },
-      { id: 'warm', name: '傷薬', cost: 2, desc: '味方一人のHPを40％回復。冷えも解除。', target: 'ally' },
+      { id: 'warm', name: '凍傷の軟膏', cost: 2, desc: '味方一人のHPを40％回復。冷えも解除。', target: 'ally' },
       { id: 'tea', name: '薬湯', cost: 3, desc: '立っている全員のHPを18回復。冷えも解除。' },
-      { id: 'salve', name: '守りの軟膏', cost: 1, desc: '味方一人がこのターン受けるダメージを半減。', target: 'ally' },
+      { id: 'salve', name: '守りの塗り薬', cost: 1, desc: '味方一人がこのターン受けるダメージを半減。', target: 'ally' },
       { id: 'mint', name: '滋養丸', cost: 2, desc: '味方一人のMPを3回復。', target: 'ally' },
       { id: 'rouse', name: '気付け薬', cost: 4, desc: '倒れた仲間をHP40％で起こす。', target: 'ally' }
     ]
@@ -261,7 +261,7 @@
         if (c.skill === 'tea') for (const t of Object.keys(b.heroes)) if (b.heroes[t].hp > 0) heal(t, 18, id);
         if (c.skill === 'salve') {
           defending.add(c.target);
-          emit(b.heroes[c.target].name + 'に軟膏を塗った。このターンの傷は半分で済む。', { type: 'shield', hero: c.target }, id);
+          emit(b.heroes[c.target].name + 'に守りの塗り薬を塗った。このターンの傷は半分で済む。', { type: 'shield', hero: c.target }, id);
         }
         if (c.skill === 'mint') {
           const t = b.heroes[c.target],

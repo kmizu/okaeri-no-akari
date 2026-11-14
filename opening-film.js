@@ -67,7 +67,6 @@
         $ = id => document.getElementById(id);
       $('openingFilm').setAttribute('data-view', shot.view);
       $('openingFilm').setAttribute('data-beat', this.index % 2);
-      $('filmScene').textContent = shot.label;
       $('filmText').textContent = shot.text;
       $('filmTitle').textContent = shot.title || '';
       $('filmTitle').hidden = !shot.title;

@@ -341,3 +341,32 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
  .modal-card .rpg-tab{font-size:12px;padding:5px 9px}
  .rpg-party{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 }
+
+/* 4. タイトル画面：4ボタン表示時や縦長・狭い画面でも下部テキストが重ならないFlex＋コンテナ基準レイアウト */
+.title-screen{display:flex;flex-direction:column;justify-content:space-between;padding:clamp(18px,4.5%,44px) 5% clamp(14px,2.6%,24px) 7%;container-type:size;overflow-y:auto}
+.title-screen .title-copy{position:static;width:min(52%,540px);margin:auto 0}
+.title-screen .eyebrow{font-size:clamp(9px,1.55cqh,13px);margin-bottom:clamp(8px,2cqh,22px)}
+.title-screen .title-intro{font-size:clamp(12px,2.1cqh,18px);margin-bottom:clamp(6px,1.3cqh,14px)}
+.title-screen h1{font-size:clamp(30px,7.4cqh,62px);margin-bottom:clamp(6px,1.2cqh,14px)}
+.title-screen .gold-line{margin:clamp(8px,1.8cqh,18px) 0}
+.title-screen .title-description{font-size:clamp(12px,2.05cqh,17px);line-height:1.72;margin-bottom:0}
+.title-screen .title-actions{margin-top:clamp(10px,2.3cqh,22px);gap:clamp(6px,1.05cqh,10px)}
+.title-screen .title-actions button{width:clamp(210px,35cqh,276px);font-size:clamp(13px,2cqh,17px);padding:clamp(8px,1.4cqh,13px) 19px}
+.title-screen .title-note{margin:clamp(9px,1.7cqh,16px) 0 0;font-size:clamp(10px,1.5cqh,13px);line-height:1.65}
+.title-screen .title-bottom{position:static;flex:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:clamp(10px,1.6cqh,16px);font-size:clamp(9px,1.35cqh,12px);text-shadow:0 2px 8px #071926e6,0 0 14px #071926cc}
+@container(max-height:540px){.title-screen .title-bottom{display:none}}
+@media(max-width:600px){
+ .title-screen{padding:22px 7% 16px}
+ .title-screen .title-copy{width:100%;max-width:340px}
+ .title-screen .title-actions button{width:100%;font-size:15px;padding:11px 16px}
+ .title-screen .title-description{font-size:13.5px}
+ .title-screen .title-note{font-size:11px}
+}
+@media(max-height:520px) and (orientation:landscape){
+ .title-screen{padding:12px 6%}
+ .title-screen .title-copy{width:54%}
+ .title-screen .title-actions{margin-top:8px;gap:5px}
+ .title-screen .title-actions button{font-size:12.5px;padding:6px 14px;width:210px}
+ .title-screen h1{font-size:32px;margin:2px 0}
+ .title-screen .title-note,.title-screen .title-bottom,.title-screen .eyebrow{display:none}
+}

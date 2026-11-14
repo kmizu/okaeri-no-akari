@@ -14,6 +14,14 @@
    <div class="film-copy" aria-live="polite"><h2 id="filmTitle" hidden></h2><p id="filmText"></p></div>
    <div class="film-actions"><button id="skipOpening">スキップ</button></div>
   </section>
+  <section id="chapterCard" class="chapter-card" hidden aria-live="polite">
+   <div class="chapter-card-inner">
+    <p id="chapterCardEyebrow" class="chapter-card-eyebrow"></p>
+    <h2 id="chapterCardTitle" class="chapter-card-title"></h2>
+    <div class="chapter-card-line" aria-hidden="true"></div>
+    <p id="chapterCardSub" class="chapter-card-sub"></p>
+   </div>
+  </section>
   <section id="dialogue" class="dialogue" hidden aria-label="会話"><div class="portrait-wrap"><div id="portrait" class="portrait"></div><span id="portraitMark" class="portrait-mark" hidden></span></div><div class="dialogue-body"><div id="speaker"></div><p id="dialogueText" aria-live="polite"></p><div id="choices"></div><button id="nextDialogue">つづける <kbd>Enter</kbd> <span>▸</span></button></div></section>
   <section id="battleScreen" class="battle-screen classic-battle" hidden aria-label="戦闘"></section>
   <section id="modal" class="modal" hidden><div class="modal-card"><div id="modalContent"></div></div></section>

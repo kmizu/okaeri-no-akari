@@ -221,6 +221,40 @@ function koharuBedroom(){
   +wood(R(572,672,56,24,'#8a6846'))+R(572,672,56,3,'#fff3d6',0,{opacity:.3})+R(120,20,912,676,'none',4,{stroke:'#0c151a','stroke-width':2,'stroke-opacity':.7});
  return s;
 }
+// ユラの診療所。薬草の束が吊るされた清潔で温かな診察室と、椅子が一脚抜けた待合。
+function clinicRoom(){
+ const r=rng(6143);let s='';
+ s+=`<radialGradient id="cout" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#2c4648"/><stop offset="1" stop-color="#0f1c22"/></radialGradient>`+R(0,0,1152,768,'url(#cout)');
+ s+=shadow(110,30,950,690,.6,'b16')+wood(R(120,20,912,676,'#3f2e21',4))+floorPlanks(r)+backWall(r);
+ s+=S('M596,652C592,540 568,450 552,360','#fff0d0',32,{opacity:.09,filter:'url(#b16)'});
+ s+=rug(432,272,248,148,'#567973','#ebe0c3','#b5645a','diamond')+braided(252,516,68,26)+rug(712,436,196,118,'#6c8262','#eae0c3','#c9974c','star');
+ s+=windowAt(404,'#5a827b','cw1',78)+windowAt(682,'#5a827b','cw2',78);
+ for(const wx of [404,682])s+=G(P(`M${wx},146h78l36,98h-90z`,'#d6ebf7')+S(`M${wx+39},146l24,98M${wx+11},194h88`,'#5a4130',4.5,{opacity:.5}),{filter:'url(#b4)',opacity:.32,style:'mix-blend-mode:screen'});
+ // 壁：干した薬草の束、薬効図の額、白衣と往診鞄
+ s+=S('M206,58Q294,76 382,56','#6c4d32',2);
+ for(const hx of [232,274,316,358]){
+  s+=L(hx,64,hx,84,'#725338',1.3)+S(`M${hx},84q-7,12 -8,22M${hx},84v23M${hx},84q7,12 8,22`,'#5b7b4e',2)
+   +E(hx-7,99,3.8,7.5,'#7f965c')+E(hx,104,3.8,8.5,'#97aa6b')+E(hx+7,99,3.8,7.5,'#7f965c')+R(hx-4,83,8,3,'#b5795e',1);
+ }
+ s+=shadow(524,56,116,44,.32,'b2')+wood(R(520,52,124,48,'#6b4d33',2))+R(525,57,114,38,'#f1e6ca',1)
+  +S('M544,86q-3,-14 2,-22M544,78q-8,-4 -11,-9M544,75q7,-4 10,-8','#5f8254',1.5)+ball(534,67,2.6,2.6,'#cf8b78')+ball(554,66,2.6,2.6,'#d9aa56')
+  +S('M574,66h48M574,73h40M574,80h44M574,87h32','#7c6b52',1.1);
+ s+=wood(R(826,64,148,5,'#6b4d33',1.5))+jar(840,64,'#7f9a72')+jar(858,64,'#b0705a')+jar(876,64,MUSTARD)+pot(912,64,16,13,'#6f8fa0')
+  +wood(R(936,154,54,5,'#5e4530',2))+coat(950,159,'#e9e3d2','#5a827b','#b5645a');
+ // 手洗い鉢と清潔な布（右壁寄り）
+ s+=box(896,314,88,28,28,'#c6a77c','#866544')+E(940,324,22,9,'#f5efe2')+E(940,324,17,6.5,'#a9ccd6')+E(936,322,6,2,'#eef9fc',{opacity:.7})+cloth(R(902,344,24,28,'#f3ede0',2))+L(905,366,923,366,'#5a827b',1.6);
+ // 薪棚と玄関マット、往診用の長靴
+ s+=shadow(150,470,46,10,.45)+logs(156,468,3,5)+wood(R(148,412,4,60,'#4d3725',1)+R(190,412,4,60,'#4d3725',1)+R(148,470,46,5,'#4d3725',1),'v');
+ s+=shadow(552,661,96,9,.35,'b2')+cloth(R(552,630,96,34,'#4f6f6a',3)+R(556,634,88,26,'#dfd2b2',2))
+  +L(560,644,640,644,'#4f6f6a',2,{'stroke-dasharray':'6 4'})+L(560,655,640,655,'#4f6f6a',2,{'stroke-dasharray':'6 4'});
+ for(const [bx,c] of [[662,'#534031'],[675,'#534031'],[694,'#6b7a58'],[706,'#6b7a58']])s+=contact(bx+6,668,8,3,.4,'b2')+cyl(bx,647,11,17,c,3)+E(bx+6.5,665,7.5,4,dark(c,.2))+R(bx,647,11,4,'#efe6d0',2);
+ s+=light(240,470,280,'#ffab5c',.36,'soft-light',220)+light(552,300,260,'#ffe3ad',.34,'soft-light',210)+light(820,300,210,'#ffe8bc',.22,'soft-light',170);
+ s+=`<radialGradient id="cvig" cx=".5" cy=".52" r=".72"><stop offset=".48" stop-color="#1c0e05" stop-opacity="0"/><stop offset="1" stop-color="#1c0e05" stop-opacity=".46"/></radialGradient>`+R(144,40,864,632,'url(#cvig)',0,{style:'mix-blend-mode:multiply'});
+ s+=R(144,144,864,24,'url(#drop)',0,{opacity:.7})+R(144,144,20,528,'url(#dropR)',0,{opacity:.58});
+ s+=wood(R(120,20,24,676,'#3f2e21')+R(1008,20,24,676,'#35261b')+R(120,20,912,22,'#3f2e21')+R(120,672,452,24,'#3f2e21')+R(628,672,404,24,'#3f2e21'),'v')
+  +wood(R(572,672,56,24,'#8a6846'))+R(572,672,56,3,'#fff3d6',0,{opacity:.3})+R(576,688,48,8,'#d9ecf5',0,{opacity:.5,filter:'url(#b2)'})+R(120,20,912,676,'none',4,{stroke:'#0c151a','stroke-width':2,'stroke-opacity':.7});
+ return s;
+}
 // ---------------------------------------------------------------- 家具（基準点＝タイルの中心）
 function bedQuilt(bx,quilt,accent,id){
  let q='';const cols=[quilt,accent,lite(quilt,.5),dark(quilt,.15),CREAM];
@@ -370,13 +404,36 @@ function build(){
  // 春まき草の鉢（第7話でマロにもらう。最終話には芽が出る）
  const sprout=x=>S(`M${x},-8v-7`,'#7fae5a',1.6)+E(x-2.4,-16,2.6,1.6,'#8fc46a')+E(x+2.4,-17,2.6,1.6,'#8fc46a');
  for(const [k,body] of [['pot0',''],['pot1',sprout(0)],['pot3',sprout(-4)+sprout(0)+sprout(4)]])D.define('home/'+k,[-12,-24,24,30],contact(1,1,9,3,.4,'b2')+pot(0,2,15,11,'#a86b4c')+E(0,-9,5.6,1.8,'#3a2a1c')+body);
+ // --- 診療所の薬棚・診察机・休養ベッド・待合の椅子（一脚は三人の家へ譲った跡）
+ D.define('home/clinicHerbs',[-68,-128,136,154],
+  box(-56,-102,112,15,96,'#8d6d49','#654b31',{grain:'v'})+R(-50,-84,100,88,'#2e2015',1)
+  +[-40,-22,-4,14,32].map((jx,i)=>jar(jx,-60,['#7f9a72','#c49d60','#a66f5c','#6f8fa0','#93a66f'][i])).join('')
+  +[-38,-18,2,22].map((jx,i)=>jar(jx,-32,['#b38c68','#849d70','#b0705a',MUSTARD][i])).join('')+cloth(R(32,-42,14,10,'#f2ecde',2))
+  +[-42,-14,14].map((bx,i)=>cloth(R(bx,-12,22,10,['#5a827b','#778e62','#b5645a'][i],2))+R(bx+5,-9,12,4,'#fff8e6',1,{opacity:.8})).join('')
+  +R(-50,-84,100,10,'url(#drop)',0,{opacity:.6})+[-60,-32,-2].map(y=>wood(R(-50,y,100,4,'#a47f56'))+R(-50,y+4,100,5,'url(#drop)',0,{opacity:.5})).join('')
+  +pot(-30,-92,16,11,'#5f8278')+pot(24,-92,14,10,'#a86b4c')+S('M24,-102q-5,-8 -8,-4M24,-102v-10M24,-102q5,-7 8,-3','#617e4e',1.8));
+ D.define('home/clinicDesk',[-84,-96,168,136],
+  contact(2,18,74,8,.42,'b4')+box(-68,-54,136,42,26,'#c5a476','#856442')+drawer(-60,-22,38,13)+drawer(-18,-22,38,13)+drawer(24,-22,36,13)
+  +cloth(R(-62,-50,52,30,'#f5efe1',2))+L(-58,-46,-14,-46,'#5a827b',1.4,{'stroke-dasharray':'3 3'})
+  +G(R(-54,-45,32,20,'#fbf5e6',1)+S('M-49,-40h22M-49,-35h18M-49,-30h20','#7d6c55',1.1),{transform:'rotate(-3 -38 -35)'})
+  +contact(12,-34,11,4,.38,'b1')+E(12,-38,11,6,'#e8e0cf')+E(12,-40,8,4,'#6d875c')+L(14,-41,23,-51,'#cbbba0',3)
+  +jar(34,-34,'#7f9a72')+jar(48,-34,'#b0705a')+cyl(-4,-52,10,14,'#fff0b8',2)+P('M-7,-52l8,-7l8,7z','#5a4a36')
+  +chairBack(0,'#7a5a3c','#5a827b'));
+ D.define('home/clinicBed',[-62,-136,144,184],
+  bed(-38,'#dce6e2','#5a827b','','qcb')+cloth(R(-30,-4,68,18,'#f7f4ec',3))+L(-26,4,34,4,'#5a827b',1.6,{'stroke-dasharray':'4 3'})
+  +wood(R(-56,-116,6,132,'#6b4d33',2))+cloth(R(-50,-110,12,112,'#efe8d5',2))+L(-48,-102,-40,-102,'#5a827b',1.5));
+ D.define('home/clinicWaiting',[-68,-88,136,120],
+  contact(-30,10,22,6,.38,'b2')+chairBack(-32,'#8a6846','#6c8262')+wood(R(-46,-60,28,12,'#9c7850',2)+R(-44,-48,5,24,'#6b4d33',1)+R(-23,-48,5,24,'#6b4d33',1))
+  +E(22,-46,18,6,'#1c0e05',{opacity:.09,filter:'url(#b2)'})
+  +box(4,-34,46,24,20,'#bc9b6e','#7f5f3e')+cloth(R(10,-32,34,16,'#f1e6cc',1))+mug(20,-24,'#5a827b')+pot(34,-22,12,10,'#b5795e'));
  D.define('home/room',[0,0,1152,768],room());
  D.define('home/koharu-room',[0,0,1152,768],koharuBedroom());
+ D.define('home/clinic-room',[0,0,1152,768],clinicRoom());
 }
 build();
 
 // ---------------------------------------------------------------- キャンバス側（毎フレームの揺らぎ）
-const NAMES={homeDesk:'desk',homeBooks:'books',homeMirror:'mirror',homeWardrobe:'wardrobe',homeStove:'stove',homeTable:'table',homeShelf:'shelf',homeSewing:'sewing',homeKoharuDoor:'koharuDoor',homeKoharuBed:'bedK',homeKoharuHerbs:'koharuHerbs',homeKoharuDesk:'koharuDesk',homeKoharuBox:'koharuBox'};
+const NAMES={homeDesk:'desk',homeBooks:'books',homeMirror:'mirror',homeWardrobe:'wardrobe',homeStove:'stove',homeTable:'table',homeShelf:'shelf',homeSewing:'sewing',homeKoharuDoor:'koharuDoor',homeKoharuBed:'bedK',homeKoharuHerbs:'koharuHerbs',homeKoharuDesk:'koharuDesk',homeKoharuBox:'koharuBox',homeClinicHerbs:'clinicHerbs',homeClinicDesk:'clinicDesk',homeClinicBed:'clinicBed',homeClinicWaiting:'clinicWaiting'};
 function glow(c,x,y,r,rgb,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,`rgba(${rgb},0)`);c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);}
 function steam(c,x,y,t,k=3){for(let i=0;i<k;i++){const p=(t*.32+i/k)%1,a=.3*(1-p)*Math.min(1,p*5);c.fillStyle=`rgba(255,255,255,${a})`;c.beginPath();c.ellipse(x+Math.sin(t*1.5+i*2.1)*5*p,y-p*30,3+p*7,2.4+p*6,0,0,Math.PI*2);c.fill();}}
 function hasChair3(s){const ep=s?.episode;return ep?.chapter===10&&(ep.route==='koharuLove'||(ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=3));}
@@ -400,5 +457,6 @@ function koharuDoor(c,open=true){return D.ready()&&D.draw(c,open?'home/koharuDoo
 function bedKQuilt(c,x,y){return D.ready()&&D.draw(c,'home/bedKQuilt',x,y);}
 function background(c){return D.ready()&&D.draw(c,'home/room',0,0);}
 function koharuRoom(c){return D.ready()&&D.draw(c,'home/koharu-room',0,0);}
-root.OkaeriHomeArt={workshop:workshopBg,background,koharuRoom,koharuDoor,bedKQuilt,tableSeats,object,ready:()=>D.ready(),failed:()=>D.failed()};
+function clinic(c){return D.ready()&&D.draw(c,'home/clinic-room',0,0);}
+root.OkaeriHomeArt={workshop:workshopBg,background,koharuRoom,clinic,koharuDoor,bedKQuilt,tableSeats,object,ready:()=>D.ready(),failed:()=>D.failed()};
 })(globalThis);

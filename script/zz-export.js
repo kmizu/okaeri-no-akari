@@ -1,1 +1,1 @@
-root.OkaeriEpisodesData={epilogues,koharuAnswers,night9,closings,titles,contexts,episodes,confessions,routes,detours,nightEchoes,festivalEchoes,finalEchoes,journeyEcho,chatter,idle};
+root.OkaeriEpisodesData={epilogues,koharuAnswers,night9,closings,titles,subtitles,contexts,prologues,episodes,confessions,routes,detours,nightEchoes,festivalEchoes,finalEchoes,journeyEcho,chatter,idle};

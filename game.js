@@ -80,18 +80,20 @@
     $('locationName').textContent =
       state.scene === 'koharuRoom'
         ? 'コハルの部屋'
-        : state.scene === 'house'
-        ? '三人の家'
-        : state.scene === 'town'
-          ? '雪の町 ユキネ'
-          : state.scene === 'canal'
-            ? '雪解けの共同水路'
-            : state.scene === 'hill'
-              ? '風待ちの丘'
-              : '粉ひきの森';
+        : state.scene === 'clinic'
+          ? 'ユラの診療所'
+          : state.scene === 'house'
+            ? '三人の家'
+            : state.scene === 'town'
+              ? '雪の町 ユキネ'
+              : state.scene === 'canal'
+                ? '雪解けの共同水路'
+                : state.scene === 'hill'
+                  ? '風待ちの丘'
+                  : '粉ひきの森';
     $('weather').textContent =
-      ['house', 'koharuRoom'].includes(state.scene)
-        ? '薪の灯り / 家の中'
+      ['house', 'koharuRoom', 'clinic'].includes(state.scene)
+        ? '薪の灯り / 室内'
         : state.flags.festivalStarted
           ? '護りの灯火祭り / 夜'
           : state.flags.hillStarted
@@ -136,6 +138,10 @@
       if (OkaeriJourney.split(state)) $('leadText').textContent = name(state.lead) + 'を操作中';
     }
     if (state.openingStage !== undefined) $('objectiveText').textContent = S.opening[state.openingStage].objective;
+    if (state.prologueStage !== undefined) {
+      const p = getPrologueParts()?.[state.prologueStage];
+      if (p?.objective) $('objectiveText').textContent = p.objective;
+    }
     const way = D.guide?.(state);
     if (way?.via && mode === 'explore') $('objectiveText').textContent += '　▶ まず「' + way.via + '」';
     const o = nearest();
@@ -148,7 +154,7 @@
     const a = D.ambient(state);
     D.setBase(a);
     Sfx?.ambient(mode === 'title' ? null : mode === 'battle' ? null : a.bed);
-    if (mode === 'explore' && state.openingStage === undefined) travelMusic();
+    if (mode === 'explore' && state.openingStage === undefined && state.prologueStage === undefined) travelMusic();
   }
   function rpgTabsHtml(active) {
     const oint = state.ointments || 0,
@@ -373,6 +379,82 @@
       musicCue(null);
     }
   }
+  let chapterCardTimer = null,
+    chapterCardFadeTimer = null;
+  function hideChapterCard() {
+    clearTimeout(chapterCardTimer);
+    clearTimeout(chapterCardFadeTimer);
+    chapterCardTimer = null;
+    chapterCardFadeTimer = null;
+    const card = $('chapterCard');
+    if (!card || card.hidden) return;
+    card.classList.remove('is-fading');
+    card.hidden = true;
+  }
+  function showChapterCard(chapter, routeId) {
+    const card = $('chapterCard');
+    if (!card || !globalThis.OkaeriEpisodesData) return;
+    hideChapterCard();
+    const title = OkaeriEpisodesData.titles?.[chapter - 1] || '',
+      subs = OkaeriEpisodesData.subtitles || {},
+      sub = (chapter === 10 && subs['10:' + routeId]) || subs[chapter] || '';
+    $('chapterCardEyebrow').textContent = 'CHAPTER ' + String(chapter).padStart(2, '0');
+    $('chapterCardTitle').textContent = '第' + chapter + '話 — ' + title;
+    $('chapterCardSub').textContent = sub;
+    card.classList.remove('is-fading');
+    card.hidden = false;
+    if ($('toast')) $('toast').hidden = true;
+    Sfx?.play('chime');
+    if (D.reduced()) {
+      chapterCardTimer = setTimeout(hideChapterCard, 1500);
+    } else {
+      chapterCardTimer = setTimeout(() => {
+        card.classList.add('is-fading');
+        chapterCardFadeTimer = setTimeout(hideChapterCard, 560);
+      }, 2200);
+    }
+  }
+  function getPrologueParts(s = state) {
+    const ep = s.episode,
+      P = globalThis.OkaeriEpisodesData?.prologues;
+    if (!ep || !P || ep.chapter < 2) return null;
+    return (ep.chapter === 10 && P['10:' + ep.route]) || P[ep.chapter] || null;
+  }
+  function playEpisodePrologue(step = 0, withCard = false) {
+    const parts = getPrologueParts();
+    if (!parts || !parts[step]) {
+      delete state.prologueStage;
+      if (withCard && state.episode?.chapter >= 2) showChapterCard(state.episode.chapter, state.episode.route);
+      const e = globalThis.OkaeriEpisodes?.current(state);
+      if (e) scene(e.scene, ...OkaeriEpisodes.spawns[e.scene]);
+      save();
+      travelMusic();
+      updateHud();
+      return;
+    }
+    const part = parts[step];
+    state.prologueStage = step;
+    scene(part.scene, part.x, part.y);
+    if (part.bgm) setMusic(part.bgm);
+    else travelMusic();
+    if (withCard && step === 0) showChapterCard(state.episode.chapter, state.episode.route);
+    talk(part.lines, () => {
+      if (step + 1 < parts.length) {
+        playEpisodePrologue(step + 1, false);
+        return;
+      }
+      delete state.prologueStage;
+      const e = globalThis.OkaeriEpisodes?.current(state),
+        dest = part.afterScene || (e ? [e.scene, ...OkaeriEpisodes.spawns[e.scene]] : null);
+      if (dest && (dest[0] !== state.scene || dest[1] !== state.x || dest[2] !== state.y)) scene(...dest);
+      else renderer.reset(state);
+      save();
+      travelMusic();
+      updateHud();
+      if (part.toast) toast(part.toast);
+      else if (state.episode) toast(OkaeriEpisodes.title(state));
+    });
+  }
   function playOpening(step = 0) {
     const part = S.opening[step];
     state.openingStage = step;
@@ -416,6 +498,7 @@
     saveKey = key;
     state = s;
     mode = 'explore';
+    hideChapterCard();
     $('titleScreen').hidden = true;
     $('hud').hidden = false;
     $('modal').hidden = true;
@@ -427,6 +510,7 @@
     canvas.focus();
     if (state.openingPrelude) playPrelude();
     else if (state.openingStage !== undefined) playOpening(state.openingStage);
+    else if (state.prologueStage !== undefined) playEpisodePrologue(state.prologueStage, false);
     else if (!fromSave) {
       if (globalThis.OkaeriOpeningFilm) playPrelude();
       else if (S.opening) playOpening();
@@ -440,7 +524,7 @@
     } else {
       travelMusic();
       if (state.pendingEvening) evening(state.pendingEvening);
-      else toast('二人の旅を再開しました');
+      else toast('旅を再開しました');
     }
   }
   function nearest() {
@@ -462,7 +546,7 @@
     Sfx?.play('swap');
   }
   function scene(next, x, y) {
-    const indoor = s => ['house', 'koharuRoom', 'lampworkshop'].includes(s);
+    const indoor = s => ['house', 'koharuRoom', 'clinic', 'lampworkshop'].includes(s);
     const door = next !== state.scene && (indoor(next) || indoor(state.scene));
     if (next !== state.scene) {
       D.fade('black');
@@ -501,6 +585,7 @@
       openModal,
       closeModal,
       startBattle,
+      beginChapter: () => playEpisodePrologue(0, true),
       jingle: n => bgm.jingle?.(n),
       sfx: n => Sfx?.play(n)
     };
@@ -521,7 +606,7 @@
       if (f.returned) {
         talk([
           ['', '二枚の出発札は、並んで「町」の欄に戻っている。'],
-          ['nina', f.waterReturned ? '今日も、二枚とも戻せたね。' : '明日は東の水路だって。帰ったらまた、ここに戻しに来ようね。']
+          ['nina', f.waterReturned ? '今日も、二枚とも戻せたね。' : '明日の朝、もう一度この板の前へ来るんだよね。サエさんがユラ先生に相談するって言ってたし。']
         ]);
         return;
       }
@@ -530,34 +615,43 @@
         save();
         talk(
           [
-            ['', 'トウマとニナは、二枚の出発札を「森」の欄から外した。'],
-            ['サエ', 'おかえり。灯台の火、ここからも見えたよ。', 'happy'],
-            ['touma', 'ただいま戻りました。倒木を一本どかして、橋の灯りの線をつなぎ直して、灯台に火を入れました。'],
-            ['サエ', '精霊は。'],
-            ['nina', 'こごえモチと、氷の殻のヤドカリ。それから灯台の前に、枝角の番人が。みんな、温めたら帰っていきました。'],
-            ['サエ', '手は。冷やしすぎてないかい。'],
+            ['', '広場へ戻ったトウマとニナは、二枚並んだ木札を「森」の欄から外した。'],
+            ['サエ', 'おかえり。森の灯台の火、この広場からもはっきり見えたよ。', 'happy'],
+            ['touma', 'ただいま戻りました。道をふさいでいた倒木をどかし、灯りの橋の導火線をつなぎ直して、灯台に火を継ぎました。'],
+            ['サエ', '道中の精霊たちはどうだったい。'],
+            ['nina', 'こごえモチと、氷をかぶったヤドカリがいました。それから灯台の前に、鳥の巣を守っていた枝角の番人も。みんな灯りで温めたら、静かに森へ帰っていきました。'],
+            ['サエ', '手はどうだい。雪風で冷やしすぎていないかい。'],
             [
               'nina',
               f.ointmentBridge
-                ? '橋の上で一回、指が動かなくなって。コハルにもらった凍傷の軟膏を塗って、トウマに待ってもらって締め直しました。'
-                : '橋の上で一回、指が動かなくなって。トウマに待ってもらって、温めてから締め直しました。'
+                ? '谷の橋の上で一度、強い風で指がすっかりかじかんで動かなくなって……。コハルにもらった凍傷の軟膏を塗って、トウマに柱を支えて待ってもらいながら締め直しました。'
+                : '谷の橋の上で一度、強い風で指がすっかりかじかんで動かなくなって……。トウマに柱を支えて待ってもらいながら、息で温めて締め直しました。'
             ],
             [
               'サエ',
-              'うん。待てたなら上出来だ。……火を扱う者の指が止まるのは、考えものだね。手を温める者を、一人つけた方がいいかもしれない。'
+              '焦らず待てた判断は上出来だ。……だが、雪道で凍傷になりかけたり、かじかんで指が動かなくなるのは見過ごせない問題だね。'
             ],
-            ['', 'サエは二枚の札を「町」の欄へ掛け、傾いていた方を指先でまっすぐに直した。\nそれから、しばらく森の方角を見ていた。'],
+            [
+              'サエ',
+              '細かい留め金や火口を扱う灯守にとって、凍傷で指先が利かなくなるのは命取りになりかねない。剣の番と火の番のほかに、道中で凍傷や怪我の手当てができる「薬師」を一人つけた方がいい。'
+            ],
+            ['touma', '薬師を、俺たちの組にですか？'],
+            [
+              'サエ',
+              'ああ。昔、私が現役で山を回っていた頃も、薬の番が一緒だったんだよ。今夜のうちに診療所のユラへ相談してくるから、明日の朝、もう一度ここへ顔を出しな。'
+            ],
+            ['', 'サエは二枚の名札を「町」の欄へ掛け直し、わずかに傾いていた方を指先でまっすぐに整えた。\nそれからしばらく、夕闇の降り始めた北の森の方角を見上げていた。'],
             ['サエ', '……いい火だ。', { wait: 600 }],
             [
               'マロ',
-              'おかえりー！　荷車、さっき着いたよ。粉は無事、明日のパンも無事！　ほら、焼きたて。まずは食べてって！',
+              'おかえりー！　粉ひき小屋の荷車、ついさっき無事に着いたよ！　灯台の火が見えたおかげで分かれ道も迷わなかったって。ほら、焼きたてのパン、まずは食べてって！',
               'happy',
               { se: 'cheer' }
             ],
             ['nina', '……いい匂い。朝からこれを楽しみに歩いてたんだ。', 'happy'],
             ['touma', 'お前、灯台の前でも腹が減ったって言ってたな。'],
-            ['nina', '言ったよ。帰り道の分は別腹だもん。', 'joy'],
-            ['', '濡れた外套を店先に掛け、二人並んでパンをかじる。\n冷えていた指先が、ゆっくり温まっていった。']
+            ['nina', '言ったよ。帰り道の焼きたては別腹だもん。', 'joy'],
+            ['', '雪で濡れた外套をパン屋の軒先に掛け、二人並んであつあつのパンをかじる。\n谷風で冷えきっていた指先まで、じんわりと温かさが戻っていった。']
           ],
           () => evening('one')
         );
@@ -565,31 +659,31 @@
       }
       if (f.board) {
         talk([
-          ['nina', '札、ちゃんと二枚掛かってるね。夕方には戻しに来よう。'],
-          ['touma', 'ああ。北の道から森だ。']
+          ['nina', '私たちの名札、ちゃんと「森」の欄に二枚並んでるね。夕方には自分の手で戻しに来よう。'],
+          ['touma', 'ああ。広場の北の道から、粉ひきの森へ向かおう。']
         ]);
         return;
       }
       talk(
         [
-          ['', '掲示板の下半分は「出発札」の板になっている。\n行き先ごとに欄があり、出かける者は自分の名札をそこへ掛けていく。'],
-          ['', '「トウマ」「ニナ」。二枚の木札を、「森」の欄に並べて掛けた。', { se: 'knock' }],
-          ['nina', '去年までは、サエさんの札の隣だったね。'],
-          ['touma', '今年は二枚だけだ。'],
-          ['', 'ニナの札は、下の角が少し欠けている。'],
-          ['nina', 'これ、子どもの頃に自分で掛けたくて、背伸びして落とした跡。'],
-          ['touma', '椅子を持ってくるから待てって言ったのに、板によじ登るからだ。'],
-          ['nina', 'トウマだって「下で受け止める」って言ったよ。'],
-          ['touma', '……札じゃなくて、お前をな。'],
+          ['', '広場の中央に立つ木製の掲示板。その下半分は、ユキネ独自の「出発札」の板になっている。\n森・水路・丘・街道と行き先ごとに欄が区切られ、町の外へ出る者は必ず自分の名札を行き先へ掛けてから出発する決まりだ。'],
+          ['', 'そうしておけば、急に吹雪が来た時でも、誰がどの道にまだ残っているか町じゅうの者がすぐに分かる。\nトウマとニナは、「トウマ」「ニナ」と彫られた二枚の木札を、「森」の欄に並べて掛けた。', { se: 'knock' }],
+          ['nina', '去年まではいつも、サエさんの札の横に並べて掛けてたね。'],
+          ['touma', 'ああ。今日からは、この二枚だけだ。'],
+          ['', 'よく見ると、ニナの木札だけ右下の角が少し欠けて丸くなっている。'],
+          ['nina', 'これ、まだ背が届かなかった子どもの頃、どうしても自分で掛けたくて背伸びして落とした跡だ。'],
+          ['touma', '踏み台を持ってくるから待てって言ったのに、お前が板の柱によじ登るからだ。'],
+          ['nina', 'だってトウマ、「落ちたら下で受け止める」って言ったじゃない。'],
+          ['touma', '……木の札じゃなくて、お前をな。'],
           ['nina', '……。', 'shy'],
-          ['nina', '行こっか。夕方には、この札を戻しに来ようね。'],
-          ['touma', 'ああ。二枚とも。']
+          ['nina', 'さ、行こっか。日が暮れる前に、ちゃんとこの手で札を戻しに来ようね。'],
+          ['touma', 'ああ。二枚そろってな。']
         ],
         () => {
           f.board = true;
           save();
           updateHud();
-          toast('行き先を記録した。北の道から森へ。');
+          toast('行き先を出発札に記録した。北の道から粉ひきの森へ。');
         }
       );
       return;
@@ -678,16 +772,16 @@
     }
     if (id === 'exit') {
       if (!f.board) {
-        talk([['nina', '待って、先に出発札。掛けずに出たら、サエさんは私たちがまだ町にいると思っちゃう。']]);
+        talk([['nina', '待ってトウマ、先に広場の掲示板で出発札を掛けなきゃ。黙って出たら、サエさんたちが私たちがまだ町にいると思っちゃうよ。']]);
         return;
       }
       scene('forest', 5, 13);
       if (!f.mochi)
         talk([
-          ['', '町の北、粉ひきの森。\n灯台は、この道を登りきった先にある。'],
-          ['nina', '町の中より、ずっと雪が深い……。昨日の足跡、ひとつも残ってないね。'],
-          ['touma', '俺が先に踏む。お前は道標を見ててくれ。向きがずれたら止めろ。'],
-          ['nina', '了解。……あれ。トウマ、あの道標の下。何か、跳ねてない？', 'question']
+          ['', 'ユキネの北門を抜けると、白嶺のふもとへ続く「粉ひきの森」に入る。\n奥の渓谷には水車の粉ひき小屋があり、北の峠を越えて運ばれてくる小麦をここで挽いて町へ届けている。森の灯台は、その分かれ道を見下ろす高台だ。'],
+          ['nina', '広場の中より、ずっと雪が深いね……。昨日の足跡も、ひと晩ですっかり埋まってる。'],
+          ['touma', '新雪は俺が先に踏み固める。ニナは後ろから道標の向きを見ててくれ。少しでも逸れたら声をかけろ。'],
+          ['nina', '了解。……あれ。トウマ、あの最初の道標の下を見て。何か丸いのが跳ねてない？', 'question']
         ]);
       return;
     }
@@ -944,55 +1038,66 @@
       }
       talk(
         [
-          ['', '森の灯台。石積みの塔のてっぺんで、大きな芯が雪をかぶっている。'],
-          ['touma', '芯の軸が傾いてた。……よし、立った。ニナ、火を。'],
-          ['nina', 'うん。ランタン、開けるね。'],
+          ['', '森の最奥にそびえる石積みの「森の灯台」。\nユキネを取り巻く「灯りの輪」の北の要であり、峠と粉ひき小屋から町へ帰る道を見下ろす一番高い火室だ。今は太い芯が凍りつき、冷たい雪をかぶっている。'],
+          ['touma', '吹雪の衝撃で芯の軸が傾いてたんだな。……よし、金具を締め直してまっすぐ立った。ニナ、火を。'],
+          ['nina', 'うん。ランタンの風よけ、開けるね。'],
           [
             '',
-            'ニナがランタンの種火を、細い芯に移す。灯術の火は、息をひそめるように小さい。\nそれが灯台の大きな芯に触れて――',
+            'ニナが腰のランタンに守ってきた種火を、細い導きの芯へとそっと移す。灯術の火は、最初は息をひそめるほど小さい。\nその種火が油を含んだ灯台の大芯に触れ、ひと呼吸おいて――',
             { bgm: 'silence', wait: 300 }
           ],
           [
             '',
-            '森の灯台に、あたたかな光が満ちた。',
+            '森の灯台いっぱいに、あたたかな黄金色の光が満ちた。',
             { still: 'chapter-01', flash: 'warm', se: 'lit', jingle: 'lit', time: 'dusk', lit: true }
           ],
           ['nina', '……ともった！', 'happy'],
-          ['touma', 'ああ。ともったな。', 'happy'],
+          ['touma', 'ああ。しっかりともったな。', 'happy'],
           [
             '',
-            '光が雪の稜線をなぞる。町を囲む灯りの輪が、北でつながった。\n分かれ道の道標が、遠くにひとつ浮かび上がる。その下を、荷車の小さな影が動いている。',
+            '高い火室から放たれた光が、夕暮れの蒼い雪の稜線をくっきりと照らし出す。北で途切れていたユキネの「灯りの輪」が、ふたたび一本の結界としてつながった。\n眼下の森の分かれ道にある道標が浮かび上がり、そのそばを、粉を積んだ荷車の小さな影が動いているのが見えた。',
             { bgm: 'tender' }
           ],
-          ['', '影は一度止まり、それから、町の方へ曲がった。'],
-          ['nina', '見えたんだ。あの人たちにも。'],
-          ['touma', '……ああ。'],
+          ['', '荷車の影は分かれ道で一度立ち止まり、灯台の光を見上げるようにしてから、迷いなくユキネの町の方角へ曲がった。'],
+          ['nina', '見えたんだね。あの荷車の人たちにも、この火が。'],
+          ['touma', '……ああ。これでもう、道を間違えずに町まで帰れる。'],
           [
             '',
-            '十二年前の大雪の晩、この灯台は消えていた。雪のせいではない。\n山から下りた魔獣が火を倒し、灯りの輪を北で断ち切ったのだ。',
+            '――今から十二年前の冬、まだトウマとニナが幼かった大雪の夕暮れのことだ。\nあの日、トウマの両親とニナの両親は、冬越しの小麦や塩を積んだ町の荷車の列に加わり、深い雪で道が閉ざされる前に北の峠からユキネへ帰る途中だった。',
             { wait: 500 }
           ],
           [
             '',
-            '当番だったサエは、一晩じゅう魔獣を相手にして、灯台まで戻れなかった。\n峠から戻るはずだった荷車の列は、この分かれ道を見つけられなかった。'
+            'だが日暮れと重なって急な猛吹雪が山を包み、さらにその夜、北の白嶺から下りてきた大柄な魔獣がこの「森の灯台」を襲った。\n魔獣は灯台の火を叩き落として灯りの輪を北で断ち切り、そのまま手薄になった町の家々へなだれ込もうとした。'
           ],
-          ['', 'その列に、トウマの両親と、ニナの両親がいた。'],
-          ['nina', '小さい頃、窓からこの灯台を探したよね。ともってたら、もうすぐ誰か帰ってくるって。'],
-          ['touma', 'お前が先に靴を履いて飛び出すから、俺は毎回追いかける羽目になった。'],
-          ['nina', 'だって、迎えに行きたかったんだもん。'],
-          ['', 'ニナは灯台の壁に、手袋のまま手のひらを当てた。トウマは、腰の剣の柄に一度だけ触れた。'],
-          ['nina', '……今日は、ちゃんとともってるよ。', { wait: 500 }],
-          ['touma', '帰ろう。札を戻すまでが仕事だ。'],
-          ['nina', 'うん。……安心したら、おなか空いちゃった。', 'happy'],
-          ['touma', f.rest ? '小屋であれだけ食っといて。' : '昼を抜いたからだ。小屋に寄ればよかったな。'],
-          ['nina', '帰り道の分は、別腹なの。', 'joy']
+          [
+            '',
+            'その夜の当番だったサエは、魔獣を町へ一歩も入れまいと吹雪の森でひとり立ちふさがった。\n夜通し斬り結んでようやく魔獣を討ち果たしたものの、サエ自身も深手を負って動けなくなり、この灯台まで登って火を入れ直すことができなかった。'
+          ],
+          [
+            '',
+            'そして――町まであと半刻という森の分かれ道まで戻ってきていた荷車の列には、目印になるはずの灯台の火が見えなかった。\n猛吹雪で道と谷底の境さえ消え果てた白闇の中、曲がり角を見失った荷車は深い吹きだまりの沢へと踏み迷い、両親たちは朝になっても帰らぬ人となった。'
+          ],
+          [
+            '',
+            'あの日、凍りついた窓辺に並んで北の山を見つめていた幼い二人は、サエとマロにそれぞれ引き取られて育った。\n「二度と誰ひとり、帰り道を見失わせない」——そう願って灯守を志した二人に、サエは自らの剣と灯術を授け、決して離れぬ二人一組として鍛え上げたのだ。'
+          ],
+          ['nina', '小さい頃、吹雪の晩になると窓に額をくっつけて、この灯台の火を探したよね。あそこがともってたら、きっと帰ってくるって。'],
+          ['touma', 'お前が先に長靴を履いて外へ飛び出そうとするから、毎回俺が玄関で捕まえる羽目になった。'],
+          ['nina', 'だって、灯りを持って迎えに行きたかったんだもん。'],
+          ['', 'ニナは石積みの冷たい壁に、手袋のままそっと手のひらを当てた。トウマは黙って、サエから受け継いだ腰の剣の柄に一度だけ指を触れた。'],
+          ['nina', '……今日は、ちゃんとともってるよ。分かれ道まで、ぜんぶ明るい。', { wait: 500 }],
+          ['touma', 'ああ。帰ろう、ニナ。広場の出発札を戻すまでが、俺たちの仕事だ。'],
+          ['nina', 'うん！　……なんだか安心したら、急におなか空いちゃった。', 'happy'],
+          ['touma', f.rest ? '休憩小屋であれだけ食べておいて、まだ入るのか。' : '昼を抜いて歩いたからな。早く帰ってマロさんのパンをもらおう。'],
+          ['nina', '帰り道の焼きたては、いつだって別腹なの。', 'joy']
         ],
         () => {
           f.lit = true;
           save();
           updateHud();
           openModal(
-            '<span class="tag">第一の灯り</span><h2>森の灯台が、ともった</h2><p>日が傾いてきた。二人で町へ帰ろう。<br>そのまま森を歩いて戻ることもできます。</p>',
+            '<span class="tag">第一の灯り</span><h2>森の灯台が、ともった</h2><p>日が傾いてきた。二人でユキネの町へ帰ろう。<br>そのまま森の雪道を歩いて戻ることもできます。</p>',
             [
               [
                 '二人で町へ帰る',
@@ -1000,9 +1105,9 @@
                   closeModal();
                   scene('town', 12, 3);
                   talk([
-                    ['', '帰り道の小さな標識灯も、ぽつり、ぽつりと明るくなっていく。'],
-                    ['nina', '私たちの火が、順番に下りていってるんだ。'],
-                    ['touma', 'ああ。……掲示板へ行こう。札を戻して、報告だ。']
+                    ['', '灯台からつないだ灯術の火が導火線を伝い、帰り道の小さな標識灯も、ぽつり、ぽつりと順番に明るくなっていく。'],
+                    ['nina', '私たちがともした火が、町まで一列に下りていってるんだね。'],
+                    ['touma', 'ああ。……広場の掲示板へ行こう。出発札を戻して、サエさんに報告だ。']
                   ]);
                 },
                 true
@@ -1515,6 +1620,46 @@
       scene('house', 12, 12);
       return true;
     }
+    if (id === 'clinicDoor') {
+      scene('clinic', 12, 12);
+      return true;
+    }
+    if (state.scene === 'clinic') {
+      if (id === 'clinicExit') {
+        scene('town', 10, 13);
+        return true;
+      }
+      const clinicLines = {
+        clinicHerbs: [
+          ['', '壁一面の薬棚。白嶺のふもとや薬草の谷で摘んだ干し草と、塗り薬の小瓶が効能ごとに整然と並んでいる。\n下の段には、見習いのコハルが間違えないよう葉の形を描いた丸い字の札が結んであった。'],
+          ['nina', 'コハルがうちの棚に貼ってる絵札、ここのユラ先生の棚をまねしたんだね。', 'happy'],
+          ['touma', '凍傷の軟膏の瓶が一番手前に並べてあるな。冬場は町じゅうの人がもらいに来るんだろう。']
+        ],
+        clinicDesk: [
+          ['', 'よく使いこまれた診察机と、薬草をすり潰す乳鉢。\n引き出しの脇には、ユキネの住民全員の持病や怪我の控えが丁寧に綴じられている。'],
+          ['touma', '俺とニナの頁、子どもの頃の擦り傷だけで何枚もありそうだな……。', 'sweat'],
+          ['nina', 'ほとんどトウマが木から落ちた記録でしょ！', 'fluster']
+        ],
+        clinicBed: [
+          ['', '清潔な白い麻布が敷かれた休養用の寝台。衝立の陰にあり、吹雪で冷えきった人や熱を出した子どもが一晩休めるようになっている。'],
+          ['nina', '昔、コハルがまだこの診療所の奥に寝泊まりしてた頃、熱を出した私のお見舞いに何度もカーテンから顔をのぞかせてくれたっけ。']
+        ],
+        clinicStove: [
+          ['', '診療所の薪ストーブ。いつ急患が運びこまれてもすぐ湯が使えるよう、やかんが絶えず白い湯気を立てている。', { se: 'fire' }],
+          ['touma', '薬草を煎じた匂いがする。ここにいるだけで指先がほどけるな。']
+        ],
+        clinicWaiting: [
+          ['', '待合の小さな机と、一脚だけ置かれた木の椅子。\nよく見ると床の敷物には、もう一脚ぶんの丸い脚跡がうっすら残っている。'],
+          ['nina', '……あ、ここ。三年前に私たちが今の家へ越した時、ユラ先生が「うちは一脚で足りるから」って譲ってくれた椅子の場所だ。'],
+          ['touma', 'おかげでうちの食卓は、オルフさんの椅子とここの椅子で二脚そろったんだよな。大事に使わないと。']
+        ]
+      };
+      if (clinicLines[id]) {
+        talk(clinicLines[id]);
+        return true;
+      }
+      return false;
+    }
     if (state.scene !== 'house') return false;
     if (id === 'houseExit') {
       scene('town', 3, 13);
@@ -1672,7 +1817,7 @@
     if (!S.walkable(state, x, y)) return false;
     state.x = x;
     state.y = y;
-    Sfx?.play(['house', 'koharuRoom', 'lampworkshop'].includes(state.scene) ? 'stepWood' : 'step');
+    Sfx?.play(['house', 'koharuRoom', 'clinic', 'lampworkshop'].includes(state.scene) ? 'stepWood' : 'step');
     updateHud();
     return true;
   }
@@ -1726,7 +1871,7 @@
       D.ambient(state).bgm ||
         (OkaeriMusic.sceneFor
           ? OkaeriMusic.sceneFor(state.scene)
-          : ['town', 'house', 'koharuRoom', 'lakeside', 'lampworkshop'].includes(state.scene)
+          : ['town', 'house', 'koharuRoom', 'clinic', 'lakeside', 'lampworkshop'].includes(state.scene)
             ? 'village'
             : 'journey')
     );
@@ -1765,8 +1910,9 @@
   setMusic('opening');
   function chapterSelect() {
     if (globalThis.OkaeriEpisodes) {
-      const enter = (n, r = null) => {
+      const enter = (n, r = null, skipPrologue = false) => {
         start(OkaeriEpisodes.create(n, r), n !== 1, chapterSaveKey);
+        if (n >= 2 && !skipPrologue) playEpisodePrologue(0, true);
         save();
       };
       const buttons = OkaeriEpisodesData.titles.map((t, i) => [
@@ -1804,7 +1950,7 @@
         buttons.push([
           '第6話の小旅行から',
           () => {
-            enter(6);
+            enter(6, null, true);
             state.episode.step = 2;
             OkaeriJourney.begin(episodeApi());
           }
@@ -1863,7 +2009,11 @@
     if (s) start(s, true);
     else toast('保存データを読めません。はじめから遊べます');
   };
-  $('nextDialogue').onclick = nextDialogue;
+  if ($('chapterCard')) $('chapterCard').onclick = hideChapterCard;
+  $('nextDialogue').onclick = () => {
+    hideChapterCard();
+    nextDialogue();
+  };
   $('leadButton').onclick = switchLead;
   $('bagButton').onclick = openBag;
   $('interactButton').onclick = interact;
@@ -1930,6 +2080,11 @@
       return;
     }
     if (e.repeat) return;
+    if ($('chapterCard') && !$('chapterCard').hidden && ['Enter', ' ', 'e', 'Escape'].includes(key)) {
+      e.preventDefault();
+      hideChapterCard();
+      return;
+    }
     if ((key === 'Enter' || key === ' ' || key === 'e') && mode === 'dialogue') {
       e.preventDefault();
       if (!queue[queueIndex].choices) nextDialogue();

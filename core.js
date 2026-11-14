@@ -402,7 +402,7 @@
       if (
         !s ||
         s.version !== 1 ||
-        !['town', 'forest', 'canal', 'hill', 'house', 'koharuRoom', 'lake', 'lakeside', 'lampworkshop', 'herbvale', 'oldpass'].includes(s.scene) ||
+        !['town', 'forest', 'canal', 'hill', 'house', 'koharuRoom', 'clinic', 'lake', 'lakeside', 'lampworkshop', 'herbvale', 'oldpass'].includes(s.scene) ||
         !Number.isFinite(s.x) ||
         !Number.isFinite(s.y) ||
         s.x < 1 ||
@@ -471,6 +471,23 @@
         )
           return null;
         episode = { chapter: e.chapter, step: e.step, route: e.route, complete: e.complete };
+      }
+      let prologueStage;
+      if (s.prologueStage !== undefined) {
+        if (
+          !Number.isInteger(s.prologueStage) ||
+          s.prologueStage < 0 ||
+          s.prologueStage > 2 ||
+          !episode ||
+          episode.chapter < 2 ||
+          episode.step !== 0 ||
+          episode.complete ||
+          s.openingStage !== undefined ||
+          s.journey ||
+          s.pendingEvening
+        )
+          return null;
+        prologueStage = s.prologueStage;
       }
       let journey;
       if (s.journey !== undefined) {
@@ -614,7 +631,7 @@
         nina: 'endingNina',
         friends: 'endingFriends'
       };
-      if (['house', 'koharuRoom'].includes(s.scene) && (s.x < 3 || s.x > 20 || s.y < 3 || s.y > 13)) return null;
+      if (['house', 'koharuRoom', 'clinic'].includes(s.scene) && (s.x < 3 || s.x > 20 || s.y < 3 || s.y > 13)) return null;
       for (const [key, requirement] of Object.entries(nightRequirements))
         if (flags['night' + key[0].toUpperCase() + key.slice(1)] && !flags[requirement]) return null;
       if (s.pendingEvening && (!nightRequirements[s.pendingEvening] || !flags[nightRequirements[s.pendingEvening]] || s.scene !== 'house'))
@@ -628,6 +645,7 @@
       return {
         ...(s.openingPrelude ? { openingPrelude: true } : {}),
         ...(openingStage !== undefined ? { openingStage } : {}),
+        ...(prologueStage !== undefined ? { prologueStage } : {}),
         ...(journey ? { journey } : {}),
         ...(memories ? { memories } : {}),
         ...(episode ? { episode } : {}),

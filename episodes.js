@@ -3,7 +3,7 @@
   const D = root.OkaeriEpisodesData,
     S = root.OkaeriStory,
     C = root.OkaeriCore;
-  const spawns = { town: [12, 10], forest: [5, 13], canal: [3, 12], hill: [4, 13], house: [12, 12] };
+  const spawns = { town: [12, 10], forest: [5, 13], canal: [3, 12], hill: [4, 13], house: [12, 12], clinic: [12, 12] };
   // ['@名前'] の一行を、条件に合う台詞へ差し替える（合わなければ消す）。
   function expand(lines, slots) {
     return lines.flatMap(l => (l.length === 1 && typeof l[0] === 'string' && l[0][0] === '@' ? slots[l[0].slice(1)] || [] : [l]));
@@ -63,7 +63,7 @@
       return s.episode.chapter === 10 ? '二人の明日へ。食卓で最後の一日を振り返れます。' : '今日の話はおしまい。食卓から翌日へ進めます。';
     const e = current(s);
     return e
-      ? { town: '町', forest: '森', canal: '水路', hill: '丘', house: '三人の家' }[e.scene] +
+      ? { town: '町', forest: '森', canal: '水路', hill: '丘', house: '三人の家', clinic: '診療所' }[e.scene] +
           '：' +
           e.label +
           (e.lead ? (e.solo ? '（操作：' : '（Qで') + (e.lead === 'nina' ? 'ニナ' : 'トウマ') + (e.solo ? '）' : 'に交代）') : '')
@@ -100,6 +100,10 @@
     nextState.ointments = Math.max(s.ointments || 0, 2);
     nextState.memories = { ...s.memories };
     Object.assign(s, nextState);
+    if (a.beginChapter) {
+      a.beginChapter();
+      return;
+    }
     a.scene(s.scene, s.x, s.y);
     a.toast(title(s));
   }
@@ -295,14 +299,15 @@
         a.talk(
           id === 'ritsu'
             ? [
-                ['', '広場の東で、見慣れない外套の男が水路の石組みをのぞきこんでいる。図面を片手に、何か数えているようだ。'],
-                ['nina', '……誰だろ。旅の人かな。'],
-                ['touma', '仕事中みたいだ。帰ってきたら声をかけよう。今は森が先だ。']
+                ['', '広場の東、共同水路へ続く道口で、旅慣れた外套の青年が石組みをのぞきこんでいる。\n図面を片手に、雪解け水の流量を測っているようだ。'],
+                ['nina', '……あれ、見慣れない外套だね。よその町から来た職人さんかな。'],
+                ['touma', '水路の点検中みたいだな。森の灯台から戻ったら、改めて声をかけよう。今は北の森が先だ。']
               ]
             : [
-                ['ユラ', 'おや、二人とも。今日から森は二人だけだってね。自分の家を持っても、食事は抜かないこと。'],
-                ['touma', '今日は弁当があります。ニナが作りました。'],
-                ['ユラ', 'よろしい。怪我をしてもしなくても、帰ったら顔を見せにおいで。', 'happy']
+                ['', '薬草の甘い匂いが満ちる診療所。ユキネでただ一人の医師であり、コハルの師匠でもあるユラが、乳鉢の手を止めて顔を上げた。'],
+                ['ユラ', 'おや、二人とも。今日から森の灯台は、サエ抜きで二人きりだってね。三人の家を持ってから、ちゃんと朝ごはんは食べてるかい。'],
+                ['touma', '食べてきました。昼の包みパンも、ニナが作ってあります。'],
+                ['ユラ', 'よろしい。コハルが持たせた軟膏、遠慮せず使うんだよ。怪我をしてもしなくても、帰ったら顔を見せにおいで。', 'happy']
               ]
         );
         return true;
@@ -341,15 +346,21 @@
       });
       return true;
     }
-    // Ordinary household interactions remain available; old main-quest handlers cannot jump ahead.
-    if (['house', 'koharuRoom'].includes(s.scene) || id === 'ourHome') return false;
+    // Ordinary household and clinic prop interactions remain available; old main-quest handlers cannot jump ahead.
+    if (
+      ['house', 'koharuRoom'].includes(s.scene) ||
+      ['ourHome', 'clinicHerbs', 'clinicDesk', 'clinicBed', 'clinicWaiting', 'clinicStove'].includes(id)
+    )
+      return false;
     const exits = {
       exit: ['forest', 5, 13],
       home: ['town', 12, 3],
       canalExit: ['canal', 3, 12],
       canalHome: ['town', 21, 9],
       hillExit: ['hill', 4, 13],
-      hillHome: ['town', 2, 9]
+      hillHome: ['town', 2, 9],
+      clinicDoor: ['clinic', 12, 12],
+      clinicExit: ['town', 10, 13]
     };
     if (exits[id]) {
       a.scene(...exits[id]);
@@ -395,12 +406,13 @@
     if (!s.episode) return list;
     // 第8話のオルフは丘の小屋にいる。全員が帰るまで、広場には立っていない。
     if (s.scene === 'town' && s.episode.chapter === 8 && !s.episode.complete) list = list.filter(o => o.id !== 'orlf');
-    if (s.scene === 'town')
-      list = [
-        ...list,
-        { id: 'ritsu', type: 'episodeNpc', x: 20, y: 9, label: '水番のリツ' },
-        { id: 'yura', type: 'episodeNpc', x: 11, y: 11, label: '診療所のユラ' }
-      ];
+    if (s.scene === 'town') {
+      list = [...list, { id: 'ritsu', type: 'episodeNpc', x: 20, y: 9, label: '水番のリツ' }];
+      if (s.episode.chapter === 9 && !s.episode.complete)
+        list = [...list, { id: 'yura', type: 'episodeNpc', x: 9, y: 9, label: '医師のユラ' }];
+    }
+    if (s.scene === 'clinic' && !(s.episode.chapter === 9 && !s.episode.complete))
+      list = [...list, { id: 'yura', type: 'episodeNpc', x: 11, y: 7, label: '医師のユラ' }];
     // コハルは第1話から、薬草の籠を提げて広場に立つ。二人と一緒に歩いている間と、丘へ登っている間はいない。
     if (
       s.scene === 'town' &&
@@ -421,7 +433,7 @@
         y: e.y,
         label: e.label,
         base,
-        person: e.scene === 'town' && e.x === 20 ? 'リツ' : e.scene === 'town' && e.x === 11 ? 'ユラ' : e.lines[0][0]
+        person: e.scene === 'town' && e.x === 20 ? 'リツ' : e.scene === 'clinic' && e.x === 11 ? 'ユラ' : e.lines[0][0]
       });
     }
     return list;

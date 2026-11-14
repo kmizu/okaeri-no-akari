@@ -370,3 +370,15 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
  .title-screen h1{font-size:32px;margin:2px 0}
  .title-screen .title-note,.title-screen .title-bottom,.title-screen .eyebrow{display:none}
 }
+
+/* 5. 章幕（エピソード開始トランジション） */
+.chapter-card{position:absolute;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;text-align:center;padding:32px;background:radial-gradient(ellipse at 50% 45%,#162b38f5 0%,#09151ef9 72%,#050d14fc 100%);backdrop-filter:blur(8px);cursor:pointer;opacity:1;transition:opacity .55s ease}
+.chapter-card[hidden]{display:none}
+.chapter-card.is-fading{opacity:0;pointer-events:none}
+.chapter-card-inner{max-width:660px;padding:28px 36px;animation:chapterCardIn .65s cubic-bezier(.22,1,.36,1) both}
+.chapter-card-eyebrow{margin:0 0 12px;font-size:clamp(11px,1.5vw,13px);letter-spacing:.38em;color:#f3cf88;font-weight:700;text-transform:uppercase}
+.chapter-card-title{margin:0;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;font-size:clamp(26px,4.2vw,42px);font-weight:700;letter-spacing:.12em;color:#fff8eb;text-shadow:0 4px 24px #00000099,0 0 28px #f5c97838}
+.chapter-card-line{width:96px;height:1.5px;margin:18px auto;background:linear-gradient(90deg,transparent,#e9c275,transparent)}
+.chapter-card-sub{margin:0;font-size:clamp(13px,1.7vw,16px);line-height:1.85;letter-spacing:.06em;color:#d6e4ea}
+@keyframes chapterCardIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.chapter-card{transition:none}.chapter-card-inner{animation:none}}

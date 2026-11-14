@@ -30,7 +30,7 @@ function frame(w,h,title,sub,body){
 
 // ---------------------------------------------------------------- 町のまわり
 // 位置は、ゲームの出入口の向きに合わせてある（北＝森、東＝水路、西＝丘、南東＝湖の街道）。
-const SPOTS={town:[450,330],house:[404,352],forest:[470,150],herbvale:[285,128],canal:[690,300],hill:[185,300],oldpass:[150,170],lake:[640,470],lakeside:[790,520],lampworkshop:[790,520]};
+const SPOTS={town:[450,330],house:[404,352],clinic:[446,356],forest:[470,150],herbvale:[285,128],canal:[690,300],hill:[185,300],oldpass:[150,170],lake:[640,470],lakeside:[790,520],lampworkshop:[790,520]};
 function local(s={}){
  const f=s.flags||{},W=900,H=620;let b='';
  // 北の山並みと、森
@@ -62,7 +62,7 @@ function local(s={}){
  b+=lamp(690,298,!!f.waterLit)+R(676,300,10,12,'#cdbf9c',1,{stroke:INK,'stroke-width':1})+label(700,278,'共同水路',15,{spacing:4})+label(700,326,'水門と護りの灯火',10,{weight:500})+label(830,150,'取水口',10,{weight:500});
  b+=label(600,452,'氷湖の旧街道',12,{rot:28})+house(790,516,1,'#6f8fa0')+house(812,524,.8)+label(800,492,'ミナモ',16,{spacing:4})+label(800,548,'渡し場',10,{weight:500})+label(810,602,'カルデ・南の港へ',10,{weight:500,anchor:'end'});
  // いまここ
- const at=SPOTS[s.scene];if(at)b+=here(at[0],at[1]-(s.scene==='town'?30:s.scene==='house'?22:40));
+ const at=SPOTS[s.scene];if(at)b+=here(at[0],at[1]-(s.scene==='town'?30:['house','clinic'].includes(s.scene)?22:40));
  b+=compass(830,400)+G(L(0,0,90,0,INK,2)+L(0,-4,0,4,INK,1.5)+L(45,-3,45,3,INK,1.2)+L(90,-4,90,4,INK,1.5)+label(45,18,'歩いて半日',11,{weight:500}),{transform:'translate(60,570)'});
  return frame(W,H,'ユキネのまわり','灯りの輪は、町と道を囲んで魔獣を寄せつけない',b);
 }

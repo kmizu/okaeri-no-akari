@@ -3,7 +3,7 @@
 // 風景の仕上げ。各地図の背景を描き終えたあとに一度だけ重ねる細部（雪の起伏・踏み跡・茂みや岩・紙の質感）と、
 // 毎フレーム描く動き（煙突の煙、手前を横切る大きな雪）。
 const W=1152,H=768,T=48;
-const INDOOR=['house','koharuRoom','lampworkshop'];
+const INDOOR=['house','koharuRoom','clinic','lampworkshop'];
 // 水面など、物を置いてはいけない帯（折れ線と幅）
 const WATER={
  canal:[[[60,630],[450,630],[450,540],[825,540],[825,220],[1100,220]],64],

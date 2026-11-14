@@ -44,7 +44,7 @@
     s.push(id);
     try {
       root.localStorage.setItem(KEY, JSON.stringify(s));
-    } catch {}
+    } catch { }
   }
   let current = null;
   function layer() {
@@ -87,23 +87,23 @@
       .map(s =>
         have.includes(s.id)
           ? '<button type="button" class="still-card" data-still="' +
-            s.id +
-            '"><img src="' +
-            s.thumb +
-            '" alt="" loading="lazy"><span>' +
-            esc(s.title) +
-            '</span></button>'
+          s.id +
+          '"><img src="' +
+          s.thumb +
+          '" alt="" loading="lazy"><span>' +
+          esc(s.title) +
+          '</span></button>'
           : '<div class="still-card is-locked"><i>？</i><span>' + esc(s.title.split('　')[0]) + '</span></div>'
       )
       .join('');
     openModal(
       '<span class="tag">思い出の絵</span><h2>' +
-        have.length +
-        ' / ' +
-        list.length +
-        ' 枚</h2><p>物語の中で一度見た絵を、ここで見返せます。絵を選ぶと大きく表示します。</p><div class="still-grid">' +
-        cards +
-        '</div>',
+      have.length +
+      ' / ' +
+      list.length +
+      ' 枚</h2><p>物語の中で一度見た絵を、ここで見返せます。絵を選ぶと大きく表示します。</p><div class="still-grid">' +
+      cards +
+      '</div>',
       [['閉じる', closeModal, true]],
       'title'
     );
@@ -172,7 +172,7 @@
       role: '薬師見習い',
       img: 'assets/koharu-town-cut.png',
       notes: [
-        'トウマとニナの二つ年下。二人を兄と姉のように慕って、同じ家に暮らしている',
+        'トウマとニナの少し年下。二人を兄と姉のように慕って、同じ家に暮らしている',
         '子どもの頃から、二人のあとをついて歩いてきた',
         'ユラ先生仕込みの薬箱を、いつも肩から提げている。得意は、かじかんだ指を戻す凍傷の軟膏'
       ]
@@ -236,8 +236,8 @@
       S('M682,246Q578,284 448,346', '#b8d4e3', 2, { 'stroke-dasharray': '4 8', opacity: 0.35 }) +
       G(
         P('M76,248Q80,232 92,229L96,220L101,228L108,219L110,229Q122,233 125,248Z', '#07131c') +
-          E(98, 233, 1.6, 1.1, '#df6b52') +
-          E(105, 233, 1.6, 1.1, '#df6b52'),
+        E(98, 233, 1.6, 1.1, '#df6b52') +
+        E(105, 233, 1.6, 1.1, '#df6b52'),
         { opacity: 0.9 }
       );
 
@@ -255,10 +255,10 @@
 
     scene += G(
       E(408, 332, 168, 30, 'none', { stroke: '#ffd27a', 'stroke-width': 6, opacity: 0.24, filter: 'url(#b4)' }) +
-        E(408, 332, 168, 30, 'none', { stroke: '#ffe4a3', 'stroke-width': 1.8, 'stroke-dasharray': '8 6', opacity: 0.72 }) +
-        E(408, 332, 132, 22, 'none', { stroke: '#ffd27a', 'stroke-width': 1.1, 'stroke-dasharray': '3 7', opacity: 0.55 }) +
-        S('M157,219Q284,278 444,202Q572,278 683,224', '#ffd074', 6, { opacity: 0.25, filter: 'url(#b4)' }) +
-        S('M157,219Q284,278 444,202Q572,278 683,224', '#ffe7ad', 1.9, { 'stroke-dasharray': '5 7', opacity: 0.85 }),
+      E(408, 332, 168, 30, 'none', { stroke: '#ffe4a3', 'stroke-width': 1.8, 'stroke-dasharray': '8 6', opacity: 0.72 }) +
+      E(408, 332, 132, 22, 'none', { stroke: '#ffd27a', 'stroke-width': 1.1, 'stroke-dasharray': '3 7', opacity: 0.55 }) +
+      S('M157,219Q284,278 444,202Q572,278 683,224', '#ffd074', 6, { opacity: 0.25, filter: 'url(#b4)' }) +
+      S('M157,219Q284,278 444,202Q572,278 683,224', '#ffe7ad', 1.9, { 'stroke-dasharray': '5 7', opacity: 0.85 }),
       { opacity: 0.92 }
     );
 
@@ -276,8 +276,8 @@
     scene +=
       G(
         wood(R(-5, -24, 10, 44, '#6d563d', 2), 'v') +
-          R(-5, -24, 10, 44, 'url(#cyl)', 2, { opacity: 0.45 }) +
-          P('M-6,-24Q0,-30 6,-24Q0,-21 -6,-24Z', 'url(#op-snow)'),
+        R(-5, -24, 10, 44, 'url(#cyl)', 2, { opacity: 0.45 }) +
+        P('M-6,-24Q0,-30 6,-24Q0,-21 -6,-24Z', 'url(#op-snow)'),
         { transform: 'translate(292,316) rotate(-16)' }
       ) + snowDrift(292, 334, 24, 7);
 
@@ -412,9 +412,9 @@
       W,
       H,
       b +
-        G(scene, { 'clip-path': 'url(#op-clip)' }) +
-        R(10, 6, W - 20, H - 12, 'none', 14, { stroke: '#e9be7858', 'stroke-width': 1.5 }) +
-        R(15, 11, W - 30, H - 22, 'none', 11, { stroke: '#e9be7824', 'stroke-width': 1 })
+      G(scene, { 'clip-path': 'url(#op-clip)' }) +
+      R(10, 6, W - 20, H - 12, 'none', 14, { stroke: '#e9be7858', 'stroke-width': 1.5 }) +
+      R(15, 11, W - 30, H - 22, 'none', 11, { stroke: '#e9be7824', 'stroke-width': 1 })
     );
     return beaconCache;
   }
@@ -475,12 +475,12 @@
     card.innerHTML =
       (p.bust
         ? '<div class="intro-bust" style="background-image:url(' +
-          p.bust[0] +
-          ');background-size:' +
-          p.bust[1] +
-          ';background-position:' +
-          p.bust[2] +
-          '"></div>'
+        p.bust[0] +
+        ');background-size:' +
+        p.bust[1] +
+        ';background-position:' +
+        p.bust[2] +
+        '"></div>'
         : '<img src="' + p.img + '" alt="">') +
       '<div class="intro-text"><small>' +
       p.kana +

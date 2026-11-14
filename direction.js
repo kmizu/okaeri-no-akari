@@ -108,7 +108,7 @@
       weather = 'snow';
       bgm = null;
     }
-    const indoors = ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene);
+    const indoors = ['house', 'koharuRoom', 'clinic', 'lampworkshop'].includes(s.scene);
     const flood = ep?.chapter === 3 && s.scene === 'canal' && ep.step >= 1 && ep.step <= 3;
     const bed = indoors
       ? 'hearth'
@@ -130,14 +130,14 @@
     const epi = root.OkaeriEpisodes?.playingEpilogue?.();
     if (epi) return !!root.OkaeriCore?.route(epi)?.koharu; // 後日譚：コハルのいる結末では、家の中でも一緒にいる
     if (s.openingStage !== undefined) return s.openingStage > 0 || !!stage.over.koharu; // 第1話の朝：戸が開いて起きてきてから、広場まで三人で歩く
+    if (s.prologueStage !== undefined) return !!stage.over.koharu && stage.over.koharu !== 'gone';
     const ep = s.episode;
     // 最終話でコハルが食卓を囲む結末は、家の中にもコハルがいる（三脚目の椅子の主）。
     if (ep && !ep.complete && ep.chapter === 10 && s.scene === 'house') return !!root.OkaeriCore?.route(ep.route)?.koharu;
     if (!ep || ep.complete || ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
-    if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && !(ep.chapter === 2 && ep.step === 0) && ep.chapter !== 4;
+    if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && ep.chapter !== 4;
     // 薬の番として加わった第2話からは、当番の日は町の中も三人で歩く。
-    // 朝のうちは診療所の仕事があるので、その日の最初の用事にはいないことがある。
-    if (ep.chapter === 2) return ep.step >= 1;
+    if (ep.chapter === 2) return true;
     if (ep.chapter === 3) return ep.step === 0 || ep.step === 4; // 事故の間（1〜3）は一人ずつ動く
     if (ep.chapter === 5) return ep.step >= 1;
     if (ep.chapter === 8) return true;
@@ -147,12 +147,13 @@
   }
   // 次の目的地。いまの地図にあればその場所を、別の地図ならそこへ向かう出口を指す。
   const WAY = {
-    town: { forest: [12, 2], canal: [22, 9], hill: [1, 9], house: [3, 13], lake: [22, 12], lakeside: [22, 12], lampworkshop: [22, 12] },
+    town: { forest: [12, 2], canal: [22, 9], hill: [1, 9], house: [3, 13], clinic: [10, 13], lake: [22, 12], lakeside: [22, 12], lampworkshop: [22, 12] },
     forest: { '*': [5, 14] },
     canal: { '*': [3, 13] },
     hill: { '*': [4, 14] },
     house: { '*': [12, 13] },
     koharuRoom: { '*': [12, 13] },
+    clinic: { '*': [12, 13] },
     herbvale: { '*': [2, 13] },
     oldpass: { '*': [2, 13] }
   };
@@ -160,7 +161,7 @@
     const ep = s.episode,
       f = s.flags || {},
       at = (scene, x, y) => ({ scene, x, y });
-    if (!ep || s.openingStage !== undefined) return null;
+    if (!ep || s.openingStage !== undefined || s.prologueStage !== undefined) return null;
     if (root.OkaeriJourney?.active(s)) return root.OkaeriJourney.target?.(s) || null;
     if (ep.complete) return at('house', 11, 9);
     if (ep.chapter > 1) {
@@ -204,12 +205,13 @@
   // 台詞のきっかけのうち、画面に関わるものを受け取る。音は game.js 側で鳴らす。
   function apply(cue, speaker) {
     if (!cue) return;
-    const t = now(),
+    const t = typeof speaker === 'number' ? speaker : now(),
       calm = reduced();
     if (cue.time) stage.over.time = cue.time;
     if (cue.weather) stage.over.weather = cue.weather;
     if (cue.flood) stage.over.flood = true;
     if (cue.lit) stage.over.lit = true;
+    if (cue.breakfast !== undefined) stage.over.breakfast = cue.breakfast;
     if (cue.koharu) stage.over.koharu = cue.koharu === 'seat' ? { mode: 'seat', start: t } : cue.koharu;
     if (cue.shake && !calm) stage.shake = { start: t, power: cue.shake === true ? 1 : cue.shake, ms: cue.shakeMs || 520 };
     if (cue.flash) stage.flash = { start: t, color: cue.flash === 'warm' ? '255,222,160' : '255,255,255', ms: calm ? 200 : 520 };
@@ -285,7 +287,7 @@
       c.restore();
       return;
     }
-    const indoors = ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene);
+    const indoors = ['house', 'koharuRoom', 'clinic', 'lampworkshop'].includes(s.scene);
     if (!festival) {
       c.globalCompositeOperation = 'multiply';
       if (mode === 'dusk') {
@@ -312,7 +314,7 @@
     c.restore();
   }
   function weatherLayer(c, s, t) {
-    if (weather() !== 'blizzard' || ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene)) return;
+    if (weather() !== 'blizzard' || ['house', 'koharuRoom', 'clinic', 'lampworkshop'].includes(s.scene)) return;
     const calm = reduced(),
       k = t * 0.001;
     c.save();

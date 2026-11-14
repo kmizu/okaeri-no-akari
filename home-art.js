@@ -300,8 +300,9 @@ function build(){
   +contact(cx+20,-62,15,5,.5,'b2')+S(`M${cx+7},-80q11,-16 22,0`,'#3a2c20',2.6)+P(`M${cx+31},-74q10,-4 12,-12l-4,-1q-2,6 -9,8z`,'#93a09f')+ball(cx+18,-72,15,11,'#93a09f')+E(cx+18,-80,10,3.4,'#b9c4c2')+ball(cx+18,-83,3,2.4,'#5e4530'));
  // --- 食卓
  const hem={'stroke-dasharray':'3 4','stroke-linecap':'butt'};
+ D.define('home/tableChairs',[-60,-112,120,64],chairBack(-36,'#8a6846','#c0766c')+chairBack(32,'#b9976a','#4f8a88'));
  D.define('home/table',[-96,-112,192,160],
-  contact(4,22,82,9,.45,'b4')+chairBack(-36,'#8a6846','#c0766c')+chairBack(32,'#b9976a','#4f8a88')
+  contact(4,22,82,9,.45,'b4')
   +cyl(-64,-6,8,26,'#6b4d33',1)+cyl(56,-6,8,26,'#6b4d33',1)
   +box(-72,-62,144,50,13,'#c9a878','#8a6846',{shadow:false,rx:4})
   +cloth(R(-36,-62,72,51,'#f1e6cc')+P('M-36,-12h72v12q-4.5,6 -9,0t-9,0t-9,0t-9,0t-9,0t-9,0t-9,0t-9,0z','#e2d5b6'))+R(-36,-12,72,3,'url(#drop)',0,{opacity:.4})
@@ -309,14 +310,13 @@ function build(){
   +wood(R(-67,-42,30,18,'#dcc08f',2))+loaf(-52,-33)
   +bowl(-14,-40,true)+L(-1,-37,8,-32,'#c9d0d2',2)+bowl(18,-27,true)+L(-2,-24,6,-20,'#c9d0d2',2)
   +mug(4,-46,'#4f8a88')+mug(34,-42,'#c0766c')
-  +contact(52,-36,9,3,.5,'b2')+cyl(45,-42,14,5,'#5a4a36',2)+R(47,-58,10,16,'#fff0b8',2,{opacity:.9})+R(47,-58,10,16,'url(#glass)',2)+R(47,-58,10,16,'none',2,{stroke:'#5a4a36','stroke-width':1.4})+P('M44,-58l8,-8l8,8z','#5a4a36')+S('M52,-66v-5','#5a4a36',1.4)+E(52,-49,2.2,4,'#fff8dc')
-  +contact(2,34,56,5,.4)+cyl(-46,16,6,16,'#5e4530',1)+cyl(40,16,6,16,'#5e4530',1)+box(-52,6,104,10,6,'#b08a5c','#7a5a3c',{shadow:false,rx:3})+cloth(R(-40,5,80,9,'#6f7f5a',4))+L(-34,9.5,34,9.5,'#ead9b4',1.4,{'stroke-dasharray':'5 4'}));
+  +contact(52,-36,9,3,.5,'b2')+cyl(45,-42,14,5,'#5a4a36',2)+R(47,-58,10,16,'#fff0b8',2,{opacity:.9})+R(47,-58,10,16,'url(#glass)',2)+R(47,-58,10,16,'none',2,{stroke:'#5a4a36','stroke-width':1.4})+P('M44,-58l8,-8l8,8z','#5a4a36')+S('M52,-66v-5','#5a4a36',1.4)+E(52,-49,2.2,4,'#fff8dc'));
  D.define('home/chair3',[-22,-112,44,90],chairBack(0,'#6d7a5a',MUSTARD)+cyl(-12,-62,4,20,'#55603f',1)+cyl(8,-62,4,20,'#55603f',1)); // 三人目の椅子
  // 食卓の三つ目の席は、コハルが診療所から持ってきた踏み台。
- D.define('home/koharuStool',[-33,-40,66,75],
-  contact(1,18,22,5,.38,'b2')+wood(R(-20,-7,6,24,'#765638',2)+R(14,-7,6,24,'#765638',2),'v')
-  +wood(R(-17,7,34,4,'#9c774d',1))+box(-24,-20,48,14,7,'#d2b17b','#94734c',{shadow:false})
-  +cloth(E(0,-14,17,5,'#bdad69'))+E(0,-15,14,3,'#e1ca8b',{opacity:.65}));
+ D.define('home/koharuStool',[-24,-80,48,68],
+  contact(1,-29,18,4.5,.38,'b2')+wood(R(-14,-50,5,21,'#765638',1.5)+R(9,-50,5,21,'#765638',1.5),'v')
+  +wood(R(-12,-39,24,4,'#9c774d',1))+box(-17,-61,34,12,6,'#d2b17b','#94734c',{shadow:false})
+  +cloth(E(0,-56,13,4.5,'#bdad69'))+E(0,-57,10.5,2.6,'#e1ca8b',{opacity:.65}));
  // 食卓から部屋へ続く扉。
  D.define('home/koharuDoor',[-75,-140,95,166],
   shadow(-62,-120,72,132,.45,'b2')+wood(R(-62,-126,76,126,'#5e422e',3),'v')+wood(R(-56,-120,64,116,'#aa8054',2),'v')
@@ -368,11 +368,12 @@ build();
 const NAMES={homeDesk:'desk',homeBooks:'books',homeMirror:'mirror',homeWardrobe:'wardrobe',homeStove:'stove',homeTable:'table',homeShelf:'shelf',homeSewing:'sewing',homeKoharuDoor:'koharuDoor',homeKoharuBed:'bedK',homeKoharuHerbs:'koharuHerbs',homeKoharuDesk:'koharuDesk',homeKoharuBox:'koharuBox'};
 function glow(c,x,y,r,rgb,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,`rgba(${rgb},0)`);c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);}
 function steam(c,x,y,t,k=3){for(let i=0;i<k;i++){const p=(t*.32+i/k)%1,a=.3*(1-p)*Math.min(1,p*5);c.fillStyle=`rgba(255,255,255,${a})`;c.beginPath();c.ellipse(x+Math.sin(t*1.5+i*2.1)*5*p,y-p*30,3+p*7,2.4+p*6,0,0,Math.PI*2);c.fill();}}
-function object(c,o,x,y,s,t){
+function hasChair3(s){const ep=s?.episode;return ep?.chapter===10&&(ep.route==='koharuLove'||(ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=3));}
+function tableSeats(c,x,y,s){if(!D.ready())return false;D.draw(c,hasChair3(s)?'home/chair3':'home/koharuStool',x-90,y+18);return D.draw(c,'home/tableChairs',x,y);}
+function object(c,o,x,y,s,t,layered){
  const name=o.type==='homeBed'?(o.id==='toumaRoom'?'bedT':'bedN'):NAMES[o.type];if(!name||!D.ready())return false;
  const third=!!root.OkaeriCore?.route(s.episode?.route)?.koharu; // 三人で食卓を囲む結末
- const ep=s.episode,chairArrived=ep?.chapter===10&&(ep.route==='koharuLove'||(ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=3));
- if(name==='table')D.draw(c,chairArrived?'home/chair3':'home/koharuStool',x-98,y+18);
+ if(name==='table'&&!layered)tableSeats(c,x,y,s);
  if(!D.draw(c,'home/'+name,x,y))return false;
  if(name==='stove'){const cx=x-24,f=.78+Math.sin(t*9)*.1+Math.sin(t*23)*.07;
   c.save();c.beginPath();c.rect(cx-22,y-37,44,28);c.clip();
@@ -386,5 +387,5 @@ function object(c,o,x,y,s,t){
 }
 function background(c){return D.ready()&&D.draw(c,'home/room',0,0);}
 function koharuRoom(c){return D.ready()&&D.draw(c,'home/koharu-room',0,0);}
-root.OkaeriHomeArt={workshop:workshopBg,background,koharuRoom,object,ready:()=>D.ready(),failed:()=>D.failed()};
+root.OkaeriHomeArt={workshop:workshopBg,background,koharuRoom,tableSeats,object,ready:()=>D.ready(),failed:()=>D.failed()};
 })(globalThis);

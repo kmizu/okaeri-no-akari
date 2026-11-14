@@ -113,3 +113,43 @@ test('the third seat is present from the opening and changes only after the rout
     assert.equal(draws[0], expected, JSON.stringify(episode));
   }
 });
+
+test('the opening home scene seats all three characters between the three seats and the tabletop', () => {
+  const order = [];
+  const ctx2d = new Proxy({ createRadialGradient: () => ({ addColorStop() {} }), createLinearGradient: () => ({ addColorStop() {} }) }, { get: (t, k) => t[k] || (() => {}) });
+  const root = vm.createContext({
+    OkaeriStory: Story,
+    OkaeriDirector: Director,
+    OkaeriSprites: {
+      facing: (_dx, _dy, prev) => prev,
+      has: () => true,
+      draw(_c, x, y, id, dir, moving, _t, seated) { order.push({ kind: 'actor', id, x, y, dir, moving, seated }); }
+    },
+    OkaeriHomeArt: {
+      background: () => true,
+      tableSeats() { order.push({ kind: 'seats' }); },
+      object(_c, o, _x, _y, _s, _t, layered) { if (o.type === 'homeTable') order.push({ kind: 'table', layered }); return true; }
+    },
+    document: { createElement: () => ({ getContext: () => ctx2d }) }
+  });
+  vm.runInContext(fs.readFileSync(require.resolve('../world.js'), 'utf8'), root);
+  const renderer = new root.OkaeriWorld.Renderer({ getContext: () => ctx2d });
+  const state = { scene: 'house', x: 12, y: 7, lead: 'touma', openingStage: 0, flags: {} };
+  renderer.reset(state);
+  renderer.draw(state, 0, 'dialogue');
+  const seatsIdx = order.findIndex(e => e.kind === 'seats');
+  const tableIdx = order.findIndex(e => e.kind === 'table');
+  const actors = order.filter(e => e.kind === 'actor');
+  assert.equal(actors.length, 3);
+  assert.ok(seatsIdx >= 0 && tableIdx > seatsIdx);
+  assert.equal(order[tableIdx].layered, true);
+  for (const a of actors) {
+    const idx = order.indexOf(a);
+    assert.ok(idx > seatsIdx && idx < tableIdx, `${a.id} should render in front of chair backs and behind tabletop`);
+    assert.equal(a.seated, true);
+    assert.equal(a.moving, false);
+  }
+  assert.equal(actors.find(a => a.id === 'koharu').dir, 'right');
+  assert.equal(actors.find(a => a.id === 'nina').dir, 'down');
+  assert.equal(actors.find(a => a.id === 'touma').dir, 'down');
+});

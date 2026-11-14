@@ -59,14 +59,16 @@
       img.src = root.OkaeriWalkImage;
     });
   }
-  function draw(c, x, y, id, dir, moving, time) {
+  function draw(c, x, y, id, dir, moving, time, seated) {
     const tile = frames[id + '-' + dir + '-' + frameIndex(moving, time)];
     if (!tile) return false;
     c.save();
-    c.fillStyle = '#29475944';
-    c.beginPath();
-    c.ellipse(x, y + 9, 16, 6, 0, 0, Math.PI * 2);
-    c.fill();
+    if (!seated) {
+      c.fillStyle = '#29475944';
+      c.beginPath();
+      c.ellipse(x, y + 9, 16, 6, 0, 0, Math.PI * 2);
+      c.fill();
+    }
     const scale = 0.32,
       w = tile.width * scale,
       h = tile.height * scale;

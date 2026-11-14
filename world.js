@@ -3,8 +3,13 @@
 const W=1152,H=768,T=48;
 let smokeLog=null; // 同じく、煙突の位置（煙に使う）
 let lightLog=null; // 背景を描く間、ともっている灯りの位置を控える（夜の光に使う）
+function homeBreakfast(s){return s.scene==='house'&&(s.openingStage===0||s.openingPrelude);}
+function breakfastPose(s){const touma={x:584,y:413,dir:'down',seated:true},nina={x:516,y:413,dir:'down',seated:true},koharu={x:462,y:422,dir:'right',seated:true};return s.lead==='nina'?{p:nina,f:touma,g:koharu}:{p:touma,f:nina,g:koharu};}
 function Renderer(canvas){this.c=canvas.getContext('2d');this.t=0;this.p={x:600,y:504,dir:'down'};this.f={x:600,y:552,dir:'down'};this.target={x:600,y:504};this.follow={x:600,y:552};this.g={x:600,y:590,dir:'down'};this.follow2={x:600,y:590};this.cache={};}
-Renderer.prototype.reset=function(s){const x=s.x*48+24,y=s.y*48+24;this.p={x,y,dir:'down'};this.f={x:x-24,y:y+28,dir:'down'};this.target={x,y};this.follow={x:x-24,y:y+28};this.g={x:x+22,y:y+44,dir:'down'};this.follow2={x:x+22,y:y+44};};
+Renderer.prototype.reset=function(s){
+ if(homeBreakfast(s)){const b=breakfastPose(s);this.p={...b.p};this.f={...b.f};this.g={...b.g};this.target={x:b.p.x,y:b.p.y};this.follow={x:b.f.x,y:b.f.y};this.follow2={x:b.g.x,y:b.g.y};return;}
+ const x=s.x*48+24,y=s.y*48+24;this.p={x,y,dir:'down'};this.f={x:x-24,y:y+28,dir:'down'};this.target={x,y};this.follow={x:x-24,y:y+28};this.g={x:x+22,y:y+44,dir:'down'};this.follow2={x:x+22,y:y+44};
+};
 const ellipse=(c,x,y,rx,ry,color)=>{c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();};
 const rect=(c,x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
 const line=(c,pts,color,width=2)=>{c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();};
@@ -134,9 +139,11 @@ Renderer.prototype.draw=function(s,time,mode){
  const drawables=[];
  for(const source of OkaeriStory.activeObjects(s)){
   const o=source.base||source;
-  const x=o.x*T+24,y=o.y*T+24;drawables.push({y,draw:()=>{
+  const x=o.x*T+24,y=o.y*T+24;
+  if(o.type==='homeTable'&&root.OkaeriHomeArt?.tableSeats)drawables.push({y:y-64,draw:()=>root.OkaeriHomeArt.tableSeats(c,x,y,s)});
+  drawables.push({y,draw:()=>{
   if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
-  if(o.type?.startsWith('home')){root.OkaeriHomeArt?.object(c,o,x,y,s,t);return;}
+  if(o.type?.startsWith('home')){root.OkaeriHomeArt?.object(c,o,x,y,s,t,o.type==='homeTable'&&!!root.OkaeriHomeArt?.tableSeats);return;}
   if(root.OkaeriTownArt?.object(c,o,x,y,s,t,{towerLit,beaconLit}))return;
   if(!['exit','npc','mochi','crab','guardian','camp','fieldSpirit','fieldProp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
   root.OkaeriJourneyArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
@@ -155,19 +162,25 @@ Renderer.prototype.draw=function(s,time,mode){
   const ready=(['log','waterGate','windbreak'].includes(o.id)?s.lead==='touma':['repair','regulator','hillLens'].includes(o.id)?s.lead==='nina':true);const distance=Math.hypot(s.x-o.x,s.y-o.y);
   if(distance<2&&mode==='explore'){ellipse(c,x,y-(o.type==='guardian'?115:o.type==='npc'?82:56)+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(o.type==='guardian'?111:o.type==='npc'?78:52)+Math.sin(t*3)*2);}
  }});}
- const tx=s.x*T+24,ty=s.y*T+24;
- if(tx!==this.target.x||ty!==this.target.y){this.follow2={...this.follow};this.follow={...this.target};this.p.dir=OkaeriSprites.facing(tx-this.target.x,ty-this.target.y,this.p.dir);this.target={x:tx,y:ty};}
- this.p.x+=(tx-this.p.x)*.22;this.p.y+=(ty-this.p.y)*.22;
- const moving=Math.hypot(tx-this.p.x,ty-this.p.y)>1;
- const fx=this.follow.x-this.f.x,fy=this.follow.y-this.f.y;
- this.f.dir=OkaeriSprites.facing(fx,fy,this.f.dir);this.f.x+=fx*.22;this.f.y+=fy*.22;
- const followersMoving=Math.hypot(fx,fy)>1;
- const gx=this.follow2.x-this.g.x,gy=this.follow2.y-this.g.y;this.g.dir=OkaeriSprites.facing(gx,gy,this.g.dir);this.g.x+=gx*.2;this.g.y+=gy*.2;
+ let moving=false,followersMoving=false,thirdMoving=false;
+ if(homeBreakfast(s)){
+  const b=breakfastPose(s);this.p={...b.p};this.f={...b.f};this.g={...b.g};this.target={x:b.p.x,y:b.p.y};this.follow={x:b.f.x,y:b.f.y};this.follow2={x:b.g.x,y:b.g.y};
+ }else{
+  const tx=s.x*T+24,ty=s.y*T+24;
+  if(tx!==this.target.x||ty!==this.target.y){this.follow2={...this.follow};this.follow={...this.target};this.p.dir=OkaeriSprites.facing(tx-this.target.x,ty-this.target.y,this.p.dir);this.target={x:tx,y:ty};}
+  this.p.x+=(tx-this.p.x)*.22;this.p.y+=(ty-this.p.y)*.22;
+  moving=Math.hypot(tx-this.p.x,ty-this.p.y)>1;
+  const fx=this.follow.x-this.f.x,fy=this.follow.y-this.f.y;
+  this.f.dir=OkaeriSprites.facing(fx,fy,this.f.dir);this.f.x+=fx*.22;this.f.y+=fy*.22;
+  followersMoving=Math.hypot(fx,fy)>1;
+  const gx=this.follow2.x-this.g.x,gy=this.follow2.y-this.g.y;this.g.dir=OkaeriSprites.facing(gx,gy,this.g.dir);this.g.x+=gx*.2;this.g.y+=gy*.2;
+  thirdMoving=Math.hypot(gx,gy)>1;
+ }
  const third=D?.companion(s)&&OkaeriSprites.has?.('koharu');
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
  const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&s.episode.step===2)||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
- if(third)shown.push({...this.g,id:'koharu',moving:Math.hypot(gx,gy)>1});
- for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t)});
+ if(third)shown.push({...this.g,id:'koharu',moving:thirdMoving});
+ for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t,actor.seated)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
  // 次の目的地の目印。歩ける時だけ、足元の輪と、上下に揺れる矢印で示す。
  const guide=mode==='explore'?D?.guide(s):null;

@@ -1,3 +1,6 @@
 * text=auto
 *.png binary
 *.wav binary
+# The generated story must match its sources byte-for-byte on Windows too.
+script/*.js text eol=lf
+episodes-data.js text eol=lf

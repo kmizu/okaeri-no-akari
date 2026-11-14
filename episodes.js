@@ -96,7 +96,8 @@
     const s = a.state,
       nextState = create(s.episode.chapter + 1, s.episode.route);
     nextState.courage = s.courage;
-    nextState.flags = { ...s.flags, ...nextState.flags };
+    nextState.flags = { ...s.flags, ...nextState.flags, ointmentGiven: true };
+    nextState.ointments = Math.max(s.ointments || 0, 2);
     nextState.memories = { ...s.memories };
     Object.assign(s, nextState);
     a.scene(s.scene, s.x, s.y);
@@ -282,7 +283,11 @@
     if (!s.episode) return false;
     if (root.OkaeriJourney?.handle(id, a)) return true;
     if (s.episode.chapter === 1 && id === 'koharu') {
-      a.talk(s.flags.lit ? D.chatter[1].koharuAfter : D.chatter[1].koharu);
+      a.talk(
+        s.flags.lit
+          ? (s.flags.ointmentBridge && D.chatter[1].koharuAfterOintment) || D.chatter[1].koharuAfter
+          : D.chatter[1].koharu
+      );
       return true;
     }
     if (s.episode.chapter === 1) {

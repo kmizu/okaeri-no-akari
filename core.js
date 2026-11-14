@@ -27,7 +27,8 @@
   const common = [
     { id: 'guard', name: '防御', cost: 0, desc: 'このターン受けるダメージを半減。' },
     { id: 'rescue', name: '手を貸す', cost: 0, desc: '倒れた相手をHP30％で起こす。' },
-    { id: 'herb', name: '薬草', cost: 0, desc: '味方一人のHPを45回復。冷えも解除。', target: 'ally' }
+    { id: 'herb', name: '薬草', cost: 0, desc: '味方一人のHPを45回復。冷えも解除。', target: 'ally' },
+    { id: 'ointment', name: '凍傷の軟膏', cost: 0, desc: '味方一人のHPを60・MPを2回復。冷えも解除。', target: 'ally' }
   ];
   // 第9話で選ぶ結末の一覧。結末を足す・変える時は、ここと台本（script/）だけを直す。
   //  select: 章選択での呼び名 / epilogue: 後日譚の呼び名（あれば後日譚つき） / flag: 旧来の結末フラグ
@@ -69,6 +70,7 @@
       turn: 1,
       gauge: 0,
       items: 3,
+      ...(options.ointments !== undefined ? { ointments: options.ointments } : {}),
       status: 'active',
       logs: [],
       ...(options.support ? { support: options.support } : {}),
@@ -147,6 +149,8 @@
       }
     if (!commands.team && order.filter(id => input.heroes[id].hp > 0 && commands[id]?.skill === 'herb').length > (input.items || 0))
       throw Error('薬草が足りません');
+    if (!commands.team && order.filter(id => input.heroes[id].hp > 0 && commands[id]?.skill === 'ointment').length > (input.ointments || 0))
+      throw Error('凍傷の軟膏が足りません');
     const b = clone(input),
       forecast = intentions(b),
       log = (b.logs = []);
@@ -163,7 +167,8 @@
         heroes: clone(b.heroes),
         enemies: clone(b.enemies),
         gauge: b.gauge,
-        items: b.items
+        items: b.items,
+        ...(b.ointments !== undefined ? { ointments: b.ointments } : {})
       });
     }
     const defending = new Set(),
@@ -250,6 +255,16 @@
         if (c.skill === 'herb') {
           b.items--;
           heal(c.target, 45, id);
+        }
+        if (c.skill === 'ointment') {
+          b.ointments--;
+          heal(c.target, 60, id);
+          const t = b.heroes[c.target];
+          if (t.hp > 0) {
+            const sb = t.sp;
+            t.sp = Math.min(t.maxSp, t.sp + 2);
+            if (t.sp > sb) emit(t.name + 'のMPが ' + (t.sp - sb) + ' 戻った。', null, id);
+          }
         }
         if (c.skill === 'cheer') heal('nina', 27, id);
         if (c.skill === 'buff') {
@@ -549,7 +564,9 @@
         'nightThree',
         'nightTouma',
         'nightNina',
-        'nightFriends'
+        'nightFriends',
+        'ointmentGiven',
+        'ointmentBridge'
       ])
         flags[key] = s.flags[key] === true;
       if (
@@ -602,6 +619,11 @@
         if (flags['night' + key[0].toUpperCase() + key.slice(1)] && !flags[requirement]) return null;
       if (s.pendingEvening && (!nightRequirements[s.pendingEvening] || !flags[nightRequirements[s.pendingEvening]] || s.scene !== 'house'))
         return null;
+      let ointments;
+      if (s.ointments !== undefined) {
+        if (!Number.isInteger(s.ointments) || s.ointments < 0 || s.ointments > 4) return null;
+        ointments = s.ointments;
+      }
       const fromKoharuRoom = s.scene === 'koharuRoom';
       return {
         ...(s.openingPrelude ? { openingPrelude: true } : {}),
@@ -609,6 +631,7 @@
         ...(journey ? { journey } : {}),
         ...(memories ? { memories } : {}),
         ...(episode ? { episode } : {}),
+        ...(ointments !== undefined ? { ointments } : {}),
         ...(s.pendingEvening ? { pendingEvening: s.pendingEvening } : {}),
         version: 1,
         scene: fromKoharuRoom ? 'house' : s.scene,

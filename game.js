@@ -52,6 +52,24 @@
       $('saveStatus').textContent = '保存できません。終了すると進行が失われます';
     }
   }
+  function gainItem(kind) {
+    if (kind === 'ointmentOpening') {
+      if (state.flags.ointmentGiven) return;
+      state.flags.ointmentGiven = true;
+      state.ointments = Math.min(4, (state.ointments || 0) + 2);
+      save();
+      updateHud();
+      toast('持ち物に「凍傷の軟膏 ×2」が入った');
+    } else if (kind === 'ointmentTopUp') {
+      state.flags.ointmentGiven = true;
+      if ((state.ointments || 0) < 2) {
+        state.ointments = 2;
+        save();
+        updateHud();
+        toast('持ち物の「凍傷の軟膏」を2個に補充してもらった');
+      }
+    }
+  }
   function toast(text) {
     $('toast').textContent = text;
     $('toast').hidden = false;
@@ -101,6 +119,11 @@
     $('objectiveText').textContent = (state.episode && OkaeriEpisodes.objective(state)) || S.objective(state);
     $('leadText').textContent = name(state.lead) + 'が先頭';
     $('leadDot').style.background = state.lead === 'touma' ? '#77b8b6' : '#cb8267';
+    const oint = state.ointments || 0,
+      hasOint = oint > 0;
+    $('bagText').textContent = state.flags.ointmentGiven || oint > 0 ? '持ち物 · 凍傷の軟膏 ×' + oint : '持ち物';
+    if (hasOint) $('bagButton').classList.add('has-item');
+    else $('bagButton').classList.remove('has-item');
     if (globalThis.OkaeriField?.names[state.scene]) {
       $('locationName').textContent = OkaeriField.names[state.scene];
     }
@@ -127,8 +150,39 @@
     Sfx?.ambient(mode === 'title' ? null : mode === 'battle' ? null : a.bed);
     if (mode === 'explore' && state.openingStage === undefined) travelMusic();
   }
+  function rpgTabsHtml(active) {
+    const oint = state.ointments || 0,
+      hasOint = state.flags.ointmentGiven || oint > 0,
+      tabs = [
+        ['menu', 'メニュー'],
+        ['bag', '持ち物' + (hasOint ? ' <small>×' + oint + '</small>' : '')],
+        ['journal', '旅の手帳'],
+        ['map', '地図']
+      ];
+    if (Stills?.gallery) tabs.push(['gallery', '思い出の絵']);
+    return (
+      '<div class="rpg-tabs" role="tablist" aria-label="旅のメニュー切り替え">' +
+      tabs
+        .map(
+          ([id, label]) =>
+            '<button type="button" role="tab" aria-selected="' +
+            (id === active) +
+            '" class="rpg-tab' +
+            (id === active ? ' is-active' : '') +
+            '" data-menu-tab="' +
+            id +
+            '">' +
+            label +
+            '</button>'
+        )
+        .join('') +
+      '</div>'
+    );
+  }
   function openModal(html, buttons, returnMode = mode) {
     Sfx?.play('page');
+    $('toast').hidden = true;
+    clearTimeout(toast.timer);
     modalReturn = returnMode;
     mode = 'modal';
     held = {};
@@ -143,6 +197,20 @@
         fn();
       };
       $('modalActions').append(b);
+    }
+    for (const tabBtn of $('modalContent').querySelectorAll?.('[data-menu-tab]') || []) {
+      tabBtn.onclick = () => {
+        const target = tabBtn.dataset.menuTab;
+        if (tabBtn.getAttribute('aria-selected') === 'true') return;
+        Sfx?.play('cursor');
+        closeModal();
+        if (target === 'menu') menu();
+        else if (target === 'bag') openBag();
+        else if (target === 'journal') journal();
+        else if (target === 'map') showMap();
+        else if (target === 'gallery')
+          Stills?.gallery((gHtml, gBtns) => openModal(rpgTabsHtml('gallery') + gHtml, gBtns, 'explore'), closeModal);
+      };
     }
     $('modal').hidden = false;
   }
@@ -220,6 +288,7 @@
     if (cue.still !== undefined) Stills?.show(cue.still);
     if (cue.intro !== undefined) Stills?.intro(cue.intro);
     if (cue.diagram !== undefined) Stills?.diagram?.(cue.diagram);
+    if (cue.item) gainItem(cue.item);
     if (cue.jingle) bgm.jingle?.(cue.jingle);
     for (const se of [].concat(cue.se || [])) Sfx?.play(se);
     if (m.mark && speaker) Sfx?.play('pop');
@@ -467,7 +536,12 @@
             ['サエ', '精霊は。'],
             ['nina', 'こごえモチと、氷の殻のヤドカリ。それから灯台の前に、枝角の番人が。みんな、温めたら帰っていきました。'],
             ['サエ', '手は。冷やしすぎてないかい。'],
-            ['nina', '橋の上で一回、指が動かなくなって。トウマに待ってもらって、温めてから締め直しました。'],
+            [
+              'nina',
+              f.ointmentBridge
+                ? '橋の上で一回、指が動かなくなって。コハルにもらった凍傷の軟膏を塗って、トウマに待ってもらって締め直しました。'
+                : '橋の上で一回、指が動かなくなって。トウマに待ってもらって、温めてから締め直しました。'
+            ],
             [
               'サエ',
               'うん。待てたなら上出来だ。……火を扱う者の指が止まるのは、考えものだね。手を温める者を、一人つけた方がいいかもしれない。'
@@ -749,32 +823,85 @@
         ]);
         return;
       }
-      talk(
-        [
+      const finishBridge = usedOintment =>
+        talk(
           [
-            '',
-            '谷にかかる「灯りの橋」。欄干の灯りが熱を伝えて、橋板の氷を溶かす仕掛けだ。\nその灯りが消えて、橋板は一面、薄氷に覆われていた。'
+            ...(usedOintment
+              ? [
+                  ['', '小瓶の蓋を開けて、かじかんだ指先に軟膏をすりこむ。乾いた薬草の甘い匂いが立った。', { se: 'item' }],
+                  ['nina', '……いち、にい、さん……じゅう。……あ、ほんとだ。指先までじんわり動く！　コハル、すごい……。', 'happy'],
+                  ['touma', '帰ったら、ちゃんと効いたって言ってやれ。……よし、締めるぞ。'],
+                  ['', '温まった指先で、ニナは最後の留め具をまっすぐ締め直した。']
+                ]
+              : [
+                  ['', 'ニナは手を引いて、指に息を吹きかけた。握って、開いて、もう一度。\nそれから、最後の留め具を締め直した。']
+                ]),
+            ['nina', 'できた！　火も、もう揺れてない。', 'happy', { se: 'chime' }],
+            ['nina', '私が先に渡って、向こうの柱も見てくるね。'],
+            ['touma', 'ああ。渡り終わるまで、こっちから足元を見てる。'],
+            ['nina', '……見ててくれるなら、落ち着いて歩けそう。渡ったら、今度は私が待ってるからね。']
           ],
-          ['nina', '火を足すだけじゃ、すぐまた消えちゃう。柱の中を通ってる芯の線が切れてるの。先に、そこをつなぎ直したい。'],
-          ['touma', '柱が傾かないように、俺が抱えておく。そこから留め具に手は届くか？'],
-          ['nina', '届く。……ほら見て、鞄。手袋のまま開いた！', 'happy'],
-          ['touma', '見せなくていい。早く出せ。'],
-          ['', 'トウマが灯柱を抱え、ニナが芯をつなぐ。\n橙色の火が線を走り、橋の薄氷がするするとほどけていく。', { se: 'flare' }],
-          ['nina', '……あと一つなんだけど。風で指がかじかんで、留め具がつかめない。', 'sweat'],
-          ['nina', 'トウマ、ごめん。少し待ってて。急いで締めたら、芯を挟んじゃう。'],
-          ['touma', '待つ。柱は持ってるから、手を温めろ。締める時に声をかけてくれればいい。'],
-          ['', 'ニナは手を引いて、指に息を吹きかけた。握って、開いて、もう一度。\nそれから、最後の留め具を締め直した。'],
-          ['nina', 'できた！　火も、もう揺れてない。', 'happy', { se: 'chime' }],
-          ['nina', '私が先に渡って、向こうの柱も見てくるね。'],
-          ['touma', 'ああ。渡り終わるまで、こっちから足元を見てる。'],
-          ['nina', '……見ててくれるなら、落ち着いて歩けそう。渡ったら、今度は私が待ってるからね。']
-        ],
-        () => {
-          f.repair = true;
-          save();
-          toast('灯りの橋を修理した');
-        }
-      );
+          () => {
+            f.repair = true;
+            save();
+            toast('灯りの橋を修理した');
+          }
+        );
+      const oint = state.ointments || 0;
+      if (oint > 0) {
+        let used = false;
+        talk(
+          [
+            [
+              '',
+              '谷にかかる「灯りの橋」。欄干の灯りが熱を伝えて、橋板の氷を溶かす仕掛けだ。\nその灯りが消えて、橋板は一面、薄氷に覆われていた。'
+            ],
+            ['nina', '火を足すだけじゃ、すぐまた消えちゃう。柱の中を通ってる芯の線が切れてるの。先に、そこをつなぎ直したい。'],
+            ['touma', '柱が傾かないように、俺が抱えておく。そこから留め具に手は届くか？'],
+            ['nina', '届く。……ほら見て、鞄。手袋のまま開いた！', 'happy'],
+            ['touma', '見せなくていい。早く出せ。'],
+            ['', 'トウマが灯柱を抱え、ニナが芯をつなぐ。\n橙色の火が線を走り、橋の薄氷がするするとほどけていく。', { se: 'flare' }],
+            ['nina', '……あと一つなんだけど。風で指がかじかんで、留め具がつかめない。', 'sweat'],
+            ['nina', 'トウマ、ごめん。少し待ってて。急いで締めたら、芯を挟んじゃう。'],
+            [
+              'touma',
+              '待つ。柱は持ってるから、急ぐな。……今朝コハルにもらった凍傷の軟膏、持ち物に入ってるだろ。',
+              [
+                [
+                  '「凍傷の軟膏」を使う（残り' + oint + '）',
+                  () => {
+                    state.ointments = Math.max(0, (state.ointments || 0) - 1);
+                    f.ointmentBridge = true;
+                    used = true;
+                    save();
+                    updateHud();
+                  }
+                ],
+                ['息を吹きかけて温める（軟膏を残す）', () => {}]
+              ]
+            ]
+          ],
+          () => finishBridge(used)
+        );
+      } else {
+        talk(
+          [
+            [
+              '',
+              '谷にかかる「灯りの橋」。欄干の灯りが熱を伝えて、橋板の氷を溶かす仕掛けだ。\nその灯りが消えて、橋板は一面、薄氷に覆われていた。'
+            ],
+            ['nina', '火を足すだけじゃ、すぐまた消えちゃう。柱の中を通ってる芯の線が切れてるの。先に、そこをつなぎ直したい。'],
+            ['touma', '柱が傾かないように、俺が抱えておく。そこから留め具に手は届くか？'],
+            ['nina', '届く。……ほら見て、鞄。手袋のまま開いた！', 'happy'],
+            ['touma', '見せなくていい。早く出せ。'],
+            ['', 'トウマが灯柱を抱え、ニナが芯をつなぐ。\n橙色の火が線を走り、橋の薄氷がするするとほどけていく。', { se: 'flare' }],
+            ['nina', '……あと一つなんだけど。風で指がかじかんで、留め具がつかめない。', 'sweat'],
+            ['nina', 'トウマ、ごめん。少し待ってて。急いで締めたら、芯を挟んじゃう。'],
+            ['touma', '待つ。柱は持ってるから、手を温めろ。締める時に声をかけてくれればいい。']
+          ],
+          () => finishBridge(false)
+        );
+      }
       return;
     }
     if (id === 'crab') {
@@ -894,7 +1021,10 @@
     fieldWin = onWin;
     setMusic('battle');
     battleOrigin = kind;
-    battle = C.newBattle(kind, D.companion(state) ? { support: 'koharu' } : {});
+    battle = C.newBattle(kind, {
+      ...(D.companion(state) ? { support: 'koharu' } : {}),
+      ...(state.flags.ointmentGiven || state.ointments !== undefined ? { ointments: state.ointments || 0 } : {})
+    });
     order = battle.heroes.koharu ? ['touma', 'nina', 'koharu'] : ['touma', 'nina'];
     commands = {};
     mode = 'battle';
@@ -935,6 +1065,7 @@
   }
   function victory() {
     travelMusic();
+    if (battle?.ointments !== undefined) state.ointments = battle.ointments;
     if (fieldWin) {
       const done = fieldWin;
       fieldWin = null;
@@ -1008,7 +1139,97 @@
             ];
     talk(lines);
   }
+  function bagSummaryHtml() {
+    const oint = state.ointments || 0,
+      items = [];
+    if (state.flags.ointmentGiven || oint > 0)
+      items.push([
+        '✦',
+        '凍傷の軟膏　× ' + oint,
+        oint > 0
+          ? 'コハルが調合した塗り薬。塗って十数えるとかじかんだ指が戻る。冷えきった作業場や、戦闘の「どうぐ」（味方一人のHP60・MP2回復＋冷え解除）で使えます。'
+          : '使いきった。三人の家のコハルの薬草棚を調べると補充できます。',
+        oint > 0 ? '使用可 · どうぐ' : '薬草棚で補充可',
+        oint > 0 ? 'is-featured' : 'is-empty'
+      ]);
+    items.push([
+      '❀',
+      '薬草（戦闘ごとに3包）',
+      '手当て袋の干し草。戦闘の「どうぐ」で味方一人のHPを45回復し、冷えも解除する。',
+      '戦闘用',
+      ''
+    ]);
+    if (state.flags.bread && !state.flags.rest)
+      items.push([
+        '◈',
+        '干しりんごの焼き菓子　× 2',
+        'パン屋のマロが包んでくれたおまけ。森の休憩小屋でのお昼に食べよう。',
+        '道中のお昼',
+        'is-featured'
+      ]);
+    if (state.flags.sewingFound && !state.flags.sewingReturned)
+      items.push([
+        '❖',
+        'エルナの針仕事帳',
+        '森の休憩小屋の道具箱で見つけた布張りの手帳。広場のエルナへ届けよう。',
+        '届けもの',
+        'is-featured'
+      ]);
+    if (state.memories?.gift === 'tea') items.push(['✧', '香りのいい薬草茶', '二人で選んだ贈り物。', '大切な品', '']);
+    if (state.memories?.gift === 'bookmark') items.push(['✧', '木彫りの栞', '二人で選んだ贈り物。', '大切な品', '']);
+    return (
+      '<div class="rpg-item-list">' +
+      items
+        .map(
+          ([icon, title, desc, badge, cls]) =>
+            '<div class="rpg-item' +
+            (cls ? ' ' + cls : '') +
+            '"><span class="rpg-item-icon" aria-hidden="true">' +
+            icon +
+            '</span><div class="rpg-item-body"><div class="rpg-item-head"><strong>' +
+            escape(title) +
+            '</strong>' +
+            (badge ? '<span class="rpg-badge">' + escape(badge) + '</span>' : '') +
+            '</div><p>' +
+            escape(desc) +
+            '</p></div></div>'
+        )
+        .join('') +
+      '</div>'
+    );
+  }
+  function openBag() {
+    if (mode === 'battle') {
+      toast('戦闘中はコマンドの「どうぐ」から使えます');
+      return;
+    }
+    if (mode === 'dialogue' || mode === 'opening' || mode === 'title') {
+      if (mode === 'dialogue') toast('会話が終わってから開けます');
+      return;
+    }
+    if (mode === 'modal') closeModal();
+    const oint = state.ointments || 0,
+      buttons = [];
+    if (oint > 0)
+      buttons.push([
+        '凍傷の軟膏を指に塗る（残り' + oint + '）',
+        () => {
+          state.ointments = Math.max(0, (state.ointments || 0) - 1);
+          save();
+          closeModal();
+          talk([
+            ['', '小瓶の蓋を開けると、乾かした薬草の甘い匂いが立った。\n指先に少しずつ塗って、コハルに言われた通りに十数える。', { se: 'item' }],
+            ['nina', '……いち、にい……じゅう。ほんとだ、指の先までぽかぽかする。', 'happy'],
+            ['touma', '手袋の中でも効いてるな。……あいつ、ずいぶん腕が上がった。']
+          ]);
+        },
+        true
+      ]);
+    buttons.push(['閉じる', closeModal, oint <= 0]);
+    openModal(rpgTabsHtml('bag') + '<span class="tag">ITEMS · 所持品</span><h2>持ち物</h2>' + bagSummaryHtml(), buttons, 'explore');
+  }
   function journal() {
+    if (mode === 'modal' && modalReturn === 'explore') closeModal();
     if (!['explore', 'title'].includes(mode)) return;
     if (mode === 'explore' && globalThis.OkaeriJourney?.active(state)) {
       const j = state.journey;
@@ -1028,15 +1249,18 @@
           }
         ]);
       openModal(
-        '<span class="tag">第6話の小旅行</span><h2>氷湖の迎え灯</h2><p>ミナモの迎え灯の光が弱くなり、夕方の便が港を見つけにくくなっています。現地の灯守の依頼で、二人が反射板と小屋の仕掛けを確かめに来ました。</p><p>' +
+        rpgTabsHtml('journal') +
+          '<span class="tag">JOURNEY · 第6話の小旅行</span><h2>氷湖の迎え灯</h2><p>ミナモの迎え灯の光が弱くなり、夕方の便が港を見つけにくくなっています。現地の灯守の依頼で、二人が反射板と小屋の仕掛けを確かめに来ました。</p><div class="rpg-quest"><small>現在の目的</small><strong>' +
           escape(OkaeriJourney.objective(state)) +
-          '</p><p>ユキネ → 氷湖の旧街道 → ミナモ → 古い灯守小屋 → 三人の家</p>' +
-          work.map(([k, label]) => '<p>' + (j[k] ? '✓ ' : '○ ') + label + '</p>').join('') +
-          '<h3>旅で知ったこと</h3>' +
+          '</strong></div><p class="rpg-route">ユキネ → 氷湖の旧街道 → ミナモ → 古い灯守小屋 → 三人の家</p><div class="rpg-step-grid">' +
+          work
+            .map(([k, label]) => '<div class="rpg-step' + (j[k] ? ' is-done' : '') + '"><span>' + (j[k] ? '✓' : '○') + '</span>' + label + '</div>')
+            .join('') +
+          '</div><h3>旅で知ったこと</h3>' +
           OkaeriJourney.notes(state)
             .map(n => '<p>' + escape(n) + '</p>')
             .join('') +
-          '<p>別行動中はQで交代。それぞれの場所と進み具合を保存します。</p>',
+          '<p class="rpg-note">別行動中はQで交代。それぞれの場所と進み具合を保存します。</p>',
         buttons,
         'explore'
       );
@@ -1056,20 +1280,34 @@
         ]);
       const overview = OkaeriEpisodesData.contexts?.[ep.chapter];
       openModal(
-        '<h2>' +
+        rpgTabsHtml('journal') +
+          '<span class="tag">JOURNAL · 旅の手帳</span><h2>' +
           OkaeriEpisodes.title(state) +
-          '</h2>' +
+          '</h2><div class="rpg-quest"><small>いま、すること</small><strong>' +
+          escape(OkaeriEpisodes.objective(state) || S.objective(state)) +
+          '</strong></div>' +
           (overview ? '<h3>今日の用事</h3><p>' + escape(overview) + '</p>' : '') +
-          '<p>' +
-          (OkaeriEpisodes.objective(state) || S.objective(state)) +
-          '</p>' +
+          '<h3>全10話の歩み</h3><div class="rpg-step-grid">' +
           OkaeriEpisodesData.titles
-            .map((t, i) => '<p>' + (i + 1 < ep.chapter ? '✓ ' : i + 1 === ep.chapter ? '→ ' : '○ ') + (i + 1) + '. ' + t + '</p>')
+            .map(
+              (t, i) =>
+                '<div class="rpg-step' +
+                (i + 1 < ep.chapter ? ' is-done' : i + 1 === ep.chapter ? ' is-current' : '') +
+                '"><span>' +
+                (i + 1 < ep.chapter ? '✓' : i + 1 === ep.chapter ? '▶' : '○') +
+                '</span>' +
+                (i + 1) +
+                '. ' +
+                t +
+                '</div>'
+            )
             .join('') +
+          '</div><h3>持ち物</h3>' +
+          bagSummaryHtml() +
           '<h3>二人の思い出</h3>' +
-          ((globalThis.OkaeriActivities?.notes(state) || []).map(n => '<p>◆ ' + escape(n) + '</p>').join('') ||
+          ((globalThis.OkaeriActivities?.notes(state) || []).map(n => '<div class="journal-step"><span>◆</span><div>' + escape(n) + '</div></div>').join('') ||
             '<p>二人で選んだことが、ここに残ります。</p>') +
-          '<p>リツ：町に戻った水番。ユラ：二人を幼い頃から知る診療所の先生。</p>',
+          '<p class="rpg-note">リツ：町に戻った水番。ユラ：二人を幼い頃から知る診療所の先生。</p>',
         buttons,
         'explore'
       );
@@ -1077,7 +1315,7 @@
     }
     if (mode === 'title') {
       openModal(
-        '<span class="tag">はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染。雪で消える道の方角を知らせ、魔獣を退ける「護りの灯火」の番をする、灯守（ひもり）です。トウマは木や金具の修理、ニナは火を扱う「灯術」が得意です。</p><p>二人の仕事と暮らしを、全10話でたどります。第9話で二人の関係を選ぶと、最終話が三通りに変わります。</p><p>操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代。Jの「旅の手帳」で、今日の用事と次の行き先を確かめられます。右上の「音」で、音楽と効果音が入ります。</p>',
+        '<span class="tag">GUIDE · はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染。雪で消える道の方角を知らせ、魔獣を退ける「護りの灯火」の番をする、灯守（ひもり）です。トウマは木や金具の修理、ニナは火を扱う「灯術」が得意です。</p><p>二人の仕事と暮らしを、全10話でたどります。第9話で二人の関係を選ぶと、最終話が三通りに変わります。</p><p class="rpg-note">操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代、Iで持ち物。Jの「旅の手帳」で今日の用事と次の行き先を確かめられます。右上の「音」で音楽と効果音が入ります。</p>',
         [['閉じる', closeModal, true]],
         'title'
       );
@@ -1108,10 +1346,15 @@
       ['festivalRibbon', '帰り結びを贈り合う']
     ];
     const html =
-      '<span class="tag">旅の手帳</span><h2>二人の灯守日誌</h2><p>' +
-      S.objective(state) +
-      '</p>' +
-      steps.map(([k, v]) => '<div class="journal-step"><span>' + (state.flags[k] ? '✓' : '○') + '</span>' + v + '</div>').join('') +
+      rpgTabsHtml('journal') +
+      '<span class="tag">JOURNAL · 旅の手帳</span><h2>二人の灯守日誌</h2><div class="rpg-quest"><small>いま、すること</small><strong>' +
+      escape(S.objective(state)) +
+      '</strong></div><div class="rpg-step-grid">' +
+      steps
+        .map(([k, v]) => '<div class="rpg-step' + (state.flags[k] ? ' is-done' : '') + '"><span>' + (state.flags[k] ? '✓' : '○') + '</span>' + v + '</div>')
+        .join('') +
+      '</div><h3>持ち物</h3>' +
+      bagSummaryHtml() +
       '<h3>町の人との寄り道</h3>' +
       OkaeriSideStories.notes(state)
         .map(
@@ -1131,7 +1374,7 @@
       (state.flags.rest ? '小屋で、二人のお昼を食べた。' : '森の小屋で、ひと休みできそう。') +
       '</p><p>' +
       (state.flags.canalRest ? '水番の休憩所で、次の人の薪を残した。' : '共同水路にも、小さな休憩所がある。') +
-      '</p><h3>二人の得意なこと</h3><p>トウマ：倒木を動かす / 崩し斬り・かばう<br>ニナ：灯りの修理 / 火花・回復<br>戦闘では毎回HP・SPが満タンで始まる試作仕様です。</p>';
+      '</p><h3>二人の得意なこと</h3><p class="rpg-note">トウマ：倒木を動かす / 崩し斬り・かばう<br>ニナ：灯りの修理 / 火花・回復<br>戦闘では毎回HP・SPが満タンで始まる試作仕様です。</p>';
     const btns = [['冒険に戻る', closeModal, true]];
     if (state.flags.lit && state.scene === 'forest')
       btns.push([
@@ -1152,9 +1395,46 @@
       toast('会話や戦闘が終わってから開けます');
       return;
     }
+    if (mode === 'modal' && modalReturn === 'explore') closeModal();
     if (mode === 'modal') return;
+    const withKoharu = Boolean(D.companion?.(state)),
+      oint = state.ointments || 0,
+      hasOint = state.flags.ointmentGiven || oint > 0;
     openModal(
-      '<span class="tag">ひと休み</span><h2>旅のメニュー</h2><p>進行はこの端末に自動保存されます。ブラウザーや開き方を変えると、保存は引き継がれません。</p>',
+      rpgTabsHtml('menu') +
+        '<span class="tag">CAMP MENU · ひと休み</span><h2>旅のメニュー</h2>' +
+        '<div class="rpg-banner"><div class="rpg-banner-meta"><span>' +
+        escape($('chapter').textContent || '') +
+        '</span><span>' +
+        escape($('weather').textContent || '') +
+        '</span></div><strong class="rpg-banner-place">' +
+        escape($('locationName').textContent || '') +
+        '</strong><div class="rpg-banner-obj"><small>いま、すること</small><span>' +
+        escape($('objectiveText').textContent || '') +
+        '</span></div></div>' +
+        '<h3>仲間と状態</h3><div class="rpg-party">' +
+        '<div class="rpg-member' +
+        (state.lead === 'touma' ? ' is-lead' : '') +
+        '"><span class="rpg-face face-touma" aria-hidden="true"></span><div class="rpg-member-info"><strong>トウマ <span class="rpg-role-pill">' +
+        (state.lead === 'touma' ? '先頭' : '同行') +
+        '</span></strong><small>剣と工作 · 灯守</small><div class="rpg-stat-row"><span>HP <b>120</b></span><span>MP <b>6</b></span></div></div></div>' +
+        '<div class="rpg-member' +
+        (state.lead === 'nina' ? ' is-lead' : '') +
+        '"><span class="rpg-face face-nina" aria-hidden="true"></span><div class="rpg-member-info"><strong>ニナ <span class="rpg-role-pill">' +
+        (state.lead === 'nina' ? '先頭' : '同行') +
+        '</span></strong><small>灯術と火 · 灯守</small><div class="rpg-stat-row"><span>HP <b>90</b></span><span>MP <b>8</b></span></div></div></div>' +
+        '<div class="rpg-member' +
+        (withKoharu ? ' is-lead' : '') +
+        '"><span class="rpg-face face-koharu" aria-hidden="true"></span><div class="rpg-member-info"><strong>コハル <span class="rpg-role-pill">' +
+        (withKoharu ? '同行中' : '薬師見習い') +
+        '</span></strong><small>' +
+        (withKoharu ? '薬と手当て · 後衛支援' : '三人の家 · 調合と手当て') +
+        '</small><div class="rpg-stat-row">' +
+        (withKoharu
+          ? '<span>HP <b>70</b></span><span>MP <b>10</b></span>'
+          : '<span>凍傷の軟膏 <b>' + (hasOint ? '×' + oint : '調合前') + '</b></span>') +
+        '</div></div></div></div>' +
+        '<p class="rpg-note">進行はこの端末に自動保存されます。ブラウザーや開き方を変えると、保存は引き継がれません。</p>',
       [
         ['戻る', closeModal, true],
         [
@@ -1167,6 +1447,23 @@
             $('titleScreen').hidden = false;
             $('hud').hidden = true;
             $('continueButton').hidden = !saved;
+          }
+        ],
+        [
+          '先頭を交代（' + name(state.lead === 'touma' ? 'nina' : 'touma') + 'へ）',
+          () => {
+            closeModal();
+            switchLead();
+          }
+        ],
+        [
+          sound ? '音：ON → OFF' : '音：OFF → ON',
+          async () => {
+            await toggleSound();
+            if (mode === 'modal') {
+              closeModal();
+              menu();
+            }
           }
         ]
       ],
@@ -1264,6 +1561,20 @@
           ]
         ],
         'explore'
+      );
+      return true;
+    }
+    if (id === 'koharuHerbs' && state.flags.ointmentGiven && (state.ointments || 0) < 2) {
+      state.ointments = 2;
+      save();
+      updateHud();
+      talk(
+        [
+          ['', '薬草と小瓶の棚。葉の形を描いた札が、一つずつ瓶に結んである。'],
+          ['touma', '見分けやすいように、絵にしたのか。'],
+          ['', '隅には二人分の手当て袋。減っていた「凍傷の軟膏」を、二人分（×2）補充しておいた。', { se: 'item' }]
+        ],
+        () => toast('持ち物の「凍傷の軟膏」が2個になった')
       );
       return true;
     }
@@ -1554,6 +1865,7 @@
   };
   $('nextDialogue').onclick = nextDialogue;
   $('leadButton').onclick = switchLead;
+  $('bagButton').onclick = openBag;
   $('interactButton').onclick = interact;
   $('interactPrompt').onclick = interact; // スマホでは、この札をそのまま押して調べられる
   $('journalButton').onclick = journal;
@@ -1569,7 +1881,13 @@
     if (!M) return;
     const svg = which === 'world' ? M.world(state || {}) : M.local(state || {});
     openModal(
-      '<div class="map-sheet" role="img" aria-label="' + (which === 'world' ? '世界の中のユキネの地図' : 'ユキネのまわりの地図') + '">' + svg + '</div>' + (which === 'world' ? M.lore() : ''),
+      (back === 'explore' ? rpgTabsHtml('map') : '') +
+        '<div class="map-sheet" role="img" aria-label="' +
+        (which === 'world' ? '世界の中のユキネの地図' : 'ユキネのまわりの地図') +
+        '">' +
+        svg +
+        '</div>' +
+        (which === 'world' ? M.lore() : ''),
       [
         [which === 'world' ? '町のまわりを見る' : '世界を見る', () => showMap(which === 'world' ? 'local' : 'world'), true],
         ['閉じる', closeModal]
@@ -1625,6 +1943,7 @@
       }
     }
     if (key === 'q') switchLead();
+    if (key === 'i') openBag();
     if (key === 'j') journal();
     if (key === 'm') showMap();
     if (key === 'Escape') {

@@ -29,7 +29,7 @@
 .combatant-condition{position:absolute;bottom:-37px;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;color:#fff6de;text-shadow:0 1px 3px #142c3b}.combatant-condition:empty{display:none}
 .battle-combatant.fallen-enemy{opacity:.15}.fallen-enemy .combatant-label,.fallen-enemy .foe-health,.fallen-enemy .combatant-condition{visibility:hidden}.battle-combatant.fallen-enemy:has(.effect-target){opacity:1}
 .classic-lower{display:grid;grid-template-columns:minmax(145px,22%) minmax(0,1fr) minmax(195px,27%);gap:8px;min-height:0}
-.classic-window{background:linear-gradient(130deg,#183b49f7,#102b3af7);border:1px solid #d9d6b975;border-radius:6px;box-shadow:inset 0 0 0 3px #10252f6b,0 2px 5px #06192366;min-width:0}
+.classic-window{background:linear-gradient(155deg,#183b49fa,#0e2533fc);border:1px solid #e9be7870;border-radius:9px;box-shadow:inset 0 0 0 1px #fff4dc17,inset 0 1px 0 #ffe6b32e,0 10px 28px #04131c80;min-width:0}
 .classic-menu{padding:10px 9px;overflow:auto}.classic-menu-title{font-size:10px;color:#e3c99f;letter-spacing:.15em;padding:0 8px 7px;margin:0 0 4px;border-bottom:1px solid #d5d6c426}
 .classic-options{display:flex;flex-direction:column;gap:1px}.classic-options .classic-command{position:relative;display:block;border:0;border-radius:3px;background:transparent;text-align:left;padding:4px 5px 4px 20px;font-size:13px;line-height:1.4;color:#f9f3e6;letter-spacing:.04em;min-height:25px}
 .classic-options .classic-command:focus,.classic-options .classic-command:hover{outline:none;color:#ffe4ad;background:#d7bf8721}.classic-options .classic-command:focus:before,.classic-options .classic-command:hover:before{content:'▸';position:absolute;left:6px;top:4px;color:#ffe1a0}

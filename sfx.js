@@ -227,6 +227,124 @@
     cheer() {
       for (let i = 0; i < 7; i++)
         tone(700 + Math.random() * 900, { type: 'triangle', at: i * 0.05 + Math.random() * 0.04, decay: 0.16, peak: 0.022 });
+    },
+    // ---- 戦闘の効果音 ----
+    cursor() {
+      tone(840, { type: 'triangle', attack: 0.003, decay: 0.04, peak: 0.028 });
+    },
+    encounter() {
+      burst({ attack: 0.02, decay: 0.34, peak: 0.09, type: 'bandpass', freq: 620, q: 1.1, slide: 2.6 });
+      tone(293.7, { type: 'triangle', decay: 0.16, peak: 0.07 });
+      tone(440, { type: 'triangle', at: 0.09, decay: 0.24, peak: 0.075 });
+    },
+    swing() {
+      burst({ attack: 0.008, decay: 0.14, peak: 0.075, type: 'bandpass', freq: 2100, q: 0.9, slide: 0.32 });
+      tone(320, { type: 'sine', decay: 0.1, peak: 0.035, slide: 0.45 });
+    },
+    slash() {
+      burst({ attack: 0.003, decay: 0.085, peak: 0.14, type: 'highpass', freq: 2400, slide: 0.45 });
+      tone(1280, { type: 'sawtooth', attack: 0.003, decay: 0.09, peak: 0.045, slide: 0.42 });
+      tone(138, { type: 'triangle', at: 0.012, decay: 0.14, peak: 0.14, slide: 0.46 });
+    },
+    heavySlash() {
+      burst({ attack: 0.003, decay: 0.12, peak: 0.16, type: 'bandpass', freq: 1900, q: 0.7, slide: 0.35 });
+      tone(1560, { type: 'sawtooth', attack: 0.003, decay: 0.13, peak: 0.055, slide: 0.38 });
+      tone(98, { type: 'triangle', at: 0.01, decay: 0.22, peak: 0.19, slide: 0.42 });
+      bell(880, 0.035, 0.02, 0.6);
+    },
+    cast() {
+      burst({ attack: 0.03, decay: 0.28, peak: 0.038, type: 'highpass', freq: 3200 });
+      for (const [f, at] of [
+        [523.3, 0],
+        [659.3, 0.06],
+        [784, 0.12]
+      ])
+        tone(f, { type: 'sine', at, attack: 0.012, decay: 0.2, peak: 0.042 });
+    },
+    fireHit() {
+      burst({ attack: 0.008, decay: 0.28, peak: 0.13, type: 'bandpass', freq: 1150, q: 0.75, slide: 2.1 });
+      for (let i = 0; i < 3; i++)
+        burst({ at: 0.03 + i * 0.055, decay: 0.05, peak: 0.08, type: 'highpass', freq: 2600 + i * 500 });
+      tone(240, { type: 'triangle', decay: 0.18, peak: 0.11, slide: 0.48 });
+    },
+    ringHit() {
+      burst({ attack: 0.015, decay: 0.32, peak: 0.065, type: 'bandpass', freq: 1600, q: 1.1, slide: 1.8 });
+      bell(587.3, 0.055, 0, 0.9);
+      bell(880, 0.048, 0.07, 1.1);
+    },
+    teamCharge() {
+      burst({ attack: 0.04, decay: 0.45, peak: 0.07, type: 'bandpass', freq: 850, q: 0.9, slide: 2.5 });
+      for (const [f, at] of [
+        [392, 0],
+        [523.3, 0.08],
+        [659.3, 0.16],
+        [784, 0.24]
+      ])
+        tone(f, { type: 'triangle', at, attack: 0.01, decay: 0.26, peak: 0.055 });
+    },
+    teamSlash() {
+      burst({ attack: 0.004, decay: 0.36, peak: 0.17, type: 'bandpass', freq: 1450, q: 0.65, slide: 1.9 });
+      tone(1760, { type: 'sawtooth', attack: 0.003, decay: 0.16, peak: 0.06, slide: 0.4 });
+      tone(88, { type: 'triangle', at: 0.01, decay: 0.28, peak: 0.2, slide: 0.45 });
+      bell(659.3, 0.06, 0.03, 1.4);
+      bell(987.8, 0.05, 0.1, 1.6);
+      bell(1318.5, 0.045, 0.18, 1.8);
+    },
+    heal() {
+      burst({ attack: 0.02, decay: 0.26, peak: 0.03, type: 'highpass', freq: 3600 });
+      for (const [f, at] of [
+        [523.3, 0],
+        [659.3, 0.07],
+        [784, 0.14],
+        [1046.5, 0.22]
+      ])
+        bell(f, 0.045, at, 0.95);
+    },
+    guard() {
+      tone(520, { type: 'triangle', attack: 0.003, decay: 0.09, peak: 0.065 });
+      tone(780, { type: 'sine', at: 0.025, attack: 0.003, decay: 0.11, peak: 0.045 });
+      tone(165, { type: 'triangle', decay: 0.11, peak: 0.08, slide: 0.75 });
+    },
+    enemyHit() {
+      burst({ attack: 0.004, decay: 0.14, peak: 0.14, type: 'bandpass', freq: 880, q: 0.65, slide: 0.38 });
+      tone(118, { type: 'triangle', attack: 0.004, decay: 0.19, peak: 0.17, slide: 0.44 });
+    },
+    coverHit() {
+      tone(640, { type: 'triangle', attack: 0.003, decay: 0.1, peak: 0.075 });
+      tone(960, { type: 'sine', at: 0.02, attack: 0.003, decay: 0.12, peak: 0.05 });
+      burst({ attack: 0.004, decay: 0.1, peak: 0.09, type: 'bandpass', freq: 1200, q: 0.8, slide: 0.5 });
+      tone(135, { type: 'triangle', decay: 0.14, peak: 0.11, slide: 0.55 });
+    },
+    iceBreak() {
+      burst({ attack: 0.003, decay: 0.09, peak: 0.13, type: 'highpass', freq: 3400 });
+      for (const [f, at] of [
+        [2093, 0],
+        [2637, 0.045],
+        [3136, 0.09],
+        [1760, 0.13]
+      ])
+        tone(f, { type: 'sine', at, attack: 0.002, decay: 0.14, peak: 0.045 });
+    },
+    bondLamp() {
+      bell(659.3, 0.055, 0, 1.2);
+      bell(987.8, 0.05, 0.1, 1.5);
+    },
+    victory() {
+      for (const [f, at, d] of [
+        [523.3, 0, 0.9],
+        [659.3, 0.1, 1.0],
+        [784, 0.2, 1.1],
+        [1046.5, 0.32, 1.8]
+      ])
+        bell(f, 0.06, at, d);
+    },
+    defeat() {
+      for (const [f, at] of [
+        [392, 0],
+        [349.2, 0.18],
+        [293.7, 0.36]
+      ])
+        tone(f, { type: 'triangle', at, attack: 0.015, decay: 0.36, peak: 0.06, slide: 0.96 });
     }
   };
   // 環境音: [フィルタ種別, 周波数, Q, 音量, ゆらぎの速さ, ゆらぎの深さ]

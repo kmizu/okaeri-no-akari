@@ -181,3 +181,163 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 .map-lore b{font-family:'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:1px}
 @media(min-width:900px) and (min-height:600px){.modal-card .map-lore p{font-size:15px}}
 @media(max-width:600px){.map-lore{columns:1}}
+
+/* ===== 持ち物（アイテム欄） ===== */
+.bag-hud{position:absolute;left:24px;bottom:64px;pointer-events:auto;background:#112d38ed;display:flex;align-items:center;gap:9px;font-size:12px;transition:opacity .35s,border-color .2s,transform .15s,background .15s}
+.bag-hud.has-item{border-color:#e9be7885}
+.bag-dot{width:10px;height:10px;border-radius:50%;background:#9fb4b0}
+.bag-hud.has-item .bag-dot{background:var(--gold);box-shadow:0 0 8px #e9be78aa}
+#stage:has(#dialogue:not([hidden])) .bag-hud{opacity:0;pointer-events:none}
+@media(max-width:600px){.bag-hud{left:12px;bottom:56px;padding:8px}}
+@media(min-width:900px) and (min-height:600px){.bag-hud{bottom:76px;font-size:16px;padding:11px 17px}.bag-hud kbd{font-size:12px}.bag-dot{width:14px;height:14px}}
+@media(max-width:600px) and (orientation:portrait){.bag-hud{top:calc(66.667cqw + 146px);left:8px;bottom:auto;font-size:14px;padding:9px 12px}}
+@media(max-height:520px) and (orientation:landscape){.bag-hud{left:8px;bottom:46px;font-size:12px;padding:7px 10px}}
+
+/* ===== 会話送りボタン拡大 & 現代RPG風メニューUI（2026-11-14） ===== */
+/* 1. 会話ウィンドウ & 大きく押しやすい「つづける / Enter」ボタン */
+.dialogue{border:1.5px solid #e7d9bd;box-shadow:0 16px 50px #0615228c,inset 0 1px 0 #fffc}
+.dialogue-body{display:flex;flex-direction:column;flex:1;min-width:0}
+#speaker:not(:empty){display:inline-flex;align-items:center;gap:6px;align-self:flex-start}
+#speaker:not(:empty)::before{content:'◆';font-size:.72em;color:#b8864b}
+#dialogueText{flex:1}
+#nextDialogue{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-left:auto;margin-top:8px;padding:10px 22px;min-height:44px;font-size:16px;font-weight:700;letter-spacing:.06em;border-radius:999px;background:linear-gradient(135deg,#264652,#162f39);color:#fbf3e2;border:1.5px solid #d7b16f;box-shadow:0 5px 16px #0b1f2840,inset 0 1px 0 #ffffff29;transition:transform .14s,background .15s,border-color .15s,box-shadow .15s}
+#nextDialogue:hover,#nextDialogue:focus-visible{background:linear-gradient(135deg,#315968,#1e3d49);border-color:#f3cf8d;color:#fff9ec;transform:translateY(-1px);box-shadow:0 7px 20px #0b1f2859,inset 0 1px 0 #ffffff3b}
+#nextDialogue:active{transform:translateY(1px)}
+#nextDialogue kbd{font-size:12px;font-weight:600;color:#ffe4ab;background:#0a1d26a6;border:1px solid #e9be7888;border-radius:5px;padding:2px 8px;margin-left:2px}
+#nextDialogue span{font-size:1.15em;color:#ffd98e;line-height:1}
+.dialogue.narration #nextDialogue{background:linear-gradient(135deg,#e9be7838,#b8833c2e);color:#fff6df;border-color:#ecc682cc;box-shadow:0 5px 18px #0007,inset 0 1px 0 #ffe9be36}
+.dialogue.narration #nextDialogue:hover,.dialogue.narration #nextDialogue:focus-visible{background:linear-gradient(135deg,#e9be7855,#c8924848);border-color:#ffe0a3}
+.dialogue.narration #nextDialogue kbd{color:#ffe6b3;background:#07161fb8;border-color:#e9be7888}
+#choices button{position:relative;padding-left:30px;border-radius:9px;background:linear-gradient(180deg,#fffdf8,#efe7d4);border:1.5px solid #b8a583;color:#263d40;font-weight:600;box-shadow:0 3px 10px #2b211317;transition:transform .12s,border-color .15s,background .15s}
+#choices button::before{content:'▸';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#b98544;opacity:.55;transition:opacity .15s,transform .15s}
+#choices button:hover,#choices button:focus-visible{background:linear-gradient(180deg,#fff9ec,#f7e5c1);border-color:#c99247;color:#1d3134;transform:translateX(2px)}
+#choices button:hover::before,#choices button:focus-visible::before{opacity:1;transform:translate(2px,-50%)}
+
+/* 2. ヘッダー・探索HUDの現代RPG風ガラス＆真鍮フレーム */
+.masthead nav{gap:8px}
+.masthead nav button{border-radius:999px;background:linear-gradient(180deg,#1a3a46d9,#0e242fe6);border:1px solid #dfd0ad3b;box-shadow:inset 0 1px 0 #ffffff1c,0 3px 10px #0005;letter-spacing:.06em;transition:transform .14s,background .15s,border-color .15s,box-shadow .15s}
+.masthead nav button:hover{background:linear-gradient(180deg,#244d5ce8,#143240f2);border-color:#e9be78b8;color:#fff6e2;transform:translateY(-1px);box-shadow:inset 0 1px 0 #ffe8ba33,0 5px 14px #0007}
+.masthead nav button kbd{background:#08172099;border-color:#e9be784d;color:#d6e3e1;border-radius:4px;padding:1px 6px}
+#menuButton{border-color:#e9be786b;background:linear-gradient(180deg,#274952e0,#142d38ed);color:#faefd9}
+.objective{background:linear-gradient(145deg,#13323feb,#0b202af2);border:1px solid #dfcfa842;border-left:3px solid var(--gold);border-radius:10px;box-shadow:0 10px 28px #0007,inset 0 1px 0 #ffffff18}
+.objective small{display:flex;align-items:center;gap:5px}
+.objective small::before{content:'✦';font-size:.9em}
+.lead,.bag-hud{border-radius:999px;background:linear-gradient(145deg,#153542f0,#0c222cf5);border:1px solid #dfcfa83d;box-shadow:0 8px 22px #0006,inset 0 1px 0 #ffffff1a}
+.lead:hover,.bag-hud:hover{background:linear-gradient(145deg,#1e4656f5,#112e3bf8);border-color:#e9be78aa;transform:translateY(-1px)}
+.lead kbd,.bag-hud kbd{background:#08172099;border-color:#e9be784d;border-radius:4px}
+#interactPrompt{background:linear-gradient(145deg,#193c4af2,#0e2530f7);border:1.5px solid #e9be78a6;box-shadow:0 10px 26px #0008,0 0 18px #e9be7829,inset 0 1px 0 #ffe9ba2e;font-weight:600;letter-spacing:.04em}
+
+/* 3. モーダル・キャンプメニュー・手帳・所持品ウィンドウ */
+.modal{background:radial-gradient(ellipse at 50% 35%,#0e2632cf,#051118eb);backdrop-filter:blur(8px)}
+.modal-card{position:relative;background:linear-gradient(165deg,#173743f8 0%,#0f2631fa 55%,#0b1d27fc 100%);border:1px solid #e9be7878;border-radius:14px;box-shadow:inset 0 0 0 1px #fff4dc17,inset 0 1px 0 #ffe6b338,0 28px 80px #000c;scrollbar-width:thin;scrollbar-color:#d4b07066 #0a1b23}
+.modal-card .tag{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;background:#e9be781c;border:1px solid #e9be784d;margin-bottom:8px;letter-spacing:.16em}
+.modal-card h2{padding-bottom:11px;background:linear-gradient(90deg,#e9be7899,#e9be7826 60%,transparent) left bottom/100% 1px no-repeat}
+.modal-card h3{display:flex;align-items:center;gap:8px;color:#f0d8a8;letter-spacing:.08em}
+.modal-card h3::before{content:'◆';font-size:.72em;color:var(--gold)}
+.modal-card .actions button{border-radius:9px;background:linear-gradient(180deg,#1d3f4ce6,#112934f0);border:1px solid #dfcfa845;box-shadow:inset 0 1px 0 #ffffff1a,0 4px 12px #0005;letter-spacing:.05em;transition:transform .13s,background .15s,border-color .15s,box-shadow .15s}
+.modal-card .actions button:hover{background:linear-gradient(180deg,#275262f0,#173644f5);border-color:#e9be78b5;color:#fff7e5;transform:translateY(-1px)}
+.modal-card .actions button.primary{background:linear-gradient(180deg,#f3cf8e,#ddaa5c);color:#1f2b27;border-color:#fae0ab;box-shadow:inset 0 1px 0 #fff9,0 5px 16px #0007;font-weight:700}
+.modal-card .actions button.primary:hover{background:linear-gradient(180deg,#fae0ab,#e8b96d);color:#17221f;border-color:#fff0cc}
+.title-actions button{border-radius:9px;background:linear-gradient(180deg,#193845d9,#0e232de6);border:1px solid #dfcfa842;box-shadow:inset 0 1px 0 #ffffff1c,0 6px 18px #0006;letter-spacing:.06em;transition:transform .14s,background .15s,border-color .15s}
+.title-actions button:hover{background:linear-gradient(180deg,#234c5ce6,#14313ff0);border-color:#e9be78b8;transform:translateX(3px)}
+.title-actions button.primary{background:linear-gradient(180deg,#f3cf8e,#ddaa5c);color:#1f2b27;border-color:#fae0ab;box-shadow:inset 0 1px 0 #fff9,0 6px 20px #0008}
+.title-actions button.primary:hover{background:linear-gradient(180deg,#fae0ab,#e8b96d)}
+
+/* タブバー */
+.rpg-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:5px;margin:-4px 0 18px;background:#081821c4;border:1px solid #e2d2ad2b;border-radius:11px}
+.rpg-tab{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 12px;font-size:13px;letter-spacing:.06em;border:1px solid transparent;border-radius:8px;background:transparent;color:#b2c6c7;transition:background .15s,color .15s,border-color .15s}
+.rpg-tab:hover{background:#ffffff10;color:#f7efe0;border-color:#e9be7845}
+.rpg-tab.is-active{background:linear-gradient(180deg,#29505e,#183542);border-color:#e9be7899;color:#fff4da;font-weight:700;box-shadow:0 3px 10px #0006,inset 0 1px 0 #ffe9ba2e}
+.rpg-tab small{display:inline-block;padding:1px 7px;border-radius:999px;background:#e9be782e;border:1px solid #e9be7859;color:#ffe2a6;font-size:.82em;line-height:1.35}
+.modal-card.map-card .rpg-tabs{margin:2px 2px 12px}
+
+/* キャンプメニュー：現在地バナー & パーティカード */
+.rpg-banner{padding:14px 18px;margin-bottom:6px;background:linear-gradient(135deg,#183a47cc,#0d222ce6);border:1px solid #e2d2ad33;border-left:3px solid var(--gold);border-radius:11px;box-shadow:inset 0 1px 0 #ffffff14}
+.rpg-banner-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;letter-spacing:.08em;color:#e7cfa0;margin-bottom:4px}
+.rpg-banner-place{display:block;font-family:'Yu Mincho','Hiragino Mincho ProN',serif;font-size:22px;letter-spacing:.14em;color:#fbf3e3;margin-bottom:9px}
+.rpg-banner-obj{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px solid #ffffff17;font-size:14px;color:#e5eeed}
+.rpg-banner-obj small{font-size:11px;letter-spacing:.12em;color:var(--gold);padding:2px 8px;border-radius:999px;background:#e9be781f;border:1px solid #e9be7845}
+.rpg-party{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.rpg-member{display:flex;align-items:center;gap:11px;padding:10px 12px;background:linear-gradient(145deg,#163541c9,#0d212be6);border:1px solid #d8e3df24;border-radius:11px;min-width:0}
+.rpg-member.is-lead{border-color:#e9be787a;background:linear-gradient(145deg,#214552db,#122b36ed);box-shadow:inset 0 1px 0 #ffe8b824}
+.rpg-face{flex:0 0 48px;width:48px;height:56px;border-radius:7px;border:1.5px solid #d5c1998c;background:url("assets/faces.png") 0 0/300% 200% no-repeat;box-shadow:0 3px 8px #0006}
+.rpg-face.face-nina{background-position:0 100%}
+.rpg-face.face-koharu{background:url("assets/koharu-faces.png") 0 0/500% 100% no-repeat}
+.rpg-member-info{flex:1;min-width:0}
+.rpg-member-info strong{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:15px;letter-spacing:.06em;color:#faf1df}
+.rpg-role-pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:1px 7px;border-radius:999px;background:#ffffff14;color:#d6e3e1;border:1px solid #ffffff24}
+.rpg-member.is-lead .rpg-role-pill{background:#e9be7829;color:#ffe2a6;border-color:#e9be7866}
+.rpg-member-info>small{display:block;font-size:11px;color:#adc2c3;margin:2px 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpg-stat-row{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#bdd0cf}
+.rpg-stat-row b{color:#fff3d6;font-weight:600}
+
+/* 所持品リスト・目的コールアウト・進行チップ */
+.rpg-item-list{display:flex;flex-direction:column;gap:9px;margin:8px 0 6px}
+.rpg-item{display:flex;align-items:flex-start;gap:13px;padding:12px 14px;background:linear-gradient(145deg,#163541bf,#0d222cd9);border:1px solid #dce6e224;border-radius:11px}
+.rpg-item.is-featured{border-color:#e9be7866;background:linear-gradient(145deg,#1f414dd6,#112934eb)}
+.rpg-item.is-empty{opacity:.75}
+.rpg-item-icon{flex:0 0 36px;width:36px;height:36px;display:grid;place-items:center;border-radius:9px;background:#e9be781f;border:1px solid #e9be7855;color:var(--gold);font-size:17px}
+.rpg-item-body{flex:1;min-width:0}
+.rpg-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.rpg-item-head strong{font-size:15px;letter-spacing:.04em;color:#fbf2df}
+.rpg-badge{font-size:11px;padding:2px 9px;border-radius:999px;background:#e9be7824;border:1px solid #e9be7859;color:#ffe1a4;letter-spacing:.05em}
+.rpg-item-body p{margin:0;font-size:13px;line-height:1.65;color:#c9d9d8}
+.rpg-quest{padding:11px 15px;margin:8px 0 14px;background:linear-gradient(90deg,#e9be7821,#e9be7808);border:1px solid #e9be7859;border-left:3px solid var(--gold);border-radius:10px}
+.rpg-quest small{display:block;font-size:11px;letter-spacing:.14em;color:var(--gold);margin-bottom:3px}
+.rpg-quest strong{display:block;font-size:16px;line-height:1.5;color:#fff4dc}
+.rpg-step-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0 6px}
+.rpg-step{display:flex;align-items:center;gap:9px;padding:8px 11px;background:#0c202ab8;border:1px solid #ffffff17;border-radius:8px;font-size:13px;color:#bacccb}
+.rpg-step span{color:#7f9c9f;font-weight:700;flex:none}
+.rpg-step.is-done{color:#d9e8e3;border-color:#8ec5b53b;background:#13313ab8}
+.rpg-step.is-done span{color:#9ad6c2}
+.rpg-step.is-current{color:#fff5dd;border-color:#e9be7888;background:linear-gradient(90deg,#e9be7829,#183844cc);font-weight:600}
+.rpg-step.is-current span{color:var(--gold)}
+.rpg-note{padding:10px 13px;margin-top:14px;background:#091922ad;border:1px solid #ffffff17;border-radius:9px;font-size:12px!important;line-height:1.65!important;color:#acc1c2!important}
+
+@media(min-width:900px) and (min-height:600px){
+ #nextDialogue{font-size:21px;padding:12px 30px;min-height:54px;gap:10px}
+ #nextDialogue kbd{font-size:15px;padding:3px 10px}
+ #choices button{padding-left:38px}
+ #choices button::before{left:15px}
+ .modal-card .rpg-tab{font-size:15px;padding:9px 14px}
+ .rpg-banner-meta{font-size:14px}
+ .rpg-banner-place{font-size:26px}
+ .rpg-banner-obj{font-size:16px}
+ .rpg-member-info strong{font-size:17px}
+ .rpg-member-info>small{font-size:12px}
+ .rpg-stat-row{font-size:13px}
+ .rpg-item-head strong{font-size:18px}
+ .rpg-badge{font-size:12px}
+ .rpg-item-body p{font-size:15px}
+ .rpg-quest small{font-size:12px}
+ .rpg-quest strong{font-size:19px}
+ .rpg-step{font-size:15px;padding:9px 13px}
+ .rpg-note{font-size:14px!important}
+}
+@media(max-width:720px){
+ .rpg-party{grid-template-columns:1fr}
+ .rpg-step-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px) and (orientation:portrait){
+ #nextDialogue{font-size:17px;padding:11px 24px;min-height:46px}
+ .modal-card .rpg-tabs{flex-wrap:nowrap;overflow-x:auto;gap:3px;padding:4px;margin:0 0 10px;scrollbar-width:none}
+ .modal-card .rpg-tab{font-size:11.5px;padding:6px 7px;white-space:nowrap}
+ .modal-card .rpg-tab small{padding:0 5px;font-size:.8em}
+ .rpg-banner{padding:9px 12px;margin-bottom:4px}
+ .rpg-banner-place{font-size:17px;margin-bottom:5px}
+ .rpg-banner-obj{padding-top:6px;font-size:13px}
+ .rpg-party{gap:6px;margin-bottom:8px}
+ .rpg-member{padding:7px 10px;gap:9px}
+ .rpg-face{flex:0 0 40px;width:40px;height:46px}
+ .rpg-member-info strong{font-size:14px}
+ .rpg-member-info>small{margin:1px 0 3px}
+ .rpg-note{margin-top:8px;padding:8px 10px}
+ .rpg-item{padding:10px 11px;gap:10px}
+ .rpg-item-head strong{font-size:15px}
+ .rpg-item-body p{font-size:13px}
+}
+@media(max-height:520px) and (orientation:landscape){
+ #nextDialogue{font-size:14px;padding:7px 18px;min-height:36px}
+ .modal-card .rpg-tab{font-size:12px;padding:5px 9px}
+ .rpg-party{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+}

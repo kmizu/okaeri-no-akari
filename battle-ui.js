@@ -27,6 +27,39 @@
   }
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const nm = id => (id === 'touma' ? 'トウマ' : id === 'koharu' ? 'コハル' : 'ニナ');
+  const sfx = name => root.OkaeriSfx?.play(name);
+  function beatSounds(beat, before, guards) {
+    if (!beat) return { start: [], impact: [] };
+    const start =
+      beat.kind === 'team'
+        ? ['teamCharge']
+        : beat.kind === 'guard'
+          ? ['guard']
+          : beat.kind === 'spell' || beat.kind === 'support'
+            ? ['cast']
+            : beat.kind === 'strike'
+              ? ['swing']
+              : [];
+    const types = new Set((beat.effects || []).map(e => e.type)),
+      impact = [];
+    if (types.has('team')) impact.push('teamSlash');
+    else if (types.has('fire')) impact.push('fireHit');
+    else if (types.has('ring')) impact.push('ringHit');
+    else if (types.has('slash')) {
+      const heavy =
+        /崩し斬り|灯返し/.test(beat.label || '') ||
+        beat.effects.some(e => before?.enemies?.[e.enemy]?.broken > 0) ||
+        Boolean(beat.actor && before?.heroes?.[beat.actor]?.buff > 0);
+      impact.push(heavy ? 'heavySlash' : 'slash');
+    } else if (types.has('heal')) impact.push('heal');
+    else if (types.has('hurt')) {
+      const guarded = beat.effects.some(e => e.type === 'hurt' && (e.covered || guards?.[e.hero]));
+      impact.push(guarded ? 'coverHit' : 'enemyHit');
+    }
+    if (beat.events?.some(e => /氷殻が溶けた/.test(e.message))) impact.push('iceBreak');
+    if (beat.events?.some(e => /二人の息が合った/.test(e.message))) impact.push('bondLamp');
+    return { start, impact };
+  }
   function buildBeats(outcome, commands = {}) {
     const legacy = !outcome.events?.length,
       events = legacy ? (outcome.logs || []).map(message => ({ message })) : outcome.events,
@@ -148,7 +181,7 @@
       if (subject.ice) list.push({ key: 'ice', glyph: '❄', label: '氷の殻', help: '物理攻撃を軽減。火花で溶かせます' });
       if (subject.broken) list.push({ key: 'broken', glyph: '✦', label: '体勢崩れ', help: '次に受ける一撃が1.5倍' });
     } else {
-      if (subject.chill) list.push({ key: 'chill', glyph: '❄', label: '冷え', help: '攻撃力が低下。回復や薬草で解除できます' });
+      if (subject.chill) list.push({ key: 'chill', glyph: '❄', label: '冷え', help: '攻撃力が低下。回復や薬草・凍傷の軟膏で解除できます' });
       if (subject.buff) list.push({ key: 'buff', glyph: '✧', label: '灯りの剣', help: '次の一撃が1.5倍になり、氷も溶かします' });
       if (guard)
         list.push({
@@ -188,6 +221,7 @@
       this.phase = 'root';
       this.flow = new CommandFlow(b.heroes);
       this.message = b.turn === 1 ? b.enemies.map(e => e.name).join(' と ') + 'が あらわれた！' : '二人の行動を選ぼう';
+      if (b.turn === 1) sfx('encounter');
       this.render();
     }
     button(label, fn, disabled = false, desc = '', target = null) {
@@ -196,7 +230,10 @@
       b.textContent = label;
       b.disabled = disabled;
       b.className = 'classic-command';
-      b.onclick = fn;
+      b.onclick = () => {
+        if (label !== 'もどる' && label !== 'にげる') sfx('confirm');
+        fn();
+      };
       b.onfocus = () => {
         if (desc) {
           const d = this.el.querySelector('.classic-description');
@@ -206,7 +243,10 @@
       };
       b.onmousemove = () => { // 置きっぱなしのマウスに選択を奪われないよう、実際に動かした時だけ反応する
         if (document.activeElement === b) return;
-        if (!b.disabled) b.focus({ preventScroll: true });
+        if (!b.disabled) {
+          sfx('cursor');
+          b.focus({ preventScroll: true });
+        }
       };
       return b;
     }
@@ -396,12 +436,17 @@
           'にげる',
           () => {
             if (b.kind === 'beast') {
+              sfx('guard');
               this.message = '背を向ければ、灯喰いは小屋へ向かう。ここで押し返すしかない！';
               this.render();
             } else if (b.kind === 'guardian') {
+              sfx('guard');
               this.message = '番人を落ち着かせなければ 灯台へ進めない！';
               this.render();
-            } else this.callbacks.onEscape();
+            } else {
+              sfx('cancel');
+              this.callbacks.onEscape();
+            }
           },
           false,
           '通常の戦闘からは確実に離脱できます。'
@@ -421,7 +466,7 @@
         add('もどる', () => this.back());
       } else if (this.phase === 'skills') {
         title.textContent = nm(actor) + ' · ' + (actor === 'nina' ? 'じゅもん' : actor === 'koharu' ? 'くすり' : 'とくぎ');
-        for (const a of OkaeriCore.actions(actor).filter(a => !['attack', 'tend', 'guard', 'herb'].includes(a.id))) {
+        for (const a of OkaeriCore.actions(actor).filter(a => !['attack', 'tend', 'guard', 'herb', 'ointment'].includes(a.id))) {
           const unavailable =
             this.b.heroes[actor].sp < a.cost ||
             (a.id === 'rescue' && this.b.heroes[actor === 'touma' ? 'nina' : 'touma'].hp > 0) ||
@@ -434,6 +479,16 @@
         const reserved = Object.values(this.flow.commands).filter(c => c.skill === 'herb').length,
           remaining = b.items - reserved;
         add('薬草　× ' + remaining, () => this.selectSkill('herb'), remaining <= 0, '味方一人のHPを45回復。二人で共有。');
+        if (b.ointments !== undefined) {
+          const rOint = Object.values(this.flow.commands).filter(c => c.skill === 'ointment').length,
+            remOint = b.ointments - rOint;
+          add(
+            '凍傷の軟膏　× ' + remOint,
+            () => this.selectSkill('ointment'),
+            remOint <= 0,
+            'コハル特製。味方一人のHP60・MP2回復、冷えも解除。'
+          );
+        }
         add('もどる', () => this.back());
       } else if (this.phase === 'target') {
         title.textContent = this.selected.name;
@@ -475,15 +530,31 @@
       if (this.phase === 'target') {
         for (const node of this.el.querySelectorAll('[data-field-enemy]:not(:disabled)')) {
           const id = Number(node.dataset.fieldEnemy);
-          node.onclick = () => this.commit({ skill: this.selected.id, target: id });
+          node.onclick = () => {
+            sfx('confirm');
+            this.commit({ skill: this.selected.id, target: id });
+          };
           node.onfocus = () => this.highlight('enemy', id);
-          node.onmousemove = () => document.activeElement !== node && node.focus({ preventScroll: true });
+          node.onmousemove = () => {
+            if (document.activeElement !== node) {
+              sfx('cursor');
+              node.focus({ preventScroll: true });
+            }
+          };
         }
         for (const node of this.el.querySelectorAll('[data-field-hero]:not(:disabled)')) {
           const id = node.dataset.fieldHero;
-          node.onclick = () => this.commit({ skill: this.selected.id, target: id });
+          node.onclick = () => {
+            sfx('confirm');
+            this.commit({ skill: this.selected.id, target: id });
+          };
           node.onfocus = () => this.highlight('hero', id);
-          node.onmousemove = () => document.activeElement !== node && node.focus({ preventScroll: true });
+          node.onmousemove = () => {
+            if (document.activeElement !== node) {
+              sfx('cursor');
+              node.focus({ preventScroll: true });
+            }
+          };
         }
       }
       const enabled = [...options.querySelectorAll('button:not(:disabled)')];
@@ -518,6 +589,7 @@
           this.phase = 'root';
         }
       } else return;
+      sfx('cancel');
       this.message = this.phase === 'root' ? 'どうする？' : nm(this.flow.actor) + 'は どうする？';
       this.render();
     }
@@ -573,6 +645,7 @@
       }
     }
     presentBeat(beat) {
+      for (const s of beatSounds(beat, this.b, this.guards).start) sfx(s);
       const caption = this.el.querySelector('.classic-message');
       caption.textContent = beat.label;
       caption.classList.add('is-transient');
@@ -669,6 +742,7 @@
       this.updateField();
       this.el.querySelector('.battle-live').textContent = beat.events.map(e => e.message).join(' ');
       if (fast) return;
+      for (const s of beatSounds(beat, before, { ...beforeGuards, ...this.guards }).impact) sfx(s);
       const stack = new Map(),
         show = (id, text, type) => {
           const row = stack.get(id) || 0;
@@ -782,6 +856,7 @@
         this.begin(b);
         return;
       }
+      sfx(b.status === 'victory' ? 'victory' : 'defeat');
       this.phase = 'outcome';
       this.message = b.status === 'victory' ? '精霊たちは落ち着いた。道を進もう。' : '二人とも動けない……。もう一度、挑めます。';
       this.render();
@@ -796,14 +871,16 @@
       if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) {
         const buttons = [...this.el.querySelectorAll('.classic-options button:not(:disabled)')],
           i = buttons.indexOf(document.activeElement),
-          delta = ['arrowup', 'arrowleft'].includes(k) ? -1 : 1;
-        buttons[(i + delta + buttons.length) % buttons.length]?.focus();
+          delta = ['arrowup', 'arrowleft'].includes(k) ? -1 : 1,
+          next = buttons[(i + delta + buttons.length) % buttons.length];
+        if (next && next !== document.activeElement) sfx('cursor');
+        next?.focus();
       } else if (['enter', ' ', 'z'].includes(k)) {
         if (this.el.contains(document.activeElement) && document.activeElement.tagName === 'BUTTON') document.activeElement.click();
       } else if (k === 'x' || k === 'escape') this.back();
     }
   }
-  const api = { CommandFlow, BattleUI, buildBeats, ResultPlayback, conditionList, headAnchor };
+  const api = { CommandFlow, BattleUI, buildBeats, beatSounds, ResultPlayback, conditionList, headAnchor };
   if (typeof module !== 'undefined') module.exports = api;
   root.OkaeriBattle = api;
 })(globalThis);

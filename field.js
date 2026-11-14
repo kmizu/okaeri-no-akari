@@ -191,15 +191,18 @@
         ]),
         true
       );
-    if (id === 'valeStream')
+    if (id === 'valeStream') {
+      root.OkaeriCore?.rpgFullHeal?.(s);
+      a.save();
       return (
         a.talk([
-          ['', '小川から、細い湯気が上がっている。手を入れると、ぬるい。'],
+          ['', '小川から、細い湯気が上がっている。手を入れると、じんわり温かく疲れがほどけた（HP・MP全回復）。'],
           ['nina', 'ここで手を洗ったら、町まで冷えずに帰れそう。'],
           ['touma', '……帰りに、水筒に詰めていくか。']
         ]),
         true
       );
+    }
     if (id === 'valeStone')
       return (
         a.talk([

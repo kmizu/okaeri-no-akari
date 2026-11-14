@@ -180,6 +180,7 @@
     if (kind === 'enemy') {
       if (subject.ice) list.push({ key: 'ice', glyph: '❄', label: '氷の殻', help: '物理攻撃を軽減。火花で溶かせます' });
       if (subject.broken) list.push({ key: 'broken', glyph: '✦', label: '体勢崩れ', help: '次に受ける一撃が1.5倍' });
+      if (subject.charged) list.push({ key: 'charged', glyph: '⚡', label: '黒吹雪（大技準備）', help: '火花・崩し斬り・灯火の一閃で突進を阻止できます' });
     } else {
       if (subject.chill) list.push({ key: 'chill', glyph: '❄', label: '冷え', help: '攻撃力が低下。回復や薬草・凍傷の軟膏で解除できます' });
       if (subject.buff) list.push({ key: 'buff', glyph: '✧', label: '灯りの剣', help: '次の一撃が1.5倍になり、氷も溶かします' });
@@ -380,8 +381,11 @@
           );
         })
         .join('');
+      const placeLabel = b.kind === 'alphaBeast' ? '風待ちの丘・頂上決戦' : b.kind === 'beast' ? '風待ちの丘・尾根道' : '雪の帰り道';
       return (
-        '<div class="classic-arena" aria-label="雪道の戦場。右手前にトウマとニナ、左奥に精霊たち"><div class="battle-terrain" aria-hidden="true"></div><div class="battle-scene-heading"><span class="battle-place">雪の帰り道</span><div class="classic-battle-info">TURN ' +
+        '<div class="classic-arena" aria-label="雪道の戦場。右手前にトウマとニナ、左奥に精霊たち"><div class="battle-terrain" aria-hidden="true"></div><div class="battle-scene-heading"><span class="battle-place">' +
+        placeLabel +
+        '</span><div class="classic-battle-info">TURN ' +
         (['result', 'outcome'].includes(this.phase) ? this.outcome.turn - 1 : b.turn) +
         '<span>息ぴったり <b>' +
         ('●'.repeat(b.gauge) + '○'.repeat(3 - b.gauge)) +
@@ -435,7 +439,11 @@
         add(
           'にげる',
           () => {
-            if (b.kind === 'beast') {
+            if (b.kind === 'alphaBeast' || b.enemies.some(e => e.boss)) {
+              sfx('guard');
+              this.message = '丘の灯台を背にしている──ここからは一歩も退けない！';
+              this.render();
+            } else if (b.kind === 'beast') {
               sfx('guard');
               this.message = '背を向ければ、灯喰いは小屋へ向かう。ここで押し返すしかない！';
               this.render();
@@ -524,7 +532,7 @@
         if (b.status === 'victory') add('冒険へもどる', () => this.callbacks.onVictory());
         else {
           add('もう一度 挑む', () => this.callbacks.onRetry());
-          add('道へもどる', () => this.callbacks.onEscape());
+          if (!b.enemies.some(e => e.boss)) add('道へもどる', () => this.callbacks.onEscape());
         }
       }
       if (this.phase === 'target') {
@@ -858,7 +866,14 @@
       }
       sfx(b.status === 'victory' ? 'victory' : 'defeat');
       this.phase = 'outcome';
-      this.message = b.status === 'victory' ? '精霊たちは落ち着いた。道を進もう。' : '二人とも動けない……。もう一度、挑めます。';
+      this.message =
+        b.status === 'victory'
+          ? b.enemies.some(e => e.boss)
+            ? '宿敵『隻眼の大灯喰い』を北の峰へと退けた！'
+            : b.enemies.some(e => e.beast)
+              ? '魔獣を山の尾根へと押し返した！'
+              : '精霊たちは落ち着いた。道を進もう。'
+          : '二人とも動けない……。体勢を立て直して、もう一度挑めます。';
       this.render();
     }
     key(e) {

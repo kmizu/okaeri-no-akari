@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 require('../story.js');require('../chapters.js');const C=require('../core.js');
 require('../episodes-data.js');require('../episode-activities.js');require('../episodes.js');
 const E=global.OkaeriEpisodes;
-const stops=[[2,2,'ritsuReturn'],[4,0,'yuraRounds'],[6,2,'unsentLetter'],[8,3,'stormThanks']];
+const stops=[[2,2,'ritsuReturn'],[4,0,'yuraRounds'],[6,2,'unsentLetter'],[8,4,'stormThanks']];
 function harness(chapter,step){
  const state=E.create(chapter);state.episode.step=step;const event=E.current(state);
  state.scene=event.scene;if(event.lead)state.lead=event.lead;

@@ -22,7 +22,8 @@ function handle(id,a){
  }
  if(id==='canalCrab'){talk([['nina','この子も、カップを家にしてるんだ。'],['touma','水が止まって、帰れなくなったんだな。'],['nina','氷をほどこう。水路が流れたら、きっと戻れる。']],()=>startBattle('crab'));return true;}
  if(id==='canalRest'){
-  if(f.canalRest){talk([['','並んだカップの跡が、木のベンチにうっすら残っている。'],['nina','帰りにも、ここで休もうね。']]);return true;}
+  root.OkaeriCore?.rpgFullHeal?.(s);save();
+  if(f.canalRest){talk([['','水番の休憩所で温かい湯を飲み、全員のHPとMPが全回復した。'],['nina','帰りにも、ここで休もうね。']]);return true;}
   talk([['','水番の休憩所。壁には「次の人のために、薪を二本」と書かれていた。'],['touma','二本、足しておこう。'],['nina','こういうの、誰が最初に始めたんだろうね。'],['touma','寒かった人じゃないか。次の人も寒いだろうって。'],['','ニナはうなずいて、二人のカップを火のそばに置いた。'],['nina','昔さ、雪の日にここで迎えを待ったの、覚えてる？'],['touma','ニナが泣いて、俺が平気なふりをした日？'],['nina','泣いてない。……ちょっとだけ。'],['touma','俺も、ちょっと怖かった。'],['nina','今は？'],['touma','帰り道、分かるから。'],['nina','私は、二人だから。',null,'shy'],['','トウマは薪を一本動かした。返事を考えている間にも、耳が少し熱くなった。']],()=>{done('canalRest');s.courage=Math.min(3,s.courage+1);save();toast('手帳に「次の人の薪」を残した');});return true;
  }
  if(id==='regulator'){

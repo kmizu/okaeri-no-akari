@@ -34,7 +34,100 @@
     bgm = new OkaeriMusic();
   let openingFilm = null,
     typing = null,
-    talkSerial = 0;
+    talkSerial = 0,
+    roamers = [],
+    lastRoamTick = 0,
+    roamGraceUntil = 0,
+    nextRoamId = 1;
+  const nowMs = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
+  function syncRoamers() {
+    if (W) W.roamers = roamers;
+  }
+  function spawnRoamers() {
+    roamers = [];
+    syncRoamers();
+    const pool = C.ROAM_POOLS?.[state.scene];
+    if (!pool) return;
+    if (state.scene === 'forest' && !state.flags.mochi && !(state.episode && (state.episode.chapter > 1 || state.episode.step > 2))) return;
+    if (state.episode && globalThis.OkaeriEpisodes?.current(state)?.solo) return;
+    if (globalThis.OkaeriEpisodes?.playingEpilogue?.()) return;
+    const objs = S.activeObjects(state),
+      candidates = [];
+    for (let y = 2; y <= 14; y++) {
+      for (let x = 1; x <= 22; x++) {
+        if (!S.walkable(state, x, y)) continue;
+        if (Math.hypot(x - state.x, y - state.y) < 4) continue;
+        if (objs.some(o => Math.hypot(x - o.x, y - o.y) < 2.2)) continue;
+        candidates.push([x, y]);
+      }
+    }
+    if (!candidates.length) return;
+    const usablePool = pool.filter(p => p.kind !== 'pack' || state.episode?.chapter >= 8 || state.flags.hillLit),
+      want = Math.min(3, Math.max(1, Math.floor(candidates.length / 9))),
+      picked = [];
+    let seed = (state.scene.charCodeAt(0) * 31 + state.x * 17 + state.y * 13 + (C.ensureRpg?.(state)?.lv || 1) * 7) >>> 0;
+    const rand = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    for (let tries = 0; tries < 40 && picked.length < want; tries++) {
+      const [cx, cy] = candidates[Math.floor(rand() * candidates.length)];
+      if (picked.some(r => Math.hypot(r.x - cx, r.y - cy) < 4.2)) continue;
+      const spec = usablePool[picked.length % usablePool.length];
+      picked.push({ id: nextRoamId++, scene: state.scene, ...spec, x: cx, y: cy });
+    }
+    roamers = picked;
+    syncRoamers();
+  }
+  function checkRoamerTouch(t = nowMs()) {
+    if (mode !== 'explore' || t < roamGraceUntil || !roamers.length) return false;
+    const hit = roamers.find(r => r.scene === state.scene && Math.hypot(r.x - state.x, r.y - state.y) < 0.85);
+    if (!hit) return false;
+    startBattle(
+      hit.kind,
+      () => {
+        roamers = roamers.filter(r => r.id !== hit.id);
+        syncRoamers();
+      },
+      { roamer: true }
+    );
+    return true;
+  }
+  function tickRoamers(t) {
+    if (mode !== 'explore' || !roamers.length || t - lastRoamTick < 920) return;
+    lastRoamTick = t;
+    const objs = S.activeObjects(state),
+      steps = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+        [0, 0]
+      ];
+    for (const r of roamers) {
+      if (r.scene !== state.scene) continue;
+      const valid = steps.filter(([dx, dy]) => {
+        if (dx === 0 && dy === 0) return true;
+        const nx = r.x + dx,
+          ny = r.y + dy;
+        if (!S.walkable(state, nx, ny)) return false;
+        if (objs.some(o => Math.hypot(nx - o.x, ny - o.y) < 1.8)) return false;
+        if (roamers.some(o => o !== r && o.x === nx && o.y === ny)) return false;
+        if (t < roamGraceUntil && Math.hypot(nx - state.x, ny - state.y) < 2) return false;
+        return true;
+      });
+      if (!valid.length) continue;
+      let choice;
+      if (r.beast && t >= roamGraceUntil && Math.hypot(r.x - state.x, r.y - state.y) <= 5.5) {
+        choice = valid.sort((a, b) => Math.hypot(r.x + a[0] - state.x, r.y + a[1] - state.y) - Math.hypot(r.x + b[0] - state.x, r.y + b[1] - state.y))[0];
+      } else {
+        choice = valid[Math.floor(Math.random() * valid.length)];
+      }
+      r.x += choice[0];
+      r.y += choice[1];
+    }
+    checkRoamerTouch(t);
+  }
   const name = id => (id === 'touma' ? 'トウマ' : id === 'nina' ? 'ニナ' : id);
   const escape = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   let saved = null;
@@ -162,6 +255,7 @@
       tabs = [
         ['menu', 'メニュー'],
         ['bag', '持ち物' + (hasOint ? ' <small>×' + oint + '</small>' : '')],
+        ['craft', '強化・調合'],
         ['journal', '旅の手帳'],
         ['map', '地図']
       ];
@@ -212,6 +306,7 @@
         closeModal();
         if (target === 'menu') menu();
         else if (target === 'bag') openBag();
+        else if (target === 'craft') openCraft();
         else if (target === 'journal') journal();
         else if (target === 'map') showMap();
         else if (target === 'gallery')
@@ -497,6 +592,7 @@
   function start(s, fromSave, key = normalSaveKey) {
     saveKey = key;
     state = s;
+    C.ensureRpg?.(state);
     mode = 'explore';
     hideChapterCard();
     $('titleScreen').hidden = true;
@@ -505,6 +601,7 @@
     $('battleScreen').hidden = true;
     $('dialogue').hidden = true;
     $('openingFilm').hidden = true;
+    spawnRoamers();
     renderer.reset(state);
     updateHud();
     canvas.focus();
@@ -556,6 +653,7 @@
     travelMusic();
     state.x = x;
     state.y = y;
+    spawnRoamers();
     renderer.reset(state);
     route = [];
     save();
@@ -840,9 +938,11 @@
       return;
     }
     if (id === 'rest') {
+      C.rpgFullHeal?.(state);
+      save();
       if (f.rest) {
         talk([
-          ['', '炉には、まだ穏やかな火が残っている。二人は飲み物を温めて、ひと息ついた。', { se: 'fire' }],
+          ['', '炉には、まだ穏やかな火が残っている。温かい湯でひと息つき、全員のHPとMPが全回復した。', { se: 'fire' }],
           ['nina', 'あったかい……。もうちょっとだけ、ね。']
         ]);
         return;
@@ -1121,14 +1221,17 @@
     }
   }
   let classicBattle = null;
-  let fieldWin = null; // 寄り道の精霊を落ち着かせたあとに呼ぶ
-  function startBattle(kind, onWin = null) {
+  let fieldWin = null; // 寄り道や徘徊シンボル精霊を落ち着かせたあとに呼ぶ
+  function startBattle(kind, onWin = null, opts = {}) {
     fieldWin = onWin;
     setMusic('battle');
     battleOrigin = kind;
+    if (opts.retry) C.rpgFullHeal?.(state);
+    const rpg = C.ensureRpg?.(state);
     battle = C.newBattle(kind, {
       ...(D.companion(state) ? { support: 'koharu' } : {}),
-      ...(state.flags.ointmentGiven || state.ointments !== undefined ? { ointments: state.ointments || 0 } : {})
+      ...(state.flags.ointmentGiven || state.ointments !== undefined ? { ointments: state.ointments || 0 } : {}),
+      ...(rpg ? { rpg, fullHeal: !!opts.retry } : {})
     });
     order = battle.heroes.koharu ? ['touma', 'nina', 'koharu'] : ['touma', 'nina'];
     commands = {};
@@ -1143,9 +1246,13 @@
           resolve(team);
         },
         onVictory: victory,
-        onRetry: () => startBattle(battleOrigin, fieldWin),
+        onRetry: () => startBattle(battleOrigin, fieldWin, { retry: true }),
         onEscape: () => {
           fieldWin = null;
+          if (battle?.ointments !== undefined) state.ointments = battle.ointments;
+          C.rpgSyncAfterBattle?.(state, battle, false);
+          roamGraceUntil = nowMs() + 2600;
+          save();
           travelMusic();
           $('battleScreen').hidden = true;
           mode = 'explore';
@@ -1171,20 +1278,32 @@
   function victory() {
     travelMusic();
     if (battle?.ointments !== undefined) state.ointments = battle.ointments;
+    const reward = C.rpgSyncAfterBattle ? C.rpgSyncAfterBattle(state, battle, true) : null,
+      dropStr = reward?.drops?.map(d => d.name + '×' + d.qty).join('・') || '',
+      rewardMsg = reward
+        ? (reward.leveledUp ? '★ Lv.' + reward.lv + ' に上がった（HP・MP全回復）！ ' : 'EXP +' + reward.exp + ' ') +
+          (dropStr ? '／ 入手：' + dropStr : '')
+        : '';
+    roamGraceUntil = nowMs() + 1400;
     if (fieldWin) {
       const done = fieldWin;
       fieldWin = null;
+      save();
       closeModal();
       $('battleScreen').hidden = true;
       mode = 'explore';
       updateHud();
       done();
+      if (rewardMsg) toast(rewardMsg);
       return;
     }
     if (state.episode && OkaeriEpisodes.current(state)?.battle) {
+      save();
       $('battleScreen').hidden = true;
       mode = 'explore';
       OkaeriEpisodes.won(episodeApi());
+      if (!roamers.length) spawnRoamers();
+      if (rewardMsg) toast(rewardMsg);
       return;
     }
     if (state.scene === 'hill') {
@@ -1194,11 +1313,14 @@
       state.flags.hillGuardian = true;
       save();
       updateHud();
-      talk([
-        ['', '枝角の番人は、ゆっくり雪の上に伏せた。荒れていた灯りが、穏やかに戻っている。'],
-        ['nina', '待っててね。すぐに、灯台をともすから。'],
-        ['touma', '今度は俺たちが、帰り道を守る。']
-      ]);
+      talk(
+        [
+          ['', '枝角の番人は、ゆっくり雪の上に伏せた。荒れていた灯りが、穏やかに戻っている。'],
+          ['nina', '待っててね。すぐに、灯台をともすから。'],
+          ['touma', '今度は俺たちが、帰り道を守る。']
+        ],
+        () => rewardMsg && toast(rewardMsg)
+      );
       return;
     }
     if (state.scene === 'canal') {
@@ -1208,17 +1330,21 @@
       state.flags.canalCrab = true;
       save();
       updateHud();
-      talk([
-        ['', 'ヤドカリは、温まった水の中へそっと降りていった。'],
-        ['nina', '帰る場所、見つかったね。'],
-        ['touma', '俺たちも、水を家まで連れていこう。']
-      ]);
+      talk(
+        [
+          ['', 'ヤドカリは、温まった水の中へそっと降りていった。'],
+          ['nina', '帰る場所、見つかったね。'],
+          ['touma', '俺たちも、水を家まで連れていこう。']
+        ],
+        () => rewardMsg && toast(rewardMsg)
+      );
       return;
     }
     closeModal();
     $('battleScreen').hidden = true;
     mode = 'explore';
     state.flags[battle.kind] = true;
+    if (battle.kind === 'mochi' && !roamers.length) spawnRoamers();
     save();
     updateHud();
     const lines =
@@ -1242,10 +1368,12 @@
               ['', '巣の中で、小鳥が一声鳴いた。番人は灯台の前から退き、森の奥へ歩いていく。', { se: 'chime' }],
               ['nina', 'さあ、私たちの番。灯りをともそう。']
             ];
-    talk(lines);
+    talk(lines, () => rewardMsg && toast(rewardMsg));
   }
   function bagSummaryHtml() {
     const oint = state.ointments || 0,
+      rpg = C.ensureRpg?.(state),
+      herbs = rpg ? rpg.herbs : 3,
       items = [];
     if (state.flags.ointmentGiven || oint > 0)
       items.push([
@@ -1253,17 +1381,23 @@
         '凍傷の軟膏　× ' + oint,
         oint > 0
           ? 'コハルが調合した塗り薬。塗って十数えるとかじかんだ指が戻る。冷えきった作業場や、戦闘の「どうぐ」（味方一人のHP60・MP2回復＋冷え解除）で使えます。'
-          : '使いきった。三人の家のコハルの薬草棚を調べると補充できます。',
-        oint > 0 ? '使用可 · どうぐ' : '薬草棚で補充可',
+          : '使いきった。家の薬草棚を調べるか、「強化・調合」タブで素材から作れます。',
+        oint > 0 ? '使用可 · どうぐ' : '薬草棚・調合で補充可',
         oint > 0 ? 'is-featured' : 'is-empty'
       ]);
     items.push([
       '❀',
-      '薬草（戦闘ごとに3包）',
-      '手当て袋の干し草。戦闘の「どうぐ」で味方一人のHPを45回復し、冷えも解除する。',
-      '戦闘用',
-      ''
+      '薬草　× ' + herbs,
+      '手当て袋の干し草。戦闘中や移動中に味方のHPを45回復する。「強化・調合」で増やせます（休憩時は最低3包まで補充）。',
+      '回復 · どうぐ',
+      herbs > 0 ? '' : 'is-empty'
     ]);
+    if (rpg?.mats && Object.values(rpg.mats).some(v => v > 0)) {
+      const matText = Object.entries(C.MATERIALS || {})
+        .map(([k, m]) => m.icon + ' ' + m.name + '×' + (rpg.mats[k] || 0))
+        .join('　');
+      items.push(['◈', '採取・討伐素材', matText + '（「強化・調合」タブで装備の手入れや薬作りに使えます）', '素材袋', '']);
+    }
     if (state.flags.bread && !state.flags.rest)
       items.push([
         '◈',
@@ -1314,6 +1448,9 @@
     }
     if (mode === 'modal') closeModal();
     const oint = state.ointments || 0,
+      rpg = C.ensureRpg ? C.ensureRpg(state) : null,
+      st = rpg && C.rpgStats ? C.rpgStats(rpg) : null,
+      hurt = rpg && st && (rpg.hp.touma < st.touma.max || rpg.hp.nina < st.nina.max || rpg.hp.koharu < st.koharu.max),
       buttons = [];
     if (oint > 0)
       buttons.push([
@@ -1331,7 +1468,181 @@
         true
       ]);
     buttons.push(['閉じる', closeModal, oint <= 0]);
+    if (hurt && rpg.herbs > 0)
+      buttons.push([
+        '薬草で手当て（全員HP+45・残り' + rpg.herbs + '）',
+        () => {
+          const res = C.rpgUseHerbField(state);
+          if (!res.ok) {
+            toast(res.reason);
+            return;
+          }
+          Sfx?.play('item');
+          save();
+          updateHud();
+          openBag();
+          toast('薬草で手当てした（全員HP+45・MP+1）');
+        }
+      ]);
+    buttons.push([
+      '強化・調合へ',
+      () => {
+        closeModal();
+        openCraft();
+      }
+    ]);
     openModal(rpgTabsHtml('bag') + '<span class="tag">ITEMS · 所持品</span><h2>持ち物</h2>' + bagSummaryHtml(), buttons, 'explore');
+  }
+  function openCraft(feedback = '') {
+    if (mode === 'battle') {
+      toast('戦闘中は開けません');
+      return;
+    }
+    if (mode === 'dialogue' || mode === 'opening' || mode === 'title') {
+      if (mode === 'dialogue') toast('会話が終わってから開けます');
+      return;
+    }
+    if (mode === 'modal') closeModal();
+    const rpg = C.ensureRpg(state),
+      st = C.rpgStats(rpg),
+      nextExp = C.rpgNextExp(rpg.lv),
+      costLabel = cost =>
+        Object.entries(cost)
+          .filter(([, n]) => n > 0)
+          .map(([k, n]) => C.MATERIALS[k].icon + ' ' + C.MATERIALS[k].name + '×' + n + '（所持' + (rpg.mats[k] || 0) + '）')
+          .join(' ／ '),
+      fullParty =
+        rpg.hp.touma >= st.touma.max &&
+        rpg.hp.nina >= st.nina.max &&
+        rpg.hp.koharu >= st.koharu.max &&
+        rpg.sp.touma >= st.touma.maxSp &&
+        rpg.sp.nina >= st.nina.maxSp &&
+        rpg.sp.koharu >= st.koharu.maxSp;
+    const matHtml =
+      '<div class="rpg-mat-bar">' +
+      Object.entries(C.MATERIALS)
+        .map(([k, m]) => '<div class="rpg-mat-chip"><span>' + m.icon + '</span>' + escape(m.name) + '<b>×' + (rpg.mats[k] || 0) + '</b></div>')
+        .join('') +
+      '</div>';
+    const upgHtml =
+      '<div class="rpg-craft-grid">' +
+      Object.values(C.UPGRADES)
+        .map(u => {
+          const rank = rpg.gear[u.id] || 0,
+            maxed = rank >= u.max,
+            cost = maxed ? {} : u.cost(rank),
+            can = !maxed && C.rpgCanAfford(rpg.mats, cost);
+          return (
+            '<div class="rpg-craft-card' +
+            (can ? ' can-make' : '') +
+            '"><div class="rpg-craft-info"><strong>' +
+            u.icon +
+            ' ' +
+            escape(u.name) +
+            ' <span class="rpg-badge">+' +
+            rank +
+            ' / +' +
+            u.max +
+            '</span></strong><p>' +
+            escape(u.desc) +
+            '</p><div class="rpg-craft-cost">' +
+            (maxed ? '最大まで手入れ済み' : '必要素材：' + escape(costLabel(cost))) +
+            '</div></div><button type="button" class="rpg-craft-btn" data-upgrade="' +
+            u.id +
+            '"' +
+            (can ? '' : ' disabled') +
+            '>' +
+            (maxed ? '最大' : '+' + (rank + 1) + ' に強化') +
+            '</button></div>'
+          );
+        })
+        .join('') +
+      '</div>';
+    const recHtml =
+      '<div class="rpg-craft-grid">' +
+      Object.values(C.RECIPES)
+        .map(r => {
+          const capped =
+              (r.id === 'herbPack' && rpg.herbs >= 12) ||
+              (r.id === 'ointmentCraft' && (state.ointments || 0) >= 4) ||
+              (r.id === 'warmTea' && fullParty),
+            can = !capped && C.rpgCanAfford(rpg.mats, r.cost);
+          return (
+            '<div class="rpg-craft-card' +
+            (can ? ' can-make' : '') +
+            '"><div class="rpg-craft-info"><strong>' +
+            r.icon +
+            ' ' +
+            escape(r.name) +
+            '</strong><p>' +
+            escape(r.desc) +
+            '</p><div class="rpg-craft-cost">必要素材：' +
+            escape(costLabel(r.cost)) +
+            '</div></div><button type="button" class="rpg-craft-btn" data-craft="' +
+            r.id +
+            '"' +
+            (can ? '' : ' disabled') +
+            '>' +
+            (capped ? (r.id === 'warmTea' ? '満タン' : '上限') : '調合する') +
+            '</button></div>'
+          );
+        })
+        .join('') +
+      '</div>';
+    openModal(
+      rpgTabsHtml('craft') +
+        '<span class="tag">WORKSHOP · 手入れと調合</span><h2>装備強化・薬調合</h2>' +
+        '<div class="rpg-lv-strip"><strong>灯守 Lv.' +
+        rpg.lv +
+        '</strong><span>' +
+        (nextExp ? '次のLvまで ' + (nextExp - rpg.exp) + ' EXP（' + rpg.exp + ' / ' + nextExp + '）' : '最大Lv到達') +
+        '</span><span>剣技×' +
+        st.atkMult +
+        ' · 灯術×' +
+        st.magMult +
+        ' · 被ダメ×' +
+        st.defMult +
+        '</span></div>' +
+        (feedback ? '<p class="rpg-note">✦ ' + escape(feedback) + '</p>' : '') +
+        matHtml +
+        '<h3>トウマの装備手入れ</h3>' +
+        upgHtml +
+        '<h3>コハルの薬調合（薬草×' +
+        rpg.herbs +
+        ' ／ 軟膏×' +
+        (state.ointments || 0) +
+        '）</h3>' +
+        recHtml +
+        '<p class="rpg-note">森・水路・丘・谷・古道を歩き回る精霊や魔獣と戦うと、EXPと手入れ素材が手に入ります（Cキーでいつでも開けます）。</p>',
+      [['閉じる', closeModal, true]],
+      'explore'
+    );
+    for (const btn of $('modalContent').querySelectorAll?.('[data-upgrade]') || []) {
+      btn.onclick = () => {
+        const res = C.rpgUpgrade(state, btn.dataset.upgrade);
+        if (!res.ok) {
+          toast(res.reason);
+          return;
+        }
+        Sfx?.play('chime');
+        save();
+        updateHud();
+        openCraft(res.name + ' を +' + res.rank + ' に手入れした！');
+      };
+    }
+    for (const btn of $('modalContent').querySelectorAll?.('[data-craft]') || []) {
+      btn.onclick = () => {
+        const res = C.rpgCraft(state, btn.dataset.craft);
+        if (!res.ok) {
+          toast(res.reason);
+          return;
+        }
+        Sfx?.play('item');
+        save();
+        updateHud();
+        openCraft(res.name + ' を調合した！');
+      };
+    }
   }
   function journal() {
     if (mode === 'modal' && modalReturn === 'explore') closeModal();
@@ -1479,7 +1790,7 @@
       (state.flags.rest ? '小屋で、二人のお昼を食べた。' : '森の小屋で、ひと休みできそう。') +
       '</p><p>' +
       (state.flags.canalRest ? '水番の休憩所で、次の人の薪を残した。' : '共同水路にも、小さな休憩所がある。') +
-      '</p><h3>二人の得意なこと</h3><p class="rpg-note">トウマ：倒木を動かす / 崩し斬り・かばう<br>ニナ：灯りの修理 / 火花・回復<br>戦闘では毎回HP・SPが満タンで始まる試作仕様です。</p>';
+      '</p><h3>二人の得意なこと</h3><p class="rpg-note">トウマ：倒木を動かす / 崩し斬り・かばう<br>ニナ：灯りの修理 / 火花・回復<br>HP・MPは戦闘後も引き継がれ、休憩小屋・診療所・自宅の炉や寝床で全回復します。Cキーで装備強化・薬調合も開けます。</p>';
     const btns = [['冒険に戻る', closeModal, true]];
     if (state.flags.lit && state.scene === 'forest')
       btns.push([
@@ -1504,7 +1815,69 @@
     if (mode === 'modal') return;
     const withKoharu = Boolean(D.companion?.(state)),
       oint = state.ointments || 0,
-      hasOint = state.flags.ointmentGiven || oint > 0;
+      hasOint = state.flags.ointmentGiven || oint > 0,
+      rpg = C.ensureRpg(state),
+      st = C.rpgStats(rpg),
+      nextExp = C.rpgNextExp(rpg.lv),
+      hurt = rpg.hp.touma < st.touma.max || rpg.hp.nina < st.nina.max || (withKoharu && rpg.hp.koharu < st.koharu.max),
+      hpBar = (cur, max) =>
+        '<div class="rpg-hp-mini"><i style="width:' + Math.max(0, Math.min(100, Math.round((cur / max) * 100))) + '%"></i></div>';
+    const menuBtns = [
+      ['戻る', closeModal, true],
+      [
+        'タイトルへ',
+        () => {
+          closeModal();
+          save();
+          mode = 'title';
+          setMusic('opening');
+          $('titleScreen').hidden = false;
+          $('hud').hidden = true;
+          $('continueButton').hidden = !saved;
+        }
+      ],
+      [
+        '先頭を交代（' + name(state.lead === 'touma' ? 'nina' : 'touma') + 'へ）',
+        () => {
+          closeModal();
+          switchLead();
+        }
+      ],
+      [
+        '強化・調合を開く',
+        () => {
+          closeModal();
+          openCraft();
+        }
+      ]
+    ];
+    if (hurt && rpg.herbs > 0)
+      menuBtns.push([
+        '薬草で手当て（残り' + rpg.herbs + '包）',
+        () => {
+          const res = C.rpgUseHerbField(state);
+          if (!res.ok) {
+            toast(res.reason);
+            return;
+          }
+          Sfx?.play('item');
+          save();
+          updateHud();
+          closeModal();
+          menu();
+          toast('薬草で手当てした（全員HP+45・MP+1）');
+        }
+      ]);
+    menuBtns.push([
+      sound ? '音：ON → OFF' : '音：OFF → ON',
+      async () => {
+        await toggleSound();
+        if (mode === 'modal') {
+          closeModal();
+          menu();
+        }
+      }
+    ]);
     openModal(
       rpgTabsHtml('menu') +
         '<span class="tag">CAMP MENU · ひと休み</span><h2>旅のメニュー</h2>' +
@@ -1517,65 +1890,70 @@
         '</strong><div class="rpg-banner-obj"><small>いま、すること</small><span>' +
         escape($('objectiveText').textContent || '') +
         '</span></div></div>' +
+        '<div class="rpg-lv-strip"><strong>灯守 Lv.' +
+        rpg.lv +
+        '</strong><span>' +
+        (nextExp ? 'EXP ' + rpg.exp + ' / ' + nextExp : '最大Lv') +
+        '</span><span>剣+' +
+        rpg.gear.sword +
+        ' · 灯杖+' +
+        rpg.gear.staff +
+        ' · 外套+' +
+        rpg.gear.coat +
+        ' ／ 薬草×' +
+        rpg.herbs +
+        '</span></div>' +
         '<h3>仲間と状態</h3><div class="rpg-party">' +
         '<div class="rpg-member' +
         (state.lead === 'touma' ? ' is-lead' : '') +
         '"><span class="rpg-face face-touma" aria-hidden="true"></span><div class="rpg-member-info"><strong>トウマ <span class="rpg-role-pill">' +
         (state.lead === 'touma' ? '先頭' : '同行') +
-        '</span></strong><small>剣と工作 · 灯守</small><div class="rpg-stat-row"><span>HP <b>120</b></span><span>MP <b>6</b></span></div></div></div>' +
+        '</span></strong><small>剣と工作 · 灯守</small>' +
+        hpBar(rpg.hp.touma, st.touma.max) +
+        '<div class="rpg-stat-row"><span>HP <b>' +
+        rpg.hp.touma +
+        '/' +
+        st.touma.max +
+        '</b></span><span>MP <b>' +
+        rpg.sp.touma +
+        '/' +
+        st.touma.maxSp +
+        '</b></span></div></div></div>' +
         '<div class="rpg-member' +
         (state.lead === 'nina' ? ' is-lead' : '') +
         '"><span class="rpg-face face-nina" aria-hidden="true"></span><div class="rpg-member-info"><strong>ニナ <span class="rpg-role-pill">' +
         (state.lead === 'nina' ? '先頭' : '同行') +
-        '</span></strong><small>灯術と火 · 灯守</small><div class="rpg-stat-row"><span>HP <b>90</b></span><span>MP <b>8</b></span></div></div></div>' +
+        '</span></strong><small>灯術と火 · 灯守</small>' +
+        hpBar(rpg.hp.nina, st.nina.max) +
+        '<div class="rpg-stat-row"><span>HP <b>' +
+        rpg.hp.nina +
+        '/' +
+        st.nina.max +
+        '</b></span><span>MP <b>' +
+        rpg.sp.nina +
+        '/' +
+        st.nina.maxSp +
+        '</b></span></div></div></div>' +
         '<div class="rpg-member' +
         (withKoharu ? ' is-lead' : '') +
         '"><span class="rpg-face face-koharu" aria-hidden="true"></span><div class="rpg-member-info"><strong>コハル <span class="rpg-role-pill">' +
         (withKoharu ? '同行中' : '薬師見習い') +
         '</span></strong><small>' +
         (withKoharu ? '薬と手当て · 後衛支援' : '三人の家 · 調合と手当て') +
-        '</small><div class="rpg-stat-row">' +
+        '</small>' +
+        (withKoharu ? hpBar(rpg.hp.koharu, st.koharu.max) : '') +
+        '<div class="rpg-stat-row">' +
         (withKoharu
-          ? '<span>HP <b>70</b></span><span>MP <b>10</b></span>'
+          ? '<span>HP <b>' + rpg.hp.koharu + '/' + st.koharu.max + '</b></span><span>MP <b>' + rpg.sp.koharu + '/' + st.koharu.maxSp + '</b></span>'
           : '<span>凍傷の軟膏 <b>' + (hasOint ? '×' + oint : '調合前') + '</b></span>') +
         '</div></div></div></div>' +
-        '<p class="rpg-note">進行はこの端末に自動保存されます。ブラウザーや開き方を変えると、保存は引き継がれません。</p>',
-      [
-        ['戻る', closeModal, true],
-        [
-          'タイトルへ',
-          () => {
-            closeModal();
-            save();
-            mode = 'title';
-            setMusic('opening');
-            $('titleScreen').hidden = false;
-            $('hud').hidden = true;
-            $('continueButton').hidden = !saved;
-          }
-        ],
-        [
-          '先頭を交代（' + name(state.lead === 'touma' ? 'nina' : 'touma') + 'へ）',
-          () => {
-            closeModal();
-            switchLead();
-          }
-        ],
-        [
-          sound ? '音：ON → OFF' : '音：OFF → ON',
-          async () => {
-            await toggleSound();
-            if (mode === 'modal') {
-              closeModal();
-              menu();
-            }
-          }
-        ]
-      ],
+        '<p class="rpg-note">進行はこの端末に自動保存されます。休憩小屋・診療所・自宅の炉や寝床でHP・MPが全回復します。</p>',
+      menuBtns,
       mode
     );
   }
   function evening(key) {
+    C.rpgFullHeal?.(state);
     state.pendingEvening = key;
     scene('house', 11, 11);
     talk(S.nightScenes[key], () => {
@@ -1655,6 +2033,10 @@
         ]
       };
       if (clinicLines[id]) {
+        if (id === 'clinicBed' || id === 'clinicStove') {
+          C.rpgFullHeal?.(state);
+          save();
+        }
         talk(clinicLines[id]);
         return true;
       }
@@ -1696,6 +2078,8 @@
           [
             '今はお茶にする',
             () => {
+              C.rpgFullHeal?.(state);
+              save();
               closeModal();
               talk([
                 ['nina', 'お湯、沸いてるよ。'],
@@ -1805,6 +2189,10 @@
       ]
     };
     if (lines[id]) {
+      if (['homeStove', 'toumaRoom', 'ninaRoom', 'koharuBed'].includes(id)) {
+        C.rpgFullHeal?.(state);
+        save();
+      }
       talk(lines[id]);
       return true;
     }
@@ -1819,6 +2207,7 @@
     state.y = y;
     Sfx?.play(['house', 'koharuRoom', 'clinic', 'lampworkshop'].includes(state.scene) ? 'stepWood' : 'step');
     updateHud();
+    checkRoamerTouch();
     return true;
   }
   function pathTo(tx, ty) {
@@ -2099,6 +2488,7 @@
     }
     if (key === 'q') switchLead();
     if (key === 'i') openBag();
+    if (key === 'c') openCraft();
     if (key === 'j') journal();
     if (key === 'm') showMap();
     if (key === 'Escape') {
@@ -2147,6 +2537,7 @@
   });
   function frame(t) {
     typeTick(t);
+    tickRoamers(t);
     if (mode === 'explore' && t - lastMove > 155) {
       const key = Object.keys(held).find(k => dirs[k]);
       if (key) {

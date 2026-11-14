@@ -39,6 +39,7 @@
       throw Error('Unknown episode or route');
     const s = root.OkaeriChapters.create(chapter === 1 ? 1 : 4);
     s.episode = { chapter, step: 0, route: chapter === 10 ? route : null, complete: false };
+    if (C.createRpg) s.rpg = C.createRpg(chapter);
     if (chapter >= 9) s.flags.festivalStarted = true;
     if (chapter === 10) setRoute(s, route);
     const e = current(s);
@@ -99,6 +100,12 @@
     nextState.flags = { ...s.flags, ...nextState.flags, ointmentGiven: true };
     nextState.ointments = Math.max(s.ointments || 0, 2);
     nextState.memories = { ...s.memories };
+    if (s.rpg && C.rpgFullHeal) {
+      nextState.rpg = JSON.parse(JSON.stringify(s.rpg));
+      if (nextState.rpg.lv < (C.createRpg(nextState.episode.chapter)?.lv || 1))
+        nextState.rpg.lv = C.createRpg(nextState.episode.chapter).lv;
+      C.rpgFullHeal(nextState);
+    }
     Object.assign(s, nextState);
     if (a.beginChapter) {
       a.beginChapter();

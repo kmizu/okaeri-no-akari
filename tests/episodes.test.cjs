@@ -32,7 +32,7 @@ test('all five routes can be completed from episode two with valid saves after e
  assert.ok(C.restoreSave(JSON.stringify(s)));
  if(s.episode.complete){if(s.episode.chapter===10)break;E.next(a);}
  }
- assert.equal(s.episode.route,r);assert.equal(battles,8,'episodes two to ten each have a battle; six has its own on the lake road');
+ assert.equal(s.episode.route,r);assert.equal(battles,9,'episodes two to ten each have a battle (ep8 has vanguard + summit alpha boss); six has its own on the lake road');
  }
 });
 test('rescue refuses the wrong leader without advancing and transfers control to Nina',()=>{

@@ -151,7 +151,7 @@
     if (ep.chapter === 2) return true;
     if (ep.chapter === 3) return ep.step === 0 || ep.step >= 4; // 事故の間（1〜3）は一人ずつ動く。診療所と帰り道は三人一緒
     if (ep.chapter === 5) return ep.step >= 1;
-    if (ep.chapter === 8) return ep.step <= 3; // 丘から戻ったあと（帰宅時）は眠っておぶわれている
+    if (ep.chapter === 8) return ep.step <= 4; // 丘から戻ったあと（帰宅時）は眠っておぶわれている
     if (ep.chapter === 9) return ep.step <= 1 || ep.route === 'both'; // 祭りの途中で姿が見えなくなるが、both では三人で帰る
     if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1;
     return false;
@@ -274,7 +274,7 @@
       else if (o.type === 'homeTable') out.push([x + 48, y - 47, 260, 1]);
       else if (o.type === 'lamp') out.push([x + 20, y - 16, 190, 1]);
       else if (o.type === 'tower' && (f.lit || stage.over.lit)) out.push([x, y - 47, 330, 1.2]);
-      else if (o.type === 'hillBeacon' && ((f.hillLit && !(s.episode?.chapter === 8 && s.episode.step <= 3)) || stage.over.lit))
+      else if (o.type === 'hillBeacon' && ((f.hillLit && !(s.episode?.chapter === 8 && s.episode.step <= 4)) || stage.over.lit))
         out.push([x, y - 60, 340, 1.2]);
       else if (o.type === 'waterBeacon' && f.waterLit) out.push([x, y - 50, 240, 1]);
       else if (o.type === 'waitingLight' && f.waitingLit) out.push([x + 20, y - 16, 170, 1]);

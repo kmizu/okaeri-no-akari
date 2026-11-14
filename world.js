@@ -139,7 +139,7 @@ Renderer.prototype.background=function(scene){
 Renderer.prototype.draw=function(s,time,mode){
  const c=this.c,t=time*.001,D=root.OkaeriDirector;this.t=t;c.clearRect(0,0,W,H);c.fillStyle='#0b1c26';c.fillRect(0,0,W,H);c.save();D?.pre(c,time);
  const wantLift=mode==='dialogue'&&!root.matchMedia?.('(orientation:portrait) and (max-width:600px)').matches?Math.max(0,Math.min(170,this.p.y-400)):0;this.lift=(this.lift||0)+(wantLift-(this.lift||0))*.1;if(this.lift<.5&&!wantLift)this.lift=0;const lift=this.lift;c.translate(0,-lift);
- const litNow=!!D?.stage.over.lit,beaconLit=(s.flags.hillLit&&!(s.episode?.chapter===8&&s.episode.step<=3))||(litNow&&s.scene==='hill'),towerLit=s.flags.lit||(litNow&&s.scene==='forest');
+ const litNow=!!D?.stage.over.lit,beaconLit=(s.flags.hillLit&&!(s.episode?.chapter===8&&s.episode.step<=4))||(litNow&&s.scene==='hill'),towerLit=s.flags.lit||(litNow&&s.scene==='forest');
  c.drawImage(this.background(s.scene),0,0);
  if(s.scene==='town'&&s.flags.festivalStarted&&(!s.episode||s.episode.chapter===9)){
   rect(c,0,0,W,H,'#1a244957');
@@ -200,6 +200,19 @@ Renderer.prototype.draw=function(s,time,mode){
  const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&s.episode.step===2)||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
  if(third)shown.push({...this.g,id:'koharu',moving:thirdMoving});
  for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',(actor.moving&&mode==='explore')||!!actor.scriptWalk,t,actor.seated)});
+ for(const r of root.OkaeriWorld?.roamers||[]){
+  if(r.scene!==s.scene)continue;
+  const rx0=r.x*T+24,ry0=r.y*T+24;r.px=r.px===undefined?rx0:r.px+(rx0-r.px)*.18;r.py=r.py===undefined?ry0:r.py+(ry0-r.py)*.18;
+  const rx=r.px,ry=r.py;
+  drawables.push({y:ry,draw:()=>{
+   ellipse(c,rx,ry+7,r.beast?24:18,r.beast?8:6,r.beast?'rgba(230,90,80,.36)':'rgba(150,224,242,.32)');
+   const own=r.tint&&OWN_ART[r.tint]?roamArt(OWN_ART[r.tint][0]):null;
+   if(own&&own.complete&&own.naturalWidth){
+    const w=r.beast?74:r.tint==='bat'?56:50,h=w*own.naturalHeight/own.naturalWidth,bob=Math.sin(t*3+r.id)*2.5;
+    c.drawImage(own,rx-w/2,ry+10-h+bob,w,h);
+   }else OkaeriCast.drawMap(c,r.art||'mochi',rx,ry,t+r.id);
+  }});
+ }
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
  // 次の目的地の目印。歩ける時だけ、足元の輪と、上下に揺れる矢印で示す。
  const guide=mode==='explore'?D?.guide(s):null;
@@ -228,12 +241,13 @@ Renderer.prototype.draw=function(s,time,mode){
  });
 };
 // 専用の絵がある精霊・魔獣（色ちがいの代わりに使う）。ice は氷殻が溶けたあとの差分。
-const OWN_ART={hail:['arare-mochi'],sleet:['mizore-yadokari-frozen','mizore-yadokari-thawed'],echo:['kodama-guardian'],beast:['higui']};
+const OWN_ART={hail:['arare-mochi'],sleet:['mizore-yadokari-frozen','mizore-yadokari-thawed'],echo:['kodama-guardian'],beast:['higui'],alphaBeast:['oo-higui-blaze','oo-higui'],moss:['koke-dama'],bat:['tsurara-bat'],hare:['yuki-usagi-light']};
+const roamCache={};function roamArt(name){if(!roamCache[name]&&typeof Image!=='undefined'){const im=new Image();im.src='assets/monsters/web/'+name+'.png';roamCache[name]=im;}return roamCache[name];}
 const ownArt=(e,name)=>'assets/monsters/web/'+name+'.png';
 function enemySvg(type,e){
  const own=e&&OWN_ART[e.tint];if(!own)return OkaeriCast.battleArt(type);
  const src=n=>ownArt(e,n),now=own[1]&&!e.ice?own[1]:own[0];
  return '<img class="enemy-art own-art-img" alt="" draggable="false" src="'+src(now)+'"'+(own[1]?' data-frozen="'+src(own[0])+'" data-thawed="'+src(own[1])+'"':'')+'>';
 }
-root.OkaeriWorld={Renderer,enemySvg,OWN_ART};
+root.OkaeriWorld={Renderer,enemySvg,OWN_ART,roamers:[]};
 })(globalThis);

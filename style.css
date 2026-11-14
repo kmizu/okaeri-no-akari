@@ -382,3 +382,24 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 .chapter-card-sub{margin:0;font-size:clamp(13px,1.7vw,16px);line-height:1.85;letter-spacing:.06em;color:#d6e4ea}
 @keyframes chapterCardIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.chapter-card{transition:none}.chapter-card-inner{animation:none}}
+
+/* 6. RPG成長・装備強化・薬調合パネル */
+.rpg-lv-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 14px;margin:6px 0 10px;background:linear-gradient(90deg,#e9be7826,#15333fd9);border:1px solid #e9be7859;border-radius:10px;font-size:13px;color:#e7f0ef}
+.rpg-lv-strip strong{font-size:15px;color:#ffe6b0;letter-spacing:.06em}
+.rpg-hp-mini{height:4px;background:#081b25;border-radius:3px;margin:4px 0 2px;overflow:hidden}
+.rpg-hp-mini i{display:block;height:100%;background:linear-gradient(90deg,#7ec4a5,#b8e0b2)}
+.rpg-mat-bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.rpg-mat-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#0b202ad9;border:1px solid #dce6e229;border-radius:9px;font-size:12px;color:#cde0df}
+.rpg-mat-chip span{font-size:16px;color:var(--gold)}
+.rpg-mat-chip b{margin-left:auto;font-size:14px;color:#fff4da}
+.rpg-craft-grid{display:flex;flex-direction:column;gap:8px;margin:8px 0 12px}
+.rpg-craft-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;background:linear-gradient(145deg,#163541c9,#0d222ce6);border:1px solid #dce6e229;border-radius:11px}
+.rpg-craft-card.can-make{border-color:#e9be7878;background:linear-gradient(145deg,#1f4350db,#112935eb)}
+.rpg-craft-info{flex:1;min-width:0}
+.rpg-craft-info strong{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:14.5px;color:#fbf2df;margin-bottom:3px}
+.rpg-craft-info p{margin:0 0 4px;font-size:12.5px;line-height:1.5;color:#bfd1d0}
+.rpg-craft-cost{font-size:11.5px;color:#ebd19e;letter-spacing:.03em}
+.rpg-craft-btn{flex:none;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:700;letter-spacing:.05em;background:linear-gradient(180deg,#f3cf8e,#ddaa5c);color:#1d2a26;border:1px solid #fae0ab;cursor:pointer;white-space:nowrap}
+.rpg-craft-btn:hover:not(:disabled){background:linear-gradient(180deg,#fae0ab,#e8b96d)}
+.rpg-craft-btn:disabled{background:#122933;color:#6f8b92;border-color:#ffffff1c;cursor:default}
+@media(max-width:680px){.rpg-mat-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.rpg-craft-card{flex-direction:column;align-items:stretch}.rpg-craft-btn{width:100%;text-align:center}}

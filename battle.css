@@ -81,7 +81,8 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
 /* 専用の絵がある精霊・魔獣：色ちがい用の着色と、絵に描きこまれている氷殻の重ね描きを外す */
 .own-art .enemy-art{filter:none!important;object-fit:contain;object-position:50% 100%}
 .own-art.has-ice .condition-visual:before,.own-art.has-ice .condition-visual:after{content:none}
-.own-art.tint-beast{--unit-size:clamp(150px,25cqw,240px)}.own-art.tint-sleet{--unit-size:clamp(110px,19cqw,180px)}.own-art.tint-echo{--unit-size:clamp(110px,18cqw,170px)}
+.own-art.tint-beast{--unit-size:clamp(150px,25cqw,240px)}.own-art.tint-alphaBeast{--unit-size:clamp(210px,34cqw,320px)}.own-art.tint-sleet{--unit-size:clamp(110px,19cqw,180px)}.own-art.tint-echo{--unit-size:clamp(110px,18cqw,170px)}.own-art.tint-moss{--unit-size:clamp(88px,15cqw,138px)}.own-art.tint-bat{--unit-size:clamp(98px,17cqw,152px)}.own-art.tint-hare{--unit-size:clamp(104px,18cqw,160px)}
+.condition-charged{color:#ffcfbf;border-color:#ff8f75b8;background:#4c1f24f0;box-shadow:0 0 10px #ff5c4766}.condition-charged b{color:#ff9b82}
 
 /* ===== 文字を大きく（2026-11-12）。広い画面では、戦闘の文字もおよそ1.6倍にする。 ===== */
 @media(min-width:900px) and (min-height:600px){

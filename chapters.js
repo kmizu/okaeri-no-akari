@@ -5,7 +5,8 @@ const hill=['hillStarted','windbreak','hillGuardian','hillLens','hillLit'];
 function create(id){
  if(![1,2,3,4].includes(id))throw Error('Unknown chapter');
  const flags={};for(const k of [...(id>1?[...forest,'ointmentGiven']:[]),...(id>2?canal:[]),...(id>3?hill:[])])flags[k]=true;
- return {version:1,scene:'town',x:12,y:10,lead:'touma',flags,courage:0,...(id>1?{ointments:2}:{})};
+ const rpg=root.OkaeriCore?.createRpg?root.OkaeriCore.createRpg(id===1?1:id===2?3:id===3?6:8):undefined;
+ return {version:1,scene:'town',x:12,y:10,lead:'touma',flags,courage:0,...(id>1?{ointments:2}:{}),...(rpg?{rpg}:{})};
 }
 root.OkaeriChapters={create};if(typeof module!=='undefined')module.exports=root.OkaeriChapters;
 })(globalThis);

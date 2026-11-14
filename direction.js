@@ -125,23 +125,34 @@
             : 'wind';
     return { time, weather, bgm, bed, indoors };
   }
-  // コハルが三人目として一緒に歩く場面。
+  // コハルが三人目として一緒にいる場面。
   function companion(s) {
+    if (stage.over.koharu === 'gone' || stage.over.koharu === 'asleep') return false;
+    if (stage.over.koharu) return true;
     const epi = root.OkaeriEpisodes?.playingEpilogue?.();
     if (epi) return !!root.OkaeriCore?.route(epi)?.koharu; // 後日譚：コハルのいる結末では、家の中でも一緒にいる
-    if (s.openingStage !== undefined) return s.openingStage > 0 || !!stage.over.koharu; // 第1話の朝：戸が開いて起きてきてから、広場まで三人で歩く
-    if (s.prologueStage !== undefined) return !!stage.over.koharu && stage.over.koharu !== 'gone';
+    if (s.openingStage !== undefined) return s.openingStage > 0; // 第1話の朝：戸が開いて起きてきてから、広場まで三人で歩く
+    if (s.prologueStage !== undefined) return false;
     const ep = s.episode;
-    // 最終話でコハルが食卓を囲む結末は、家の中にもコハルがいる（三脚目の椅子の主）。
-    if (ep && !ep.complete && ep.chapter === 10 && s.scene === 'house') return !!root.OkaeriCore?.route(ep.route)?.koharu;
+    // 家の中で三人が揃っている場面（帰宅して夜の会話で寝室へ入るまで、または最終話のコハル同席ルート）。
+    if (ep && !ep.complete && ['house', 'clinic'].includes(s.scene)) {
+      if (s.scene === 'clinic') return [2, 3, 5, 8].includes(ep.chapter) || (ep.chapter === 10 && !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1);
+      if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu;
+      if (ep.chapter === 2 && ep.step === 3) return true;
+      if (ep.chapter === 3 && ep.step === 5) return true;
+      if (ep.chapter === 4 && ep.step === 3) return true;
+      if (ep.chapter === 5 && ep.step === 3) return true;
+      if (ep.chapter === 9 && ep.route === 'both') return true;
+      return false;
+    }
     if (!ep || ep.complete || ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
     if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && ep.chapter !== 4;
     // 薬の番として加わった第2話からは、当番の日は町の中も三人で歩く。
     if (ep.chapter === 2) return true;
-    if (ep.chapter === 3) return ep.step === 0 || ep.step === 4; // 事故の間（1〜3）は一人ずつ動く
+    if (ep.chapter === 3) return ep.step === 0 || ep.step >= 4; // 事故の間（1〜3）は一人ずつ動く。診療所と帰り道は三人一緒
     if (ep.chapter === 5) return ep.step >= 1;
-    if (ep.chapter === 8) return true;
-    if (ep.chapter === 9) return ep.step <= 1; // 祭りの途中で、姿が見えなくなる
+    if (ep.chapter === 8) return ep.step <= 3; // 丘から戻ったあと（帰宅時）は眠っておぶわれている
+    if (ep.chapter === 9) return ep.step <= 1 || ep.route === 'both'; // 祭りの途中で姿が見えなくなるが、both では三人で帰る
     if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1;
     return false;
   }

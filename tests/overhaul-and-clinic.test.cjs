@@ -234,6 +234,18 @@ test('Episode 2 starts with chapter transition card and 3-person morning house s
   assert.equal(afterPrologue.scene, 'town');
   assert.equal(resumed.ctx.OkaeriDirector.companion(afterPrologue), true, 'Koharu walks with the party in Episode 2');
 
+  // Episode 2 ending house conversation: Koharu is present at home and seated during dinner/talk, then goes to sleep in her room
+  const ep2HomeSave = { ...b.ctx.OkaeriEpisodes.create(2), scene: 'house', x: 11, y: 10 };
+  ep2HomeSave.episode.step = 3;
+  const bEnd2 = boot(JSON.stringify(ep2HomeSave));
+  bEnd2.el('continueButton').onclick();
+  assert.equal(bEnd2.ctx.OkaeriDirector.companion(bEnd2.saved()), true, 'Koharu comes home with Touma and Nina at end of Episode 2');
+  bEnd2.el('interactButton').onclick();
+  assert.equal(bEnd2.ctx.OkaeriDirector.companion(bEnd2.saved()), true, 'Koharu is visible during Episode 2 dinner conversation');
+  // Advance past Koharu saying goodnight (7 lines) to line 8 where her room door closes
+  for (let i = 0; i < 7; i++) bEnd2.el('nextDialogue').onclick();
+  assert.equal(bEnd2.ctx.OkaeriDirector.companion(bEnd2.saved()), false, 'Koharu goes into her room to sleep when her door closes');
+
   // Every chapter 2..9 and every chapter 10 route has a house prologue and subtitle
   const D = b.ctx.OkaeriEpisodesData;
   for (let ch = 2; ch <= 9; ch++) {

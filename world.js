@@ -8,7 +8,7 @@ function koharuMorning(s,time=0){
  if(!homeBreakfast(s))return null;
  const D=root.OkaeriDirector,over=D?.stage?.over?.koharu;
  if(over==='gone')return {state:'gone',doorOpen:true,pose:{x:462,y:422,dir:'right',seated:true}};
- if(!over)return {state:'asleep',doorOpen:false,pose:{x:552,y:330,dir:'down',seated:false}};
+ if(!over||over==='asleep')return {state:'asleep',doorOpen:false,pose:{x:552,y:330,dir:'down',seated:false}};
  if(over==='door')return {state:'door',doorOpen:true,pose:{x:552,y:330,dir:'down',seated:false}};
  if(over==='seated'||D?.reduced?.()||!(over?.mode==='seat')||time-over.start>=900)return {state:'seated',doorOpen:true,pose:{x:462,y:422,dir:'right',seated:true}};
  const p=Math.max(0,(time-over.start)/900);

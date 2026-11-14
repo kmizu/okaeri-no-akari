@@ -78,16 +78,26 @@ test('invalid opening saves are rejected and older saves continue without a new 
  assert.equal(loaded.el('dialogue').hidden,true);assert.equal(loaded.saved().openingStage,undefined);
 });
 
-test('opening film renders the assembled 護りの灯火 beacon diagram with rope, latch, and spare wick callouts',()=>{
+test('house morning scene shows the assembled 護りの灯火 diagram right after Nina names the parts, while OP stays diagram-free',()=>{
  const b=boot();
+ b.el('stage').insertBefore=function(node){this.children.push(node);node.remove=()=>{this.children=this.children.filter(c=>c!==node);};};
+ b.ctx.document.createElement=()=>({style:{},dataset:{},setAttribute(){}});
  vm.runInContext(fs.readFileSync(require.resolve('../draw-engine.js'),'utf8'),b.ctx);
- b.el('startButton').onclick();
- assert.equal(b.el('filmBeacon').hidden,true);
- tick(b);assert.equal(b.el('filmBeacon').hidden,true);
- tick(b);assert.equal(b.el('filmBeacon').hidden,false);
- for(const part of ['<svg','縄','留め金','替えの芯','護りの灯火'])assert.match(b.el('filmBeacon').innerHTML,new RegExp(part));
- tick(b);assert.equal(b.el('filmBeacon').hidden,false);
- assert.match(b.el('filmText').textContent,/護りの灯火/);
- tick(b);assert.equal(b.el('filmBeacon').hidden,true);
- for(const s of b.ctx.OkaeriOpeningFilm.shots)assert.doesNotMatch(s.text,/帰り灯/);
+ vm.runInContext(fs.readFileSync(require.resolve('../stills.js'),'utf8'),b.ctx);
+ vm.runInContext(fs.readFileSync(require.resolve('../game.js'),'utf8'),b.ctx);
+ for(const s of b.ctx.OkaeriOpeningFilm.shots){assert.doesNotMatch(s.text,/帰り灯/);assert.notEqual(s.view,'beacon');assert.equal(s.diagram,undefined);}
+ b.el('startButton').onclick();b.el('skipOpening').onclick();
+ assert.equal(b.saved().scene,'house');
+ const lines=b.ctx.OkaeriStory.opening[0].lines,idx=lines.findIndex(l=>/縄、留め金、替えの芯/.test(l[1]));
+ assert.ok(idx>0,'Nina parts line exists in house opening');
+ for(let i=0;i<idx;i++)b.el('nextDialogue').onclick();
+ assert.match(b.el('dialogueText').textContent,/縄、留め金、替えの芯/);
+ assert.equal(b.el('stage').children.some(c=>c.dataset?.diagram==='beacon'),false);
+ b.el('nextDialogue').onclick();
+ const card=b.el('stage').children.find(c=>c.dataset?.diagram==='beacon');
+ assert.ok(card,'diagram card appears right after Nina mentions the parts');
+ for(const part of ['<svg','縄','留め金','替えの芯','護りの灯火'])assert.match(card.innerHTML,new RegExp(part));
+ b.el('nextDialogue').onclick();
+ const fadeTimer=[...b.timers.values()].at(-1);if(fadeTimer)fadeTimer();
+ assert.equal(b.el('stage').children.some(c=>c.dataset?.diagram==='beacon'),false);
 });

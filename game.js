@@ -219,6 +219,7 @@
     if (cue.bgm !== undefined) musicCue(cue.bgm);
     if (cue.still !== undefined) Stills?.show(cue.still);
     if (cue.intro !== undefined) Stills?.intro(cue.intro);
+    if (cue.diagram !== undefined) Stills?.diagram?.(cue.diagram);
     if (cue.jingle) bgm.jingle?.(cue.jingle);
     for (const se of [].concat(cue.se || [])) Sfx?.play(se);
     if (m.mark && speaker) Sfx?.play('pop');
@@ -298,6 +299,7 @@
       D.clearOverrides();
       Stills?.hide();
       Stills?.intro(null);
+      Stills?.diagram?.(null);
       updateHud();
       musicCue(null);
     }

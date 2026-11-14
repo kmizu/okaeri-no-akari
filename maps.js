@@ -46,7 +46,7 @@ function local(s={}){
  // 道
  b+=road('M450,330V200Q452,150 470,124')+road('M450,330Q560,318 690,300')+road('M450,330Q320,322 185,300')+road('M392,170Q330,150 285,128',{dash:'3 5'})+road('M185,290Q150,230 150,170',{dash:'3 5'})+road('M150,170Q90,150 40,160',{dash:'2 6',o:.5})
   +road('M450,330Q540,400 640,470T790,520')+road('M790,520Q820,570 800,612',{dash:'2 6',o:.5});
- // 灯りの輪：森の灯台（北の要）・丘の灯台（西の要）・水路の帰り灯（東）・町の門（南）をつなぐ
+ // 灯りの輪：森の灯台（北の要）・丘の灯台（西の要）・水路の護りの灯火（東）・町の門（南）をつなぐ
  const ring='M470,112C640,120 760,220 720,300C700,400 560,440 450,430C300,430 170,400 170,300C170,200 320,110 470,112Z';
  b+=S(ring,GOLD,7,{opacity:.22,filter:'url(#b4)'})+S(ring,GOLD,2.4,{'stroke-dasharray':'2 7','stroke-linecap':'round'})+label(600,168,'灯りの輪',13,{fill:'#8a6420',rot:24,spacing:4});
  for(const [x,y] of [[560,150],[660,214],[716,352],[620,410],[330,418],[230,376],[210,222],[330,150]])b+=lamp(x,y);
@@ -59,7 +59,7 @@ function local(s={}){
  b+=house(285,128,.9,'#7f9a72')+label(285,104,'薬草の谷',14)+label(285,152,'薬草の畑',10,{weight:500,fill:'#5f7a4c'});
  b+=tower(185,290,!!f.hillLit,1.1)+label(185,246,'丘の灯台',13)+label(185,260,'西の要',10,{fill:RED,weight:500})+label(190,326,'風待ちの丘',16,{spacing:5})+house(240,318,.8);
  b+=label(150,150,'峠の旧道',13)+E(150,172,5,5,'#cdbf9c',{stroke:INK,'stroke-width':1})+label(64,146,'丘向こうの',10,{weight:500})+label(64,160,'集落へ',10,{weight:500});
- b+=lamp(690,298,!!f.waterLit)+R(676,300,10,12,'#cdbf9c',1,{stroke:INK,'stroke-width':1})+label(700,278,'共同水路',15,{spacing:4})+label(700,326,'水門と帰り灯',10,{weight:500})+label(830,150,'取水口',10,{weight:500});
+ b+=lamp(690,298,!!f.waterLit)+R(676,300,10,12,'#cdbf9c',1,{stroke:INK,'stroke-width':1})+label(700,278,'共同水路',15,{spacing:4})+label(700,326,'水門と護りの灯火',10,{weight:500})+label(830,150,'取水口',10,{weight:500});
  b+=label(600,452,'氷湖の旧街道',12,{rot:28})+house(790,516,1,'#6f8fa0')+house(812,524,.8)+label(800,492,'ミナモ',16,{spacing:4})+label(800,548,'渡し場',10,{weight:500})+label(810,602,'カルデ・南の港へ',10,{weight:500,anchor:'end'});
  // いまここ
  const at=SPOTS[s.scene];if(at)b+=here(at[0],at[1]-(s.scene==='town'?30:s.scene==='house'?22:40));

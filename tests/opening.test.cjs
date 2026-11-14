@@ -77,3 +77,17 @@ test('invalid opening saves are rejected and older saves continue without a new 
  const loaded=boot(JSON.stringify(legacy));loaded.el('continueButton').onclick();
  assert.equal(loaded.el('dialogue').hidden,true);assert.equal(loaded.saved().openingStage,undefined);
 });
+
+test('opening film renders the assembled 護りの灯火 beacon diagram with rope, latch, and spare wick callouts',()=>{
+ const b=boot();
+ vm.runInContext(fs.readFileSync(require.resolve('../draw-engine.js'),'utf8'),b.ctx);
+ b.el('startButton').onclick();
+ assert.equal(b.el('filmBeacon').hidden,true);
+ tick(b);assert.equal(b.el('filmBeacon').hidden,true);
+ tick(b);assert.equal(b.el('filmBeacon').hidden,false);
+ for(const part of ['<svg','縄','留め金','替えの芯','護りの灯火'])assert.match(b.el('filmBeacon').innerHTML,new RegExp(part));
+ tick(b);assert.equal(b.el('filmBeacon').hidden,false);
+ assert.match(b.el('filmText').textContent,/護りの灯火/);
+ tick(b);assert.equal(b.el('filmBeacon').hidden,true);
+ for(const s of b.ctx.OkaeriOpeningFilm.shots)assert.doesNotMatch(s.text,/帰り灯/);
+});

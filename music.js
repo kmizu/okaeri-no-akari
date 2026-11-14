@@ -31,7 +31,7 @@
   };
   const TITLES = {
     opening: '「雪明かりの約束」',
-    village: '「窓辺の帰り灯」',
+    village: '「窓辺の護りの灯火」',
     journey: '「雪道の二重奏」',
     battle: '「灯りのステップ」',
     lake: '「湖面に届く手紙」',
@@ -39,7 +39,7 @@
     tension: '「薄氷」',
     tender: '「言葉にする帰り道」',
     quiet: '「冷めたスープ」',
-    festival: '「帰り灯祭り」',
+    festival: '「護りの灯火祭り」',
     ending: '「おかえりの灯」',
     silence: '（無音）'
   };

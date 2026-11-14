@@ -14,7 +14,7 @@ GitHub `main` の `ad60004` を取り込んだあと、`ART-NOTES.md` と関連�
 | コハルとの結末 | `stills/ending-koharu-love.png` | `stills/web/ending-koharu-love.webp` とサムネイル | 台本への表示指定は未追加 |
 | ニナから告白した結末の口づけ | `stills/ending-nina-kiss.png` | `stills/web/ending-nina-kiss.webp` とサムネイル | 同上 |
 | トウマから告白した結末の夜 | `stills/ending-touma-hearth.png` | `stills/web/ending-touma-hearth.webp` とサムネイル | 同上 |
-| 後日譚・門の帰り灯 | `stills/epilogue-pair-gate.png` | 同名の `web/*.webp` とサムネイル | 台本への表示指定は未追加 |
+| 後日譚・門の護りの灯火 | `stills/epilogue-pair-gate.png` | 同名の `web/*.webp` とサムネイル | 台本への表示指定は未追加 |
 | 後日譚・玄関灯 | `stills/epilogue-pair-lamp.png` | 同上 | 同上 |
 | 後日譚・コハルと台所 | `stills/epilogue-koharu-kitchen.png` | 同上 | 同上 |
 | 後日譚・コハルと外套 | `stills/epilogue-koharu-coat.png` | 同上 | 同上 |

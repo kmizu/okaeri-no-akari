@@ -75,19 +75,19 @@
       ['house', 'koharuRoom'].includes(state.scene)
         ? '薪の灯り / 家の中'
         : state.flags.festivalStarted
-          ? '帰り灯祭り / 夜'
+          ? '護りの灯火祭り / 夜'
           : state.flags.hillStarted
             ? '祭りの日 / 夕暮れ'
             : state.flags.lit
               ? '冬の終わり / 夕暮れ'
               : '冬の終わり / 午前';
     $('chapter').textContent = state.flags.festivalStarted
-      ? '最終話 · 帰り灯祭り'
+      ? '最終話 · 護りの灯火祭り'
       : state.flags.hillStarted
         ? '第三話 · 風待ちの丘'
         : state.flags.canalStarted
           ? '第二話 · 水音の帰る道'
-          : '第一話 · 帰り灯の日';
+          : '第一話 · 護りの灯火の日';
     if (state.episode) {
       const a = D.ambient(state),
         clock = { morning: '朝', day: '日中', dusk: '夕暮れ', night: '夜' }[a.time];
@@ -95,7 +95,7 @@
       $('weather').textContent = a.indoors
         ? '薪の灯り / ' + clock
         : state.episode.chapter === 9
-          ? '帰り灯祭り / 夜'
+          ? '護りの灯火祭り / 夜'
           : (a.weather === 'blizzard' ? '吹雪' : state.episode.chapter === 10 ? '祭りの翌日' : '冬の終わり') + ' / ' + clock;
     }
     $('objectiveText').textContent = (state.episode && OkaeriEpisodes.objective(state)) || S.objective(state);
@@ -566,9 +566,9 @@
     if (id === 'lamp') {
       talk(
         [
-          ['', '家の戸口に、小さな帰り灯がともっている。昼間なのに、消えていない。'],
+          ['', '家の戸口に、小さな護りの灯火がともっている。昼間なのに、消えていない。'],
           ['nina', 'ここのおじさん、丘向こうの集落へ配達に出てるんだって。'],
-          ['touma', '帰り灯は、最後に帰った人が消す決まりだからな。ともってるうちは、まだ誰か外にいる。'],
+          ['touma', '戸口の護りの灯火は、最後に帰った人が消す決まりだからな。ともってるうちは、まだ誰か外にいる。'],
           ['nina', 'うん。「待ってるよ」って、灯りが代わりに言ってくれてるの。'],
           ['', '三人の家の戸口にも、同じ形の灯りが一つある。\n今朝、ニナがともしてきた。']
         ],
@@ -1075,7 +1075,7 @@
     }
     if (mode === 'title') {
       openModal(
-        '<span class="tag">はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染。雪で消える道の代わりに、人が帰る方角を知らせる「帰り灯」の番をする、灯守（ひもり）です。トウマは木や金具の修理、ニナは火を扱う「灯術」が得意です。</p><p>二人の仕事と暮らしを、全10話でたどります。第9話で二人の関係を選ぶと、最終話が三通りに変わります。</p><p>操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代。Jの「旅の手帳」で、今日の用事と次の行き先を確かめられます。右上の「音」で、音楽と効果音が入ります。</p>',
+        '<span class="tag">はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染。雪で消える道の方角を知らせ、魔獣を退ける「護りの灯火」の番をする、灯守（ひもり）です。トウマは木や金具の修理、ニナは火を扱う「灯術」が得意です。</p><p>二人の仕事と暮らしを、全10話でたどります。第9話で二人の関係を選ぶと、最終話が三通りに変わります。</p><p>操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代。Jの「旅の手帳」で、今日の用事と次の行き先を確かめられます。右上の「音」で、音楽と効果音が入ります。</p>',
         [['閉じる', closeModal, true]],
         'title'
       );
@@ -1094,14 +1094,14 @@
       ['waterGate', 'トウマで水門を支える'],
       ['canalCrab', '水路のヤドカリを落ち着かせる'],
       ['waterFlow', 'ニナで調整灯をつなぐ'],
-      ['waterLit', '水路の帰り灯をともす'],
+      ['waterLit', '水路の護りの灯火をともす'],
       ['waterReturned', 'マロに水の便りを届ける'],
       ['hillStarted', '風待ちの丘へ出発'],
       ['windbreak', 'トウマで風よけを直す'],
       ['hillGuardian', '尾根の番人を落ち着かせる'],
       ['hillLens', 'ニナでレンズを合わせる'],
       ['hillLit', '丘の灯台をともす'],
-      ['festivalStarted', '帰り灯祭りへ'],
+      ['festivalStarted', '護りの灯火祭りへ'],
       ['festivalMeal', '二人でスープを食べる'],
       ['festivalRibbon', '帰り結びを贈り合う']
     ];
@@ -1194,7 +1194,7 @@
           (end
             ? '同じ家から、二人の明日が続いていきます。遊んでくれて、ありがとうございます。'
             : key === 'three'
-              ? '家で着替えた二人は、これから帰り灯祭りへ。'
+              ? '家で着替えた二人は、これから護りの灯火祭りへ。'
               : '炉のそばに二人分のカップ。今日のことを、家に置いて眠ろう。') +
           '</p>',
         [
@@ -1530,7 +1530,7 @@
       if (id === 4) handle('festivalStart');
       save();
     };
-    const names = ['第一話 · 森の灯台', '第二話 · 水音の帰る道', '第三話 · 風待ちの丘', '最終話 · 帰り灯祭り'];
+    const names = ['第一話 · 森の灯台', '第二話 · 水音の帰る道', '第三話 · 風待ちの丘', '最終話 · 護りの灯火祭り'];
     const buttons = names.map((n, i) => [n, () => enter(i + 1), i === 2]);
     let replay = null;
     try {

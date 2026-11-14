@@ -17,7 +17,7 @@
 | 5 | [第5話：三人乗りのそり](chapter-05.png) | 真ん中のコハルが、いちばん大きな声で笑った。 | `episodes-data.js episodes[5][2]` |
 | 6 | [第6話：白い石を鞄に](chapter-06.png) | ニナは小箱の石を一つ、鞄の内袋に入れた。 | `episodes-data.js episodes[6][3]` |
 | 7 | [第7話：この家の二脚の椅子](chapter-07.png) | 食卓の椅子は、色の違う木でできた二脚。 | `episodes-data.js episodes[7][3]` |
-| 8 | [第8話：温め草と帰り灯](chapter-08.png) | コハルが、温め草の袋をニナの手に押しあてた。 | `episodes-data.js episodes[8][3]` |
+| 8 | [第8話：温め草と護りの灯火](chapter-08.png) | コハルが、温め草の袋をニナの手に押しあてた。 | `episodes-data.js episodes[8][3]` |
 | 9 | [第9話：三人の帰り結び](chapter-09.png) | コハルの鞄の帯も、二本になった。 | `episodes-data.js episodes[9][1]` |
 | 10 | [第10話：選んだ翌朝](chapter-10.png) | 祭りの翌日。ゆうべ選んだことを受けて過ごす、最初の一日です。 | `episodes-data.js contexts[10] / routes各冒頭` |
 

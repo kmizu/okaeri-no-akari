@@ -16,7 +16,7 @@ function handle(id,a){
   if(!f.hillLit)return false;
   if(f.festivalStarted){talk([['サエ','もう仕事はおしまい。今夜は二人とも、祭りのお客さんだよ。']]);return true;}
   scene('town',12,10);
-  talk([['サエ','おかえり。丘の灯り、ここからも見えたよ。'],['touma','ただいま。風よけも、直してきました。'],['nina','レンズも。遠くまで届いてるといいな。'],['サエ','もう着いた人がいるよ。「灯りがあって助かった」って。'],['','サエは二枚の出発札を、そっと町の欄に戻した。'],['サエ','よく帰ってきたね。さあ、温かいうちに食べておいで。'],['','最終話　帰り灯祭り\n広場でマロの料理を受け取り、繕いものの籠に寄ってみよう。']],()=>{done('festivalStarted');a.evening?.('three');});return true;
+  talk([['サエ','おかえり。丘の灯り、ここからも見えたよ。'],['touma','ただいま。風よけも、直してきました。'],['nina','レンズも。遠くまで届いてるといいな。'],['サエ','もう着いた人がいるよ。「灯りがあって助かった」って。'],['','サエは二枚の出発札を、そっと町の欄に戻した。'],['サエ','よく帰ってきたね。さあ、温かいうちに食べておいで。'],['','最終話　護りの灯火祭り\n広場でマロの料理を受け取り、繕いものの籠に寄ってみよう。']],()=>{done('festivalStarted');a.evening?.('three');});return true;
  }
  if(f.festivalStarted&&s.scene==='town'){
   if(id==='bakery'){
@@ -28,7 +28,7 @@ function handle(id,a){
    talk([['','繕いものの籠に、小さな布の帯が積まれていた。使い終えた冬服から作る「帰り結び」だ。'],['nina','無事に帰ってほしい人の、鞄に結ぶんだって。'],['touma','知ってる。子どもの頃、母さんがつけてくれた。'],['nina','今年は……私が結んでもいい？',null,'shy'],['touma','うん。俺も、ニナのに。',null,'shy'],['','赤茶の帯がトウマの鞄に、青緑の帯がニナの鞄に揺れた。'],['nina','これで、迷子になれないね。'],['touma','なっても、探しに行くよ。']],()=>done('festivalRibbon'));return true;
   }
   if(id==='lamp'){
-   if(!f.festivalMeal||!f.festivalRibbon){talk([['nina','帰り灯を見る前に、広場も一緒に回ろう。スープと、帰り結びの籠。']]);return true;}
+   if(!f.festivalMeal||!f.festivalRibbon){talk([['nina','護りの灯火を見る前に、広場も一緒に回ろう。スープと、帰り結びの籠。']]);return true;}
    if(f.endingTouma||f.endingNina||f.endingFriends){talk([['','二つの影が、並んで雪の上に伸びている。'],['nina','また明日も、会おうね。']]);return true;}
    talk([['','祭りの音が少し遠くなる場所で、二人は足を止めた。森、水路、丘。届けた灯りが、町を囲んでいる。'],['nina','全部、帰るための灯りなんだね。'],['touma','うん。帰りたい場所があるから。'],['nina','……私ね。仕事がなくても、トウマと歩きたいな。',null,'shy'],['','トウマは、隣にいるニナを見た。いつもの距離に、まだ言っていない言葉があった。']],()=>{
     const finish=ending=>{closeModal();talk(OkaeriStory.endings[ending].lines,()=>{

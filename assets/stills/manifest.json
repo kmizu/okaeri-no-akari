@@ -81,7 +81,7 @@
     },
     {
       "id": "chapter-08",
-      "title": "第8話：温め草と帰り灯",
+      "title": "第8話：温め草と護りの灯火",
       "chapter": 8,
       "route": null,
       "file": "chapter-08.png",
@@ -197,7 +197,7 @@
     },
     {
       "id": "epilogue-pair-gate",
-      "title": "後日譚 — 門の帰り灯",
+      "title": "後日譚 — 門の護りの灯火",
       "chapter": 10,
       "route": [
         "touma",

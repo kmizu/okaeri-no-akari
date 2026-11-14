@@ -123,7 +123,7 @@ function tree(c,x,y,s){
  return D.want(name,[-58,-176,166,226],()=>treeBody(v),2)&&D.draw(c,name,x,y,s);
 }
 
-// ---------------------------------------------------------------- 街灯（帰り灯）
+// ---------------------------------------------------------------- 街灯（護りの灯火）
 function lanternBody(lit){
  let s=EXTRA+P('M-2,6L10,3L46,18L26,24Z',SHADE,{opacity:.2,filter:'url(#b2)'})+E(8,8,20,6,SHADE,{opacity:.22,filter:'url(#b2)'});
  if(lit)s+=light(20,-16,62,'#ffcf7a',.5)+E(22,6,17,5,'#ffdc80',{opacity:.25,filter:'url(#b2)'});

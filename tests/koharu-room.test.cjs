@@ -23,25 +23,31 @@ function reachable(state, start) {
   return [...seen].map(k => k.split(',').map(Number));
 }
 
-test('Koharu has an accessible separate room with a bed, herbs and a way home', () => {
+test('the shared house gives Touma, Koharu and Nina each a walled bedroom with reachable furniture', () => {
   const house = { scene: 'house', flags: {} };
-  const door = Story.objects.house.find(o => o.id === 'koharuDoor');
-  assert.ok(door, 'house has a door to Koharu’s room');
-  assert.ok(reachable(house, [12, 12]).some(([x, y]) => Math.hypot(x - door.x, y - door.y) < 1.5));
-  const room = { scene: 'koharuRoom', flags: {} };
-  const points = reachable(room, [12, 12]);
-  for (const id of ['koharuBed', 'koharuHerbs', 'koharuDesk', 'koharuKeepsakes', 'koharuRoomExit']) {
-    const object = Story.objects.koharuRoom.find(o => o.id === id);
+  const points = reachable(house, [12, 12]);
+  for (const id of ['koharuBed', 'koharuHerbs', 'koharuDesk', 'koharuKeepsakes', 'toumaRoom', 'toumaDesk', 'ninaRoom', 'houseExit']) {
+    const object = Story.objects.house.find(o => o.id === id);
     assert.ok(object, id);
     assert.ok(points.some(([x, y]) => Math.hypot(x - object.x, y - object.y) < 1.5), `${id} is reachable`);
   }
-  assert.equal(Story.walkable(room, 2, 12), false);
-  assert.equal(Music.sceneFor('koharuRoom'), 'hearth');
-  assert.equal(Director.ambient({ ...room, episode: { chapter: 8, step: 1 } }).indoors, true);
-  assert.doesNotThrow(() => global.OkaeriScenery.animate({}, 'koharuRoom', 10), 'snow is not drawn indoors');
-  const save = { ...global.OkaeriChapters.create(2), scene: 'koharuRoom', x: 12, y: 12 };
-  assert.equal(Core.restoreSave(JSON.stringify(save)).scene, 'koharuRoom');
-  assert.equal(Core.restoreSave(JSON.stringify({ ...save, x: 2 })), null);
+  assert.equal(Story.objects.house.some(o => o.id === 'koharuDoor'), false, 'floating corner door is gone');
+  for (let y = 3; y <= 6; y++) {
+    assert.equal(Story.walkable(house, 8, y), false, `left bedroom partition at y=${y}`);
+    assert.equal(Story.walkable(house, 14, y), false, `right bedroom partition at y=${y}`);
+  }
+  assert.equal(Story.walkable(house, 6, 6), true, 'Touma doorway');
+  assert.equal(Story.walkable(house, 11, 6), true, 'Koharu doorway');
+  assert.equal(Story.walkable(house, 17, 6), true, 'Nina doorway');
+  assert.equal(Music.sceneFor('house'), 'hearth');
+  assert.equal(Director.ambient({ ...house, episode: { chapter: 8, step: 1 } }).indoors, true);
+  assert.doesNotThrow(() => global.OkaeriScenery.animate({}, 'house', 10), 'snow is not drawn indoors');
+  const legacySave = { ...global.OkaeriChapters.create(2), scene: 'koharuRoom', x: 12, y: 12 };
+  const migrated = Core.restoreSave(JSON.stringify(legacySave));
+  assert.equal(migrated.scene, 'house');
+  assert.equal(migrated.x, 11);
+  assert.equal(migrated.y, 5);
+  assert.equal(Core.restoreSave(JSON.stringify({ ...legacySave, x: 2 })), null);
 });
 
 function boot(saved) {
@@ -65,28 +71,28 @@ function boot(saved) {
   return { ctx, el, store, saved: () => ctx.OkaeriCore.restoreSave(store.get('okaeri-forest-v1')) };
 }
 
-test('the actual game enters, saves, resumes and leaves Koharu’s room', () => {
-  const initial = { ...global.OkaeriChapters.create(4), episode: { chapter: 2, step: 0, route: null, complete: false }, scene: 'house', x: 19, y: 12 };
+test('the actual game explores Koharu’s bedroom inside the house, saves, and resumes cleanly', () => {
+  const initial = { ...global.OkaeriChapters.create(4), episode: { chapter: 2, step: 0, route: null, complete: false }, scene: 'house', x: 11, y: 4 };
   const b = boot(initial);
   b.el('continueButton').onclick();
+  assert.equal(b.el('locationName').textContent, '三人の家');
   b.el('interactButton').onclick();
-  assert.equal(b.saved().scene, 'koharuRoom');
-  assert.equal(b.el('locationName').textContent, 'コハルの部屋');
+  assert.match(b.el('dialogueText').textContent, /コハル/);
   const resumed = boot(JSON.parse(b.store.get('okaeri-forest-v1')));
   resumed.el('continueButton').onclick();
-  assert.equal(resumed.el('locationName').textContent, 'コハルの部屋');
-  resumed.el('interactButton').onclick();
   assert.equal(resumed.saved().scene, 'house');
-  assert.equal(resumed.saved().x, 19);
-  assert.equal(resumed.saved().y, 12);
+  assert.equal(resumed.saved().x, 11);
+  assert.equal(resumed.saved().y, 4);
   assert.equal(resumed.saved().episode.chapter, 2);
 });
 
-test('household interactions remain available with a chapter in progress', () => {
-  const b = boot({ ...global.OkaeriChapters.create(4), episode: { chapter: 2, step: 0, route: null, complete: false }, scene: 'koharuRoom', x: 7, y: 5 });
-  b.el('continueButton').onclick();
-  b.el('interactButton').onclick();
-  assert.match(b.el('dialogueText').textContent, /コハル/);
+test('household interactions in Koharu’s room remain available with a chapter in progress', () => {
+  for (const [x, y] of [[11, 5], [10, 4], [10, 5]]) {
+    const b = boot({ ...global.OkaeriChapters.create(4), episode: { chapter: 2, step: 0, route: null, complete: false }, scene: 'house', x, y });
+    b.el('continueButton').onclick();
+    b.el('interactButton').onclick();
+    assert.match(b.el('dialogueText').textContent, /コハル|小さな箱|机|薬草/);
+  }
 });
 
 test('the third seat is present from the opening and changes only after the route brings a chair home', () => {
@@ -114,7 +120,7 @@ test('the third seat is present from the opening and changes only after the rout
   }
 });
 
-test('the opening home scene seats all three characters between the three seats and the tabletop', () => {
+test('the opening home scene starts with Koharu asleep behind a closed door, then opens her door and seats her at the table', () => {
   const order = [];
   const ctx2d = new Proxy({ createRadialGradient: () => ({ addColorStop() {} }), createLinearGradient: () => ({ addColorStop() {} }) }, { get: (t, k) => t[k] || (() => {}) });
   const root = vm.createContext({
@@ -127,6 +133,8 @@ test('the opening home scene seats all three characters between the three seats 
     },
     OkaeriHomeArt: {
       background: () => true,
+      koharuDoor(_c, open) { order.push({ kind: 'door', open }); },
+      bedKQuilt() { order.push({ kind: 'quilt' }); },
       tableSeats() { order.push({ kind: 'seats' }); },
       object(_c, o, _x, _y, _s, _t, layered) { if (o.type === 'homeTable') order.push({ kind: 'table', layered }); return true; }
     },
@@ -135,21 +143,50 @@ test('the opening home scene seats all three characters between the three seats 
   vm.runInContext(fs.readFileSync(require.resolve('../world.js'), 'utf8'), root);
   const renderer = new root.OkaeriWorld.Renderer({ getContext: () => ctx2d });
   const state = { scene: 'house', x: 12, y: 7, lead: 'touma', openingStage: 0, flags: {} };
+
+  // 1. Before Koharu wakes up: door closed, Koharu under quilt in bed, only Touma & Nina at the table
+  Director.clearOverrides();
   renderer.reset(state);
   renderer.draw(state, 0, 'dialogue');
-  const seatsIdx = order.findIndex(e => e.kind === 'seats');
-  const tableIdx = order.findIndex(e => e.kind === 'table');
-  const actors = order.filter(e => e.kind === 'actor');
-  assert.equal(actors.length, 3);
-  assert.ok(seatsIdx >= 0 && tableIdx > seatsIdx);
-  assert.equal(order[tableIdx].layered, true);
-  for (const a of actors) {
+  assert.equal(order.find(e => e.kind === 'door').open, false);
+  const bedKoharu = order.find(e => e.kind === 'actor' && e.id === 'koharu');
+  const quiltIdx = order.findIndex(e => e.kind === 'quilt');
+  const seatsIdx1 = order.findIndex(e => e.kind === 'seats');
+  const tableIdx1 = order.findIndex(e => e.kind === 'table');
+  assert.ok(bedKoharu && quiltIdx > order.indexOf(bedKoharu), 'Koharu is drawn under her bed quilt');
+  const tableActors1 = order.filter(e => e.kind === 'actor' && order.indexOf(e) > seatsIdx1 && order.indexOf(e) < tableIdx1);
+  assert.deepEqual(tableActors1.map(a => a.id).sort(), ['nina', 'touma']);
+
+  // 2. Koharu opens her door: door open, Koharu standing at her doorway, Touma & Nina look up
+  order.length = 0;
+  Director.apply({ koharu: 'door' }, 100);
+  renderer.draw(state, 100, 'dialogue');
+  assert.equal(order.find(e => e.kind === 'door').open, true);
+  assert.equal(order.some(e => e.kind === 'quilt'), false);
+  const doorKoharu = order.find(e => e.kind === 'actor' && e.id === 'koharu');
+  assert.equal(doorKoharu.seated, false);
+  assert.equal(doorKoharu.x, 552);
+  assert.equal(doorKoharu.y, 330);
+  assert.equal(order.find(e => e.kind === 'actor' && e.id === 'touma').dir, 'up');
+  assert.equal(order.find(e => e.kind === 'actor' && e.id === 'nina').dir, 'up');
+
+  // 3. Koharu walks to her step-stool and sits between seats and tabletop
+  order.length = 0;
+  Director.apply({ koharu: 'seat' }, 200);
+  renderer.draw(state, 1200, 'dialogue');
+  const seatsIdx3 = order.findIndex(e => e.kind === 'seats');
+  const tableIdx3 = order.findIndex(e => e.kind === 'table');
+  const actors3 = order.filter(e => e.kind === 'actor');
+  assert.equal(actors3.length, 3);
+  assert.equal(order[tableIdx3].layered, true);
+  for (const a of actors3) {
     const idx = order.indexOf(a);
-    assert.ok(idx > seatsIdx && idx < tableIdx, `${a.id} should render in front of chair backs and behind tabletop`);
+    assert.ok(idx > seatsIdx3 && idx < tableIdx3, `${a.id} should render in front of chair backs and behind tabletop`);
     assert.equal(a.seated, true);
     assert.equal(a.moving, false);
   }
-  assert.equal(actors.find(a => a.id === 'koharu').dir, 'right');
-  assert.equal(actors.find(a => a.id === 'nina').dir, 'down');
-  assert.equal(actors.find(a => a.id === 'touma').dir, 'down');
+  assert.equal(actors3.find(a => a.id === 'koharu').dir, 'right');
+  assert.equal(actors3.find(a => a.id === 'nina').dir, 'down');
+  assert.equal(actors3.find(a => a.id === 'touma').dir, 'down');
+  Director.clearOverrides();
 });

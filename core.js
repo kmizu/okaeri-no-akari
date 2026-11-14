@@ -602,6 +602,7 @@
         if (flags['night' + key[0].toUpperCase() + key.slice(1)] && !flags[requirement]) return null;
       if (s.pendingEvening && (!nightRequirements[s.pendingEvening] || !flags[nightRequirements[s.pendingEvening]] || s.scene !== 'house'))
         return null;
+      const fromKoharuRoom = s.scene === 'koharuRoom';
       return {
         ...(s.openingPrelude ? { openingPrelude: true } : {}),
         ...(openingStage !== undefined ? { openingStage } : {}),
@@ -610,9 +611,9 @@
         ...(episode ? { episode } : {}),
         ...(s.pendingEvening ? { pendingEvening: s.pendingEvening } : {}),
         version: 1,
-        scene: s.scene,
-        x: s.x,
-        y: s.y,
+        scene: fromKoharuRoom ? 'house' : s.scene,
+        x: fromKoharuRoom ? 11 : s.x,
+        y: fromKoharuRoom ? 5 : s.y,
         lead: s.lead,
         flags,
         courage: Math.max(0, Math.min(3, Number(s.courage) || 0))

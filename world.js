@@ -4,7 +4,17 @@ const W=1152,H=768,T=48;
 let smokeLog=null; // 同じく、煙突の位置（煙に使う）
 let lightLog=null; // 背景を描く間、ともっている灯りの位置を控える（夜の光に使う）
 function homeBreakfast(s){return s.scene==='house'&&(s.openingStage===0||s.openingPrelude);}
-function breakfastPose(s){const touma={x:584,y:413,dir:'down',seated:true},nina={x:516,y:413,dir:'down',seated:true},koharu={x:462,y:422,dir:'right',seated:true};return s.lead==='nina'?{p:nina,f:touma,g:koharu}:{p:touma,f:nina,g:koharu};}
+function koharuMorning(s,time=0){
+ if(!homeBreakfast(s))return null;
+ const D=root.OkaeriDirector,over=D?.stage?.over?.koharu;
+ if(!over)return {state:'asleep',doorOpen:false,pose:{x:552,y:330,dir:'down',seated:false}};
+ if(over==='door')return {state:'door',doorOpen:true,pose:{x:552,y:330,dir:'down',seated:false}};
+ if(over==='seated'||D?.reduced?.()||!(over?.mode==='seat')||time-over.start>=900)return {state:'seated',doorOpen:true,pose:{x:462,y:422,dir:'right',seated:true}};
+ const p=Math.max(0,(time-over.start)/900);
+ if(p<.55){const u=p/.55;return {state:'walk',doorOpen:true,pose:{x:552+(462-552)*u,y:330+(360-330)*u,dir:'left',seated:false,scriptWalk:true}};}
+ const u=(p-.55)/.45;return {state:'walk',doorOpen:true,pose:{x:462,y:360+(422-360)*u,dir:'down',seated:false,scriptWalk:true}};
+}
+function breakfastPose(s,time=0){const km=koharuMorning(s,time),look=km?.state==='door'?'up':'down',touma={x:584,y:413,dir:look,seated:true},nina={x:516,y:413,dir:look,seated:true},koharu=km?km.pose:{x:462,y:422,dir:'right',seated:true};return s.lead==='nina'?{p:nina,f:touma,g:koharu}:{p:touma,f:nina,g:koharu};}
 function Renderer(canvas){this.c=canvas.getContext('2d');this.t=0;this.p={x:600,y:504,dir:'down'};this.f={x:600,y:552,dir:'down'};this.target={x:600,y:504};this.follow={x:600,y:552};this.g={x:600,y:590,dir:'down'};this.follow2={x:600,y:590};this.cache={};}
 Renderer.prototype.reset=function(s){
  if(homeBreakfast(s)){const b=breakfastPose(s);this.p={...b.p};this.f={...b.f};this.g={...b.g};this.target={x:b.p.x,y:b.p.y};this.follow={x:b.f.x,y:b.f.y};this.follow2={x:b.g.x,y:b.g.y};return;}
@@ -136,11 +146,16 @@ Renderer.prototype.draw=function(s,time,mode){
   }
   for(const [x,y] of [[330,430],[730,520]]){rect(c,x-30,y,60,15,'#a38362');rect(c,x-25,y+15,6,17,'#7c715e');rect(c,x+19,y+15,6,17,'#7c715e');ellipse(c,x,y-3,20,9,'#e7cb98');}
  }
- const drawables=[];
+ const drawables=[],km=koharuMorning(s,time);
+ if(s.scene==='house'&&root.OkaeriHomeArt?.koharuDoor)drawables.push({y:312,draw:()=>root.OkaeriHomeArt.koharuDoor(c,!km||km.doorOpen)});
  for(const source of OkaeriStory.activeObjects(s)){
   const o=source.base||source;
   const x=o.x*T+24,y=o.y*T+24;
   if(o.type==='homeTable'&&root.OkaeriHomeArt?.tableSeats)drawables.push({y:y-64,draw:()=>root.OkaeriHomeArt.tableSeats(c,x,y,s)});
+  if(o.id==='koharuBed'&&km?.state==='asleep'&&OkaeriSprites.has?.('koharu')){
+   drawables.push({y:y+.4,draw:()=>{c.save();c.beginPath();c.rect(x-24,y-90,92,66);c.clip();OkaeriSprites.draw(c,x+22,y+12,'koharu','down',false,t,true);c.restore();}});
+   drawables.push({y:y+.8,draw:()=>root.OkaeriHomeArt?.bedKQuilt?.(c,x,y)});
+  }
   drawables.push({y,draw:()=>{
   if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
   if(o.type?.startsWith('home')){root.OkaeriHomeArt?.object(c,o,x,y,s,t,o.type==='homeTable'&&!!root.OkaeriHomeArt?.tableSeats);return;}
@@ -158,13 +173,13 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='mochi')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='crab')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='guardian')OkaeriCast.drawMap(c,o.type,x,y,t);
-  if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':o.id==='ourHome'?'⌂':['houseExit','koharuRoomExit'].includes(o.id)?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
+  if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':o.id==='ourHome'?'⌂':o.id==='houseExit'?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
   const ready=(['log','waterGate','windbreak'].includes(o.id)?s.lead==='touma':['repair','regulator','hillLens'].includes(o.id)?s.lead==='nina':true);const distance=Math.hypot(s.x-o.x,s.y-o.y);
   if(distance<2&&mode==='explore'){ellipse(c,x,y-(o.type==='guardian'?115:o.type==='npc'?82:56)+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(o.type==='guardian'?111:o.type==='npc'?78:52)+Math.sin(t*3)*2);}
  }});}
  let moving=false,followersMoving=false,thirdMoving=false;
  if(homeBreakfast(s)){
-  const b=breakfastPose(s);this.p={...b.p};this.f={...b.f};this.g={...b.g};this.target={x:b.p.x,y:b.p.y};this.follow={x:b.f.x,y:b.f.y};this.follow2={x:b.g.x,y:b.g.y};
+  const b=breakfastPose(s,time);this.p={...b.p};this.f={...b.f};this.g={...b.g};this.target={x:b.p.x,y:b.p.y};this.follow={x:b.f.x,y:b.f.y};this.follow2={x:b.g.x,y:b.g.y};thirdMoving=!!b.g.scriptWalk;
  }else{
   const tx=s.x*T+24,ty=s.y*T+24;
   if(tx!==this.target.x||ty!==this.target.y){this.follow2={...this.follow};this.follow={...this.target};this.p.dir=OkaeriSprites.facing(tx-this.target.x,ty-this.target.y,this.p.dir);this.target={x:tx,y:ty};}
@@ -180,7 +195,7 @@ Renderer.prototype.draw=function(s,time,mode){
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
  const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&s.episode.step===2)||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
  if(third)shown.push({...this.g,id:'koharu',moving:thirdMoving});
- for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',actor.moving&&mode==='explore',t,actor.seated)});
+ for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',(actor.moving&&mode==='explore')||!!actor.scriptWalk,t,actor.seated)});
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
  // 次の目的地の目印。歩ける時だけ、足元の輪と、上下に揺れる矢印で示す。
  const guide=mode==='explore'?D?.guide(s):null;

@@ -129,7 +129,7 @@
   function companion(s) {
     const epi = root.OkaeriEpisodes?.playingEpilogue?.();
     if (epi) return !!root.OkaeriCore?.route(epi)?.koharu; // 後日譚：コハルのいる結末では、家の中でも一緒にいる
-    if (s.openingStage !== undefined) return true; // 第1話の朝：同じ家で起きて、広場まで三人で歩く
+    if (s.openingStage !== undefined) return s.openingStage > 0 || !!stage.over.koharu; // 第1話の朝：戸が開いて起きてきてから、広場まで三人で歩く
     const ep = s.episode;
     // 最終話でコハルが食卓を囲む結末は、家の中にもコハルがいる（三脚目の椅子の主）。
     if (ep && !ep.complete && ep.chapter === 10 && s.scene === 'house') return !!root.OkaeriCore?.route(ep.route)?.koharu;
@@ -210,6 +210,7 @@
     if (cue.weather) stage.over.weather = cue.weather;
     if (cue.flood) stage.over.flood = true;
     if (cue.lit) stage.over.lit = true;
+    if (cue.koharu) stage.over.koharu = cue.koharu === 'seat' ? { mode: 'seat', start: t } : cue.koharu;
     if (cue.shake && !calm) stage.shake = { start: t, power: cue.shake === true ? 1 : cue.shake, ms: cue.shakeMs || 520 };
     if (cue.flash) stage.flash = { start: t, color: cue.flash === 'warm' ? '255,222,160' : '255,255,255', ms: calm ? 200 : 520 };
     if (cue.fade) fade(cue.fade, cue.fadeMs);

@@ -387,7 +387,7 @@
       if (
         !s ||
         s.version !== 1 ||
-        !['town', 'forest', 'canal', 'hill', 'house', 'lake', 'lakeside', 'lampworkshop', 'herbvale', 'oldpass'].includes(s.scene) ||
+        !['town', 'forest', 'canal', 'hill', 'house', 'koharuRoom', 'lake', 'lakeside', 'lampworkshop', 'herbvale', 'oldpass'].includes(s.scene) ||
         !Number.isFinite(s.x) ||
         !Number.isFinite(s.y) ||
         s.x < 1 ||
@@ -597,7 +597,7 @@
         nina: 'endingNina',
         friends: 'endingFriends'
       };
-      if (s.scene === 'house' && (s.x < 3 || s.x > 20 || s.y < 3 || s.y > 13)) return null;
+      if (['house', 'koharuRoom'].includes(s.scene) && (s.x < 3 || s.x > 20 || s.y < 3 || s.y > 13)) return null;
       for (const [key, requirement] of Object.entries(nightRequirements))
         if (flags['night' + key[0].toUpperCase() + key.slice(1)] && !flags[requirement]) return null;
       if (s.pendingEvening && (!nightRequirements[s.pendingEvening] || !flags[nightRequirements[s.pendingEvening]] || s.scene !== 'house'))

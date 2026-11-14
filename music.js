@@ -47,7 +47,7 @@
     static sceneFor(scene) {
       return ['lake', 'lakeside'].includes(scene)
         ? 'lake'
-        : ['house', 'lampworkshop'].includes(scene)
+        : ['house', 'koharuRoom', 'lampworkshop'].includes(scene)
           ? 'hearth'
           : scene === 'town'
             ? 'village'

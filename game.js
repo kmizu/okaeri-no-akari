@@ -60,7 +60,9 @@
   }
   function updateHud() {
     $('locationName').textContent =
-      state.scene === 'house'
+      state.scene === 'koharuRoom'
+        ? 'コハルの部屋'
+        : state.scene === 'house'
         ? '三人の家'
         : state.scene === 'town'
           ? '雪の町 ユキネ'
@@ -70,7 +72,7 @@
               ? '風待ちの丘'
               : '粉ひきの森';
     $('weather').textContent =
-      state.scene === 'house'
+      ['house', 'koharuRoom'].includes(state.scene)
         ? '薪の灯り / 家の中'
         : state.flags.festivalStarted
           ? '帰り灯祭り / 夜'
@@ -389,7 +391,8 @@
     Sfx?.play('swap');
   }
   function scene(next, x, y) {
-    const door = (next === 'house') !== (state.scene === 'house') || (next === 'lampworkshop') !== (state.scene === 'lampworkshop');
+    const indoor = s => ['house', 'koharuRoom', 'lampworkshop'].includes(s);
+    const door = next !== state.scene && (indoor(next) || indoor(state.scene));
     if (next !== state.scene) {
       D.fade('black');
       if (door) Sfx?.play('door');
@@ -1213,7 +1216,44 @@
       scene('house', 12, 12);
       return true;
     }
+    if (state.scene === 'koharuRoom') {
+      if (id === 'koharuRoomExit') {
+        scene('house', 19, 12);
+        return true;
+      }
+      const roomLines = {
+        koharuBed: [
+          ['', 'コハルの寝台。若草色の毛布の端に、小さな花がいくつも縫い付けられている。'],
+          ['touma', 'この前まで布の切れ端だったのに、いつの間に。'],
+          ['', 'まくら元には三人で撮った写真。裏には「寝坊したら三回起こすこと」と、丸い字で書いてある。']
+        ],
+        koharuHerbs: [
+          ['', '薬草と小瓶の棚。葉の形を描いた札が、一つずつ瓶に結んである。'],
+          ['touma', '見分けやすいように、絵にしたのか。'],
+          ['', '隅には二人分の手当て袋。コハルがいつでも持っていけるように詰めてある。']
+        ],
+        koharuDesk: [
+          ['', 'コハルの薬草机。開いた手帳には、ユラに教わった薬の分量と、失敗した日のことが丁寧に並ぶ。'],
+          ['', '最後のページには、三つのカップの絵。「帰ったらお茶」。'],
+          ['touma', '……湯を沸かしておくか。']
+        ],
+        koharuKeepsakes: [
+          ['', '小さな箱には、押し花と古い帰り結び。三人で雪だるまを作った日の絵も、折らずにしまってある。'],
+          ['touma', '……あの時の、まだ持ってたのか。'],
+          ['', '絵の隅には、後から増えた文字。「また三人で」。']
+        ]
+      };
+      if (roomLines[id]) {
+        talk(roomLines[id]);
+        return true;
+      }
+      return false;
+    }
     if (state.scene !== 'house') return false;
+    if (id === 'koharuDoor') {
+      scene('koharuRoom', 12, 12);
+      return true;
+    }
     if (id === 'houseExit') {
       scene('town', 3, 13);
       return true;
@@ -1309,7 +1349,7 @@
       homeShelf: [
         [
           '',
-          '古い家の鍵と、一枚の写真。この家を大掃除した日に、町の人たちと撮ったものだ。\n血のつながりはなくても、二人を育ててくれた顔が並んでいる。'
+          '古い家の鍵と、一枚の写真。この家を大掃除した日に、町の人たちと撮ったものだ。\n三人を見守ってきた、町の人たちの顔が並んでいる。'
         ],
         ['nina', 'この日、町じゅうの人が来てくれたんだよね。'],
         ['touma', 'マロさんは掃除より、パンを配る方が忙しそうだった。'],
@@ -1335,7 +1375,7 @@
     if (!S.walkable(state, x, y)) return false;
     state.x = x;
     state.y = y;
-    Sfx?.play(['house', 'lampworkshop'].includes(state.scene) ? 'stepWood' : 'step');
+    Sfx?.play(['house', 'koharuRoom', 'lampworkshop'].includes(state.scene) ? 'stepWood' : 'step');
     updateHud();
     return true;
   }
@@ -1389,7 +1429,7 @@
       D.ambient(state).bgm ||
         (OkaeriMusic.sceneFor
           ? OkaeriMusic.sceneFor(state.scene)
-          : ['town', 'house', 'lakeside', 'lampworkshop'].includes(state.scene)
+          : ['town', 'house', 'koharuRoom', 'lakeside', 'lampworkshop'].includes(state.scene)
             ? 'village'
             : 'journey')
     );

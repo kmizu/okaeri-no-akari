@@ -108,7 +108,7 @@
       weather = 'snow';
       bgm = null;
     }
-    const indoors = ['house', 'lampworkshop'].includes(s.scene);
+    const indoors = ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene);
     const flood = ep?.chapter === 3 && s.scene === 'canal' && ep.step >= 1 && ep.step <= 3;
     const bed = indoors
       ? 'hearth'
@@ -133,7 +133,7 @@
     const ep = s.episode;
     // 最終話でコハルが食卓を囲む結末は、家の中にもコハルがいる（三脚目の椅子の主）。
     if (ep && !ep.complete && ep.chapter === 10 && s.scene === 'house') return !!root.OkaeriCore?.route(ep.route)?.koharu;
-    if (!ep || ep.complete || ['house', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
+    if (!ep || ep.complete || ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
     if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && !(ep.chapter === 2 && ep.step === 0) && ep.chapter !== 4;
     // 薬の番として加わった第2話からは、当番の日は町の中も三人で歩く。
     // 朝のうちは診療所の仕事があるので、その日の最初の用事にはいないことがある。
@@ -152,6 +152,7 @@
     canal: { '*': [3, 13] },
     hill: { '*': [4, 14] },
     house: { '*': [12, 13] },
+    koharuRoom: { '*': [12, 13] },
     herbvale: { '*': [2, 13] },
     oldpass: { '*': [2, 13] }
   };
@@ -283,7 +284,7 @@
       c.restore();
       return;
     }
-    const indoors = ['house', 'lampworkshop'].includes(s.scene);
+    const indoors = ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene);
     if (!festival) {
       c.globalCompositeOperation = 'multiply';
       if (mode === 'dusk') {
@@ -310,7 +311,7 @@
     c.restore();
   }
   function weatherLayer(c, s, t) {
-    if (weather() !== 'blizzard' || ['house', 'lampworkshop'].includes(s.scene)) return;
+    if (weather() !== 'blizzard' || ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene)) return;
     const calm = reduced(),
       k = t * 0.001;
     c.save();

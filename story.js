@@ -1,6 +1,7 @@
 (function(root){
 const objects={
-house:[{"id":"toumaDesk","x":9,"y":4,"label":"トウマの修理机","type":"homeDesk"},{"id":"toumaBooks","x":7,"y":3,"label":"書き込みのある本棚","type":"homeBooks"},{"id":"ninaMirror","x":15,"y":4,"label":"ニナの鏡台","type":"homeMirror"},{"id":"ninaWardrobe","x":20,"y":3,"label":"糸と冬服の棚","type":"homeWardrobe"},{id:'houseExit',x:12,y:13,label:'町へ出る',type:'exit'},{id:'homeTable',x:11,y:9,label:'食卓・一日の思い出',type:'homeTable'},{id:'homeStove',x:5,y:9,label:'薪ストーブ',type:'homeStove'},{id:'toumaRoom',x:5,y:4,label:'トウマの部屋',type:'homeBed'},{id:'ninaRoom',x:18,y:4,label:'ニナの部屋',type:'homeBed'},{id:'homeShelf',x:8,y:11,label:'古い写真と家の鍵',type:'homeShelf'},{id:'homeSewing',x:18,y:10,label:'窓辺の繕い机',type:'homeSewing'}],
+house:[{"id":"toumaDesk","x":9,"y":4,"label":"トウマの修理机","type":"homeDesk"},{"id":"toumaBooks","x":7,"y":3,"label":"書き込みのある本棚","type":"homeBooks"},{"id":"ninaMirror","x":15,"y":4,"label":"ニナの鏡台","type":"homeMirror"},{"id":"ninaWardrobe","x":20,"y":3,"label":"糸と冬服の棚","type":"homeWardrobe"},{id:'houseExit',x:12,y:13,label:'町へ出る',type:'exit'},{id:'homeTable',x:11,y:9,label:'食卓・一日の思い出',type:'homeTable'},{id:'homeStove',x:5,y:9,label:'薪ストーブ',type:'homeStove'},{id:'toumaRoom',x:5,y:4,label:'トウマの部屋',type:'homeBed'},{id:'ninaRoom',x:18,y:4,label:'ニナの部屋',type:'homeBed'},{id:'homeShelf',x:8,y:11,label:'古い写真と家の鍵',type:'homeShelf'},{id:'homeSewing',x:18,y:10,label:'窓辺の繕い机',type:'homeSewing'},{id:'koharuDoor',x:20,y:12,label:'コハルの部屋へ',type:'homeKoharuDoor'}],
+koharuRoom:[{id:'koharuBed',x:6,y:5,label:'コハルの寝台',type:'homeKoharuBed'},{id:'koharuHerbs',x:19,y:4,label:'薬草と小瓶の棚',type:'homeKoharuHerbs'},{id:'koharuDesk',x:16,y:9,label:'コハルの薬草机',type:'homeKoharuDesk'},{id:'koharuKeepsakes',x:5,y:10,label:'思い出の箱',type:'homeKoharuBox'},{id:'koharuRoomExit',x:12,y:13,label:'食卓へ戻る',type:'exit'}],
 hill:[{id:'returnSign',x:7,y:9,label:'小屋の帰還札',type:'returnSign'},{id:'hillHome',x:4,y:14,label:'ユキネへ戻る',type:'exit'},{id:'windbreak',x:8,y:11,label:'外れた風よけ',type:'windbreak'},{id:'hillRest',x:6,y:8,label:'風待ちの小屋',type:'camp'},{id:'hillGuardian',x:12,y:9,label:'尾根の番人',type:'guardian',hide:'hillGuardian'},{id:'hillLens',x:17,y:5,label:'霜のついたレンズ',type:'hillLens'},{id:'hillBeacon',x:20,y:3,label:'丘の灯台',type:'hillBeacon'}],
 canal:[{id:'canalHome',x:3,y:13,label:'ユキネへ戻る',type:'exit'},{id:'waterGate',x:8,y:10,label:'凍りついた水門',type:'waterGate'},{id:'canalRest',x:6,y:7,label:'水番の休憩所',type:'camp'},{id:'canalCrab',x:12,y:10,label:'水路のヤドカリ',type:'crab',hide:'canalCrab'},{id:'regulator',x:15,y:6,label:'三つの調整灯',type:'regulator'},{id:'waterBeacon',x:20,y:3,label:'水路の帰り灯',type:'waterBeacon'}],
 town:[{id:'ourHome',x:3,y:13,label:'三人の家へ',type:'exit'},{id:'elna',x:7,y:11,label:'織り手のエルナ',type:'npc'},{id:'orlf',x:16,y:10,label:'配達人のオルフ',type:'npc'},{id:'hillExit',x:1,y:9,label:'風待ちの丘へ',type:'exit'},{id:'canalExit',x:22,y:9,label:'共同水路へ',type:'exit'},{id:'board',x:10,y:8,label:'出発札',type:'board'},{id:'sae',x:14,y:9,label:'師匠のサエ',type:'npc'},{id:'bakery',x:6,y:8,label:'パン屋のマロ',type:'npc'},{id:'lamp',x:18,y:9,label:'帰り灯',type:'lamp'},{id:'gift',x:4,y:11,label:'繕いものの籠',type:'basket'},{id:'exit',x:12,y:2,label:'森へ続く道',type:'exit'}],
@@ -14,6 +15,10 @@ function walkable(s,x,y){
  if(y===6&&x!==6&&x!==17)return false;
  if(x===12&&y<=6)return false;
  return !((x===9&&y===4)||(x===7&&y===3)||(x===15&&y===4)||(x===20&&y===3)||(x===8&&y===11)||(x>=4&&x<=5&&y<=4)||(x>=18&&x<=19&&y<=4)||(x>=10&&x<=12&&y>=8&&y<=9)||(x>=4&&x<=5&&y>=8&&y<=9)||(x>=18&&x<=19&&y===10));
+ }
+ if(s.scene==='koharuRoom'){
+  if(x<3||x>20||y<3||y>13)return false;
+  return !((x>=5&&x<=6&&y>=4&&y<=5)||(x>=18&&x<=19&&y>=3&&y<=4)||(x>=15&&x<=17&&y>=8&&y<=9)||(x>=4&&x<=5&&y===10));
  }
  if(s.scene==='hill'){
   const path=(x>=3&&x<=6&&y>=11&&y<=14)||(x>=5&&x<=7&&y>=8&&y<=12)||(x>=6&&x<=13&&y>=10&&y<=12)||(x>=11&&x<=13&&y>=6&&y<=11)||(x>=12&&x<=19&&y>=5&&y<=7)||(x>=18&&x<=21&&y>=3&&y<=7);
@@ -36,7 +41,7 @@ function walkable(s,x,y){
  if(!s.flags.guardian&&x===20&&y<=5)return false;
  return true;
 }
-function objective(s){const f=s.flags;if(s.scene==='house')return '三人の家。食卓で一日の思い出を振り返ろう';if(s.scene==='hill'){if(!f.windbreak)return 'トウマで風よけを直そう';if(!f.hillGuardian)return '尾根を守る番人を落ち着かせよう';if(!f.hillLens)return 'ニナで灯台のレンズを合わせよう';if(!f.hillLit)return '二人で丘の灯台をともそう';return '町へ戻って、サエにただいま';}if(s.scene==='canal'){if(!f.waterGate)return 'トウマで水門を支えよう';if(!f.canalCrab)return '水路に迷い込んだヤドカリを落ち着かせよう';if(!f.waterFlow)return 'ニナで三つの調整灯をつなごう';if(!f.waterLit)return '水路の帰り灯をともそう';return '水音と一緒に町へ帰ろう';}if(s.scene==='town'){if(f.endingTouma||f.endingNina||f.endingFriends)return 'また明日も、二人で。祭りを楽しもう';if(f.festivalStarted){if(!f.festivalMeal)return 'マロのスープを、二人で味わおう';if(!f.festivalRibbon)return '繕いものの籠で、帰り結びを';return '東の帰り灯で、ニナと話そう';}if(f.hillLit)return 'サエに報告して、帰り灯祭りへ';if(f.waterReturned)return '西の道から、風待ちの丘へ';if(f.returned)return f.waterLit?'パン屋のマロに、水が戻ったと伝えよう':'東の道から共同水路へ';if(f.lit)return '出発札を戻して、みんなにただいま';if(!f.board)return '広場の出発札を掛けよう';return '北の道から、森の灯台へ';}if(!f.mochi)return '道で跳ねる精霊を落ち着かせよう';if(!f.log)return 'トウマで倒木を動かそう';if(!f.repair)return 'ニナで灯りの橋を修理しよう';if(!f.crab)return '氷殻を火花で溶かそう';if(!f.guardian)return '灯台を守る番人のもとへ';if(!f.lit)return '二人で森の灯台をともそう';return '町へ帰ろう。南の道か、手帳から';}
+function objective(s){const f=s.flags;if(s.scene==='koharuRoom')return 'コハルの部屋。食卓へは、手前の扉から戻ろう';if(s.scene==='house')return '三人の家。食卓で一日の思い出を振り返ろう';if(s.scene==='hill'){if(!f.windbreak)return 'トウマで風よけを直そう';if(!f.hillGuardian)return '尾根を守る番人を落ち着かせよう';if(!f.hillLens)return 'ニナで灯台のレンズを合わせよう';if(!f.hillLit)return '二人で丘の灯台をともそう';return '町へ戻って、サエにただいま';}if(s.scene==='canal'){if(!f.waterGate)return 'トウマで水門を支えよう';if(!f.canalCrab)return '水路に迷い込んだヤドカリを落ち着かせよう';if(!f.waterFlow)return 'ニナで三つの調整灯をつなごう';if(!f.waterLit)return '水路の帰り灯をともそう';return '水音と一緒に町へ帰ろう';}if(s.scene==='town'){if(f.endingTouma||f.endingNina||f.endingFriends)return 'また明日も、二人で。祭りを楽しもう';if(f.festivalStarted){if(!f.festivalMeal)return 'マロのスープを、二人で味わおう';if(!f.festivalRibbon)return '繕いものの籠で、帰り結びを';return '東の帰り灯で、ニナと話そう';}if(f.hillLit)return 'サエに報告して、帰り灯祭りへ';if(f.waterReturned)return '西の道から、風待ちの丘へ';if(f.returned)return f.waterLit?'パン屋のマロに、水が戻ったと伝えよう':'東の道から共同水路へ';if(f.lit)return '出発札を戻して、みんなにただいま';if(!f.board)return '広場の出発札を掛けよう';return '北の道から、森の灯台へ';}if(!f.mochi)return '道で跳ねる精霊を落ち着かせよう';if(!f.log)return 'トウマで倒木を動かそう';if(!f.repair)return 'ニナで灯りの橋を修理しよう';if(!f.crab)return '氷殻を火花で溶かそう';if(!f.guardian)return '灯台を守る番人のもとへ';if(!f.lit)return '二人で森の灯台をともそう';return '町へ帰ろう。南の道か、手帳から';}
 const opening=[
  {scene:'house',x:12,y:7,objective:'家で、出かける支度をする',lines:[
   ['','雪の町ユキネ、冬の終わり。\n町はずれの小さな家の台所で、鍋のふたがことこと鳴っている。',{se:'fire'}],
@@ -53,6 +58,7 @@ const opening=[
   ['nina','うそ。……ほんとだ、しょっぱい。','surprise'],
   ['touma','俺は濃い方が好きだから、ちょうどいい。'],
   ['','ニナは何か言い返しかけて、やめた。\nかわりにトウマの右手を引っぱって、手袋の親指を確かめる。'],
+  ['','廊下の奥、コハルの部屋の戸が開いた。寝ぐせのついた頭が、ひょっこりのぞく。'],
   ['コハル','おはよー……。あ、もう支度してる。ずるい、起こしてよ。','sleepy'],
   ['','コハル。ユラの診療所で修業している、薬師の見習い。二人の二つ年下で、子どもの頃からずっと、二人のあとをついて歩いてきた。',{intro:'koharu',se:'chime'}],
   ['nina','三回起こしたよ。三回とも「あと五つ数えたら」って言った。','happy',{intro:null}],

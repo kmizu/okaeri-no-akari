@@ -188,6 +188,35 @@ function workshop(){
  return s;
 }
 function workshopBg(c){if(!D.want('home/workshop',[0,0,1152,768],workshop))return false;D.draw(c,'home/workshop',0,0);D.release('home/workshop');return true;}
+
+// 家の奥にあるコハルの小さな部屋。家具は人物の前後に描けるよう別スプライトにする。
+function koharuBedroom(){
+ const r=rng(7319);let s='';
+ s+=`<radialGradient id="kout" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#304749"/><stop offset="1" stop-color="#101d24"/></radialGradient>`+R(0,0,1152,768,'url(#kout)');
+ s+=shadow(110,30,950,690,.6,'b16')+wood(R(120,20,912,676,'#3f2e21',4))+floorPlanks(r)+backWall(r);
+ s+=rug(330,330,330,210,'#70815e','#e9dcb9','#b76a5b','star')+braided(300,516,68,25)+rug(775,515,130,62,'#916e58','#e9dcb9','#6f8f5a','diamond');
+ s+=windowAt(526,'#778e62','kw');
+ // 葉を干す紐と、布に包んだ種。冬の間にも手入れする薬草の部屋。
+ s+=S('M260,62Q360,78 460,60','#6c4d32',2);
+ for(const x of [286,330,374,418]){
+  s+=L(x,67,x,86,'#725338',1.3)+S(`M${x},86q-8,12 -9,22M${x},86q1,14 0,24M${x},86q8,12 9,22`,'#617e4e',2)
+   +E(x-8,101,4,8,'#82965c')+E(x,106,4,9,'#9aaa6b')+E(x+8,101,4,8,'#82965c')+R(x-4,85,8,3,'#bb8065',1);
+ }
+ s+=wood(R(728,67,152,6,'#795b3e',1))+jar(740,67,'#b0705a')+jar(758,67,'#7f9a72')+jar(776,67,MUSTARD)
+  +G(R(807,47,45,24,'#e9d9b6',1)+S('M813,54h29M813,59h22M813,64h26','#8b795d',1),{transform:'rotate(3 830 59)'});
+ // 押し花の額と、よく使う外套。小さな私室らしい手触りを壁に置く。
+ s+=shadow(650,58,46,42,.3,'b2')+wood(R(646,54,50,44,'#77543b',2))+R(650,58,42,36,'#eee1bd',1)
+  +S('M671,86q-4,-12 1,-21M671,79q-9,-5 -12,-10M671,76q8,-4 11,-9','#6e8f5d',1.5)
+  +ball(659,68,3,3,'#cf8b78')+ball(683,66,3,3,'#d4aa60')+ball(672,64,3,3,'#d3b071')
+  +wood(R(934,150,54,5,'#5e4530',2))+coat(950,155,'#a5543f','#efe5cc','#778e62');
+ s+=light(578,176,210,'#ffe0ac',.25,'soft-light',160)+light(760,405,220,'#ffc37d',.24,'soft-light',170);
+ // 食卓へ戻る入口の敷居。部屋全体を家の家具と同じ素材で囲む。
+ s+=shadow(552,661,96,9,.35,'b2')+cloth(R(552,630,96,34,'#6f7f5a',3))+R(556,634,88,26,'#d8c696',2)
+  +L(560,644,640,644,'#6f7f5a',2,{'stroke-dasharray':'6 4'})+L(560,655,640,655,'#6f7f5a',2,{'stroke-dasharray':'6 4'});
+ s+=wood(R(120,20,24,676,'#3f2e21')+R(1008,20,24,676,'#35261b')+R(120,20,912,22,'#3f2e21')+R(120,672,452,24,'#3f2e21')+R(628,672,404,24,'#3f2e21'),'v')
+  +wood(R(572,672,56,24,'#8a6846'))+R(572,672,56,3,'#fff3d6',0,{opacity:.3})+R(120,20,912,676,'none',4,{stroke:'#0c151a','stroke-width':2,'stroke-opacity':.7});
+ return s;
+}
 // ---------------------------------------------------------------- 家具（基準点＝タイルの中心）
 function bed(bx,quilt,accent,extra,id){
  let q='';const cols=[quilt,accent,lite(quilt,.5),dark(quilt,.15),CREAM];
@@ -217,6 +246,9 @@ function build(){
  D.define('home/bedT',[-88,-136,128,184],bed(-70,'#4f8a88','#2f5f66',shelfT,'qa')+cloth(R(-62,6,34,13,'#2f5f66',3))+S('M-62,10h34M-62,14h34','#fff',1,{opacity:.25}));
  const bunny=ball(52,-48,7,7,'#f1d9c9')+ball(47,-56,2.6,5,'#f1d9c9')+ball(57,-56,2.6,5,'#f1d9c9')+E(50,-49,1,1.2,'#3a2414')+E(55,-49,1,1.2,'#3a2414');
  D.define('home/bedN',[-40,-136,128,184],bed(-22,'#c0766c','#8a4a52','','qb')+bunny+cloth(P('M6,6q8,-9 14,0q6,-9 14,0q0,9 -14,15q-14,-6 -14,-15z','#f0d7b0')));
+ // コハルの寝台。若草色の毛布と小さな花の飾り。
+ D.define('home/bedK',[-88,-136,128,184],bed(-70,'#899866','#667a4d','','qk')
+  +cloth(R(-61,5,36,12,'#d9c582',3))+[[-55,10],[-45,11],[-35,10]].map(([x,y])=>ball(x,y,2.2,2.2,'#f5e7bb')).join(''));
  // --- トウマの修理机
  let curls='';const r=rng(5);for(let i=0;i<9;i++){const cx=-16+r()*34,cy=-38+r()*10;curls+=S(`M${n(cx)},${n(cy)}q3,-4 5,0t-3,3`,'#f0d9a8',1.3);}
  D.define('home/desk',[-56,-92,116,138],
@@ -280,6 +312,34 @@ function build(){
   +contact(52,-36,9,3,.5,'b2')+cyl(45,-42,14,5,'#5a4a36',2)+R(47,-58,10,16,'#fff0b8',2,{opacity:.9})+R(47,-58,10,16,'url(#glass)',2)+R(47,-58,10,16,'none',2,{stroke:'#5a4a36','stroke-width':1.4})+P('M44,-58l8,-8l8,8z','#5a4a36')+S('M52,-66v-5','#5a4a36',1.4)+E(52,-49,2.2,4,'#fff8dc')
   +contact(2,34,56,5,.4)+cyl(-46,16,6,16,'#5e4530',1)+cyl(40,16,6,16,'#5e4530',1)+box(-52,6,104,10,6,'#b08a5c','#7a5a3c',{shadow:false,rx:3})+cloth(R(-40,5,80,9,'#6f7f5a',4))+L(-34,9.5,34,9.5,'#ead9b4',1.4,{'stroke-dasharray':'5 4'}));
  D.define('home/chair3',[-22,-112,44,90],chairBack(0,'#6d7a5a',MUSTARD)+cyl(-12,-62,4,20,'#55603f',1)+cyl(8,-62,4,20,'#55603f',1)); // 三人目の椅子
+ // 食卓の三つ目の席は、コハルが診療所から持ってきた踏み台。
+ D.define('home/koharuStool',[-33,-40,66,75],
+  contact(1,18,22,5,.38,'b2')+wood(R(-20,-7,6,24,'#765638',2)+R(14,-7,6,24,'#765638',2),'v')
+  +wood(R(-17,7,34,4,'#9c774d',1))+box(-24,-20,48,14,7,'#d2b17b','#94734c',{shadow:false})
+  +cloth(E(0,-14,17,5,'#bdad69'))+E(0,-15,14,3,'#e1ca8b',{opacity:.65}));
+ // 食卓から部屋へ続く扉。
+ D.define('home/koharuDoor',[-75,-140,95,166],
+  shadow(-62,-120,72,132,.45,'b2')+wood(R(-62,-126,76,126,'#5e422e',3),'v')+wood(R(-56,-120,64,116,'#aa8054',2),'v')
+  +R(-51,-113,54,92,'none',2,{stroke:'#684b33','stroke-width':3})+L(-51,-73,3,-73,'#765437',2)+ball(-5,-58,3,3,'#e3c489')
+  +wood(R(-55,-136,60,17,'#d2b684',3))+T(-25,-124,'コハル',10,'#4a3928')
+  +S('M-50,-105q6,-7 12,0M-49,-102q4,-4 10,0','#7b9561',1.5));
+ // 薬草棚と作業机。瓶・手帳はそれぞれ別々に調べられる。
+ D.define('home/koharuHerbs',[-62,-132,128,158],
+  box(-54,-105,108,30,74,'#ab8b5c','#765a3b')+R(-48,-73,96,46,'#493625',1)
+  +wood(R(-49,-57,98,5,'#aa875a'))+wood(R(-49,-31,98,6,'#aa875a'))
+  +jar(-40,-56,'#849d70')+jar(-20,-56,'#c49d60')+jar(2,-56,'#a66f5c')+jar(24,-56,'#7f9a72')
+  +jar(-40,-30,'#b38c68')+jar(-20,-30,'#93a66f')+jar(2,-30,'#c29b6b')+jar(24,-30,'#8b9864')
+  +P('M-35,-102h25v13h-25z','#efe2bb')+S('M-32,-99h18M-32,-95h15','#8a7559',1));
+ D.define('home/koharuDesk',[-74,-112,148,150],
+  box(-60,-57,120,40,30,'#c3a279','#826242')+drawer(-52,-11,47,13)+drawer(1,-11,47,13)
+  +G(R(-45,-50,53,25,'#efe3c8',1)+L(-19,-49,-19,-27,'#a18a6a',1)+S('M-40,-44h17M-40,-39h15M-15,-44h18M-15,-39h13','#9a8b70',1),{transform:'rotate(-3 -18 -39)'})
+  +jar(27,-26,'#90a575')+cyl(43,-42,10,17,'#d7b58c',2)+S('M47,-43q-5,-11 -9,-14M48,-43q5,-12 10,-13','#75945b',2)
+  +stool(0,28,'#8d9d6d'));
+ D.define('home/koharuBox',[-52,-73,104,95],
+  box(-42,-42,84,31,27,'#b18c62','#765a40')+wood(R(-42,-47,84,9,'#c5a579',2))
+  +R(-5,-16,10,8,'#d9b867',2)+ball(0,-13,1.4,1.4,'#573d2b')
+  +G(R(-25,-64,28,20,'#eadbc0',1)+S('M-21,-48q6,-11 12,0t12,0','#8ca477',1.5)+ball(-11,-56,3,3,'#d19b75'),{transform:'rotate(-6 -11 -54)'})
+  +cloth(P('M12,-50q7,-8 14,0q-6,3 -14,0z','#b46a58')));
  // --- 写真と鍵の飾り棚
  D.define('home/shelf',[-52,-104,112,132],
   box(-38,-46,76,22,34,'#b8976a','#86643f')+drawer(-33,-18,33,12)+drawer(1,-18,33,12)+drawer(-33,-4,67,11)
@@ -300,17 +360,19 @@ function build(){
  const sprout=x=>S(`M${x},-8v-7`,'#7fae5a',1.6)+E(x-2.4,-16,2.6,1.6,'#8fc46a')+E(x+2.4,-17,2.6,1.6,'#8fc46a');
  for(const [k,body] of [['pot0',''],['pot1',sprout(0)],['pot3',sprout(-4)+sprout(0)+sprout(4)]])D.define('home/'+k,[-12,-24,24,30],contact(1,1,9,3,.4,'b2')+pot(0,2,15,11,'#a86b4c')+E(0,-9,5.6,1.8,'#3a2a1c')+body);
  D.define('home/room',[0,0,1152,768],room());
+ D.define('home/koharu-room',[0,0,1152,768],koharuBedroom());
 }
 build();
 
 // ---------------------------------------------------------------- キャンバス側（毎フレームの揺らぎ）
-const NAMES={homeDesk:'desk',homeBooks:'books',homeMirror:'mirror',homeWardrobe:'wardrobe',homeStove:'stove',homeTable:'table',homeShelf:'shelf',homeSewing:'sewing'};
+const NAMES={homeDesk:'desk',homeBooks:'books',homeMirror:'mirror',homeWardrobe:'wardrobe',homeStove:'stove',homeTable:'table',homeShelf:'shelf',homeSewing:'sewing',homeKoharuDoor:'koharuDoor',homeKoharuBed:'bedK',homeKoharuHerbs:'koharuHerbs',homeKoharuDesk:'koharuDesk',homeKoharuBox:'koharuBox'};
 function glow(c,x,y,r,rgb,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,`rgba(${rgb},0)`);c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);}
 function steam(c,x,y,t,k=3){for(let i=0;i<k;i++){const p=(t*.32+i/k)%1,a=.3*(1-p)*Math.min(1,p*5);c.fillStyle=`rgba(255,255,255,${a})`;c.beginPath();c.ellipse(x+Math.sin(t*1.5+i*2.1)*5*p,y-p*30,3+p*7,2.4+p*6,0,0,Math.PI*2);c.fill();}}
 function object(c,o,x,y,s,t){
  const name=o.type==='homeBed'?(o.id==='toumaRoom'?'bedT':'bedN'):NAMES[o.type];if(!name||!D.ready())return false;
  const third=!!root.OkaeriCore?.route(s.episode?.route)?.koharu; // 三人で食卓を囲む結末
- if(name==='table'&&s.episode?.chapter===10&&third&&s.episode.step>=1)D.draw(c,'home/chair3',x-98,y+18);
+ const ep=s.episode,chairArrived=ep?.chapter===10&&(ep.route==='koharuLove'||(ep.route==='koharu'&&ep.step>=1)||(ep.route==='both'&&ep.step>=3));
+ if(name==='table')D.draw(c,chairArrived?'home/chair3':'home/koharuStool',x-98,y+18);
  if(!D.draw(c,'home/'+name,x,y))return false;
  if(name==='stove'){const cx=x-24,f=.78+Math.sin(t*9)*.1+Math.sin(t*23)*.07;
   c.save();c.beginPath();c.rect(cx-22,y-37,44,28);c.clip();
@@ -323,5 +385,6 @@ function object(c,o,x,y,s,t){
  return true;
 }
 function background(c){return D.ready()&&D.draw(c,'home/room',0,0);}
-root.OkaeriHomeArt={workshop:workshopBg,background,object,ready:()=>D.ready(),failed:()=>D.failed()};
+function koharuRoom(c){return D.ready()&&D.draw(c,'home/koharu-room',0,0);}
+root.OkaeriHomeArt={workshop:workshopBg,background,koharuRoom,object,ready:()=>D.ready(),failed:()=>D.failed()};
 })(globalThis);

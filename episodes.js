@@ -337,7 +337,7 @@
       return true;
     }
     // Ordinary household interactions remain available; old main-quest handlers cannot jump ahead.
-    if (s.scene === 'house' || id === 'ourHome') return false;
+    if (['house', 'koharuRoom'].includes(s.scene) || id === 'ourHome') return false;
     const exits = {
       exit: ['forest', 5, 13],
       home: ['town', 12, 3],

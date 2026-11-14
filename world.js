@@ -62,8 +62,8 @@ Renderer.prototype.background=function(scene){
  this.lights=this.lights||{};lightLog=this.lights[scene]=[];this.smoke=this.smoke||{};smokeLog=this.smoke[scene]=[];
  let vector=false;const finish=()=>{lightLog=null;smokeLog=null;if(VD&&VD.missed()!==missed0&&!VD.failed())this.stale[scene]=true;if(!vector)root.OkaeriScenery?.polish(c,scene);this.cache[scene]=cv;return cv;}; // vector: 描画エンジンの絵は仕上げ込みなので重ねない
  if(root.OkaeriJourneyArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})||root.OkaeriFieldArt?.background(c,scene,{rect,poly,line,ellipse,block,house,tree,lantern,glow})){return finish();}
- if(scene==='house'){ // 家の中は home-art.js の一枚絵。読み込み前なら、読めたあとで描き直す。
-  const ok=root.OkaeriHomeArt?.background(c);vector=true;const out=finish();if(!ok&&VD&&!VD.failed())this.stale[scene]=true;return out;
+ if(scene==='house'||scene==='koharuRoom'){ // 屋内は home-art.js の背景。読み込み後に描き直す。
+  const ok=scene==='house'?root.OkaeriHomeArt?.background(c):root.OkaeriHomeArt?.koharuRoom(c);vector=true;const out=finish();if(!ok&&VD&&!VD.failed())this.stale[scene]=true;return out;
  }
  let g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#bdd6df');g.addColorStop(.5,'#dce6df');g.addColorStop(1,'#9bbdc9');c.fillStyle=g;c.fillRect(0,0,W,H);
  const paths=[];const path=(p,w)=>paths.push([p,w]);
@@ -151,7 +151,7 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='mochi')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='crab')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='guardian')OkaeriCast.drawMap(c,o.type,x,y,t);
-  if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':o.id==='ourHome'?'⌂':o.id==='houseExit'?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
+  if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':o.id==='ourHome'?'⌂':['houseExit','koharuRoomExit'].includes(o.id)?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
   const ready=(['log','waterGate','windbreak'].includes(o.id)?s.lead==='touma':['repair','regulator','hillLens'].includes(o.id)?s.lead==='nina':true);const distance=Math.hypot(s.x-o.x,s.y-o.y);
   if(distance<2&&mode==='explore'){ellipse(c,x,y-(o.type==='guardian'?115:o.type==='npc'?82:56)+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(o.type==='guardian'?111:o.type==='npc'?78:52)+Math.sin(t*3)*2);}
  }});}
@@ -180,7 +180,7 @@ Renderer.prototype.draw=function(s,time,mode){
  if(s.scene==='canal'&&((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||D?.stage.over.flood)){for(let i=0;i<12;i++){const ry=400+i*17;line(c,[[400+Math.sin(t*3+i)*15,ry],[630+Math.sin(t*3+i+.5)*15,ry+10]],'#b6e5ed66',2);}c.fillStyle='#a3d9e514';c.fillRect(0,0,W,H);}
  if(s.flags.lit){const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#dfae4820');g.addColorStop(1,'#2c31581c');c.fillStyle=g;c.fillRect(0,0,W,H);}
  root.OkaeriScenery?.animate(c,s.scene,t,this.smoke?.[s.scene]||[]);
- if(!['house','lampworkshop'].includes(s.scene))for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
+ if(!['house','koharuRoom','lampworkshop'].includes(s.scene))for(let i=0;i<55;i++){const x=(i*137+t*(9+i%5))%W,y=(i*89+t*(12+i%8))%H;ellipse(c,x,y,1.2+i%2,1.2+i%2,'#ffffff75');}
  D?.light(c,s,time,this.lights?.[s.scene]||[]);D?.weatherLayer(c,s,time);
  const vign=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);vign.addColorStop(0,'#071d3000');vign.addColorStop(1,'#071d3077');c.fillStyle=vign;c.fillRect(0,0,W,H);
  c.restore();

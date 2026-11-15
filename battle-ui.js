@@ -178,9 +178,9 @@
     if (subject.hp <= 0) return kind === 'hero' ? [{ key: 'down', glyph: '×', label: '戦闘不能', help: '手を貸すと起き上がれます' }] : [];
     const list = [];
     if (kind === 'enemy') {
-      if (subject.ice) list.push({ key: 'ice', glyph: '❄', label: '氷の殻', help: '物理攻撃を軽減。火花で溶かせます' });
+      if (subject.ice) list.push({ key: 'ice', glyph: '❄', label: '氷の殻', help: '物理攻撃を軽減。火花や炎熱の投げ薬で溶かせます' });
       if (subject.broken) list.push({ key: 'broken', glyph: '✦', label: '体勢崩れ', help: '次に受ける一撃が1.5倍' });
-      if (subject.charged) list.push({ key: 'charged', glyph: '⚡', label: '黒吹雪（大技準備）', help: '火花・崩し斬り・灯火の一閃で突進を阻止できます' });
+      if (subject.charged) list.push({ key: 'charged', glyph: '⚡', label: '黒吹雪（大技準備）', help: '火花・炎熱の投げ薬・崩し斬り・灯火の一閃で突進を阻止できます' });
     } else {
       if (subject.chill) list.push({ key: 'chill', glyph: '❄', label: '冷え', help: '攻撃力が低下。回復や薬草・凍傷の軟膏で解除できます' });
       if (subject.buff) list.push({ key: 'buff', glyph: '✧', label: '灯りの剣', help: '次の一撃が1.5倍になり、氷も溶かします' });
@@ -469,11 +469,21 @@
         );
       } else if (this.phase === 'actor') {
         title.textContent = nm(actor);
-        add(actor === 'koharu' ? 'てあて' : 'こうげき', () => this.selectSkill(actor === 'koharu' ? 'tend' : 'attack'));
-        add(actor === 'nina' ? 'じゅもん' : actor === 'koharu' ? 'くすり' : 'とくぎ', () => {
-          this.phase = 'skills';
-          this.render();
-        });
+        add(
+          actor === 'koharu' ? 'てあて' : 'こうげき',
+          () => this.selectSkill(actor === 'koharu' ? 'tend' : 'attack'),
+          false,
+          actor === 'koharu' ? '味方一人のHPを12回復。冷えも解除。' : ''
+        );
+        add(
+          actor === 'nina' ? 'じゅもん' : actor === 'koharu' ? 'くすり' : 'とくぎ',
+          () => {
+            this.phase = 'skills';
+            this.render();
+          },
+          false,
+          actor === 'koharu' ? '味方を支える調合薬や、精霊を追い払う炎熱の投げ薬を使う。' : ''
+        );
         add('どうぐ', () => {
           this.phase = 'items';
           this.render();

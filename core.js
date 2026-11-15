@@ -14,9 +14,10 @@
       { id: 'ring', name: '灯の輪', cost: 3, desc: '敵全体に14ダメージ。' },
       { id: 'heal', name: 'ぬくもり', cost: 2, desc: '味方一人のHPを45％回復。冷え解除。', target: 'ally' },
       { id: 'buff', name: '灯を託す', cost: 2, desc: 'トウマの次の一撃を1.5倍に。氷殻も溶かす。' }
-    ], // コハルは剣も火も持たない。薬師見習いとして、後ろから薬で二人を支える。
+    ], // コハル（薬の番）。味方を手当て・補助薬で支えつつ、炎熱の投げ薬で精霊も追い払う。
     koharu: [
       { id: 'tend', name: '手当て', cost: 0, desc: '味方一人のHPを12回復。冷えも解除。', target: 'ally' },
+      { id: 'firepot', name: '炎熱の投げ薬', cost: 2, desc: '投げつけて炎熱を発生させ、氷殻を溶かして18ダメージ。', target: 'enemy' },
       { id: 'warm', name: '凍傷の軟膏', cost: 2, desc: '味方一人のHPを40％回復。冷えも解除。', target: 'ally' },
       { id: 'tea', name: '薬湯', cost: 3, desc: '立っている全員のHPを18回復。冷えも解除。' },
       { id: 'salve', name: '守りの塗り薬', cost: 1, desc: '味方一人がこのターン受けるダメージを半減。', target: 'ally' },
@@ -363,7 +364,7 @@
             damage: 30,
             chill: true,
             chargeAttack: true,
-            label: '黒霜の猛突進（火花・崩し斬り・連携で阻止！） → 全員に30・冷え'
+            label: '黒霜の猛突進（火花・投げ薬・崩し斬り・連携で阻止！） → 全員に30・冷え'
           };
         }
         if (e.enraged) {
@@ -585,14 +586,15 @@
         if (a.target === 'enemy' && e?.hp <= 0) e = b.enemies.find(e => e.hp > 0);
         const roleMul = id === 'touma' ? atkMul : magMul;
         const power = n => n * roleMul * (h.chill ? 0.75 : 1) * (h.buff ? 1.5 : 1);
-        if (['attack', 'break', 'fire'].includes(c.skill) && e) {
-          const buff = h.buff > 0;
+        if (['attack', 'break', 'fire', 'firepot'].includes(c.skill) && e) {
+          const buff = h.buff > 0,
+            isFire = c.skill === 'fire' || c.skill === 'firepot';
           hit(
             e,
-            power(c.skill === 'fire' ? 22 : c.skill === 'break' ? 14 : id === 'touma' ? 20 : 14),
-            c.skill === 'fire' || buff,
+            power(c.skill === 'fire' ? 22 : c.skill === 'firepot' ? 18 : c.skill === 'break' ? 14 : id === 'touma' ? 20 : 14),
+            isFire || buff,
             id,
-            'slash',
+            isFire ? 'fire' : 'slash',
             () => {
               h.buff = 0;
               if (buff) cooperation = true;

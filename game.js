@@ -1993,7 +1993,7 @@
         '"><span class="rpg-face face-koharu" aria-hidden="true"></span><div class="rpg-member-info"><strong>コハル <span class="rpg-role-pill">' +
         (withKoharu ? '同行中' : '薬師見習い') +
         '</span></strong><small>' +
-        (withKoharu ? '薬と手当て · 後衛支援' : '三人の家 · 調合と手当て') +
+        (withKoharu ? '補助薬と投げ薬 · 薬の番' : '三人の家 · 調合と手当て') +
         '</small>' +
         (withKoharu ? hpBar(rpg.hp.koharu, st.koharu.max) : '') +
         '<div class="rpg-stat-row">' +
@@ -2067,7 +2067,7 @@
       const chairKnown = !state.episode || state.episode.chapter > 7 || (state.episode.chapter === 7 && (state.episode.step >= 2 || state.episode.complete));
       const clinicLines = {
         clinicHerbs: [
-          ['', '壁一面の薬棚。白嶺のふもとや薬草の谷で摘んだ干し草と、塗り薬の小瓶が効能ごとに整然と並んでいる。\n下の段には、見習いのコハルが間違えないよう葉の形を描いた丸い字の札が結んであった。'],
+          ['', '壁一面の薬棚。白嶺のふもとや薬草の谷で摘んだ干し草と、塗り薬や炎熱の投げ薬の小瓶が効能ごとに整然と並んでいる。\n下の段には、見習いのコハルが間違えないよう葉の形を描いた丸い字の札が結んであった。'],
           ...(ninaAwayNow ? [] : [['nina', 'コハルがうちの棚に貼ってる絵札、ここのユラ先生の棚をまねしたんだね。', 'happy']]),
           ['touma', '凍傷の軟膏の瓶が一番手前に並べてあるな。冬場は町じゅうの人がもらいに来るんだろう。']
         ],

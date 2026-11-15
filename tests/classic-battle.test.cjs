@@ -4,10 +4,11 @@ test('herb restores an ally and consumes one shared item',()=>{let b=C.newBattle
 test('last herb cannot be committed by both party members',()=>{let b=C.newBattle('guardian');b.items=1;assert.throws(()=>C.resolveTurn(b,{touma:{skill:'herb',target:'touma'},nina:{skill:'herb',target:'nina'}},['touma','nina']),/薬草/);assert.equal(b.items,1);assert.equal(b.turn,1);});
 test('battle messages carry HP snapshots so damage is not shown before the attack',()=>{const r=C.resolveTurn(C.newBattle('mochi'),{touma:{skill:'attack',target:0},nina:{skill:'fire',target:0}},['touma','nina']);assert.equal(r.events[0].enemies[0].hp,38);assert.equal(r.events[1].enemies[0].hp,18);assert.equal(r.events[0].heroes.nina.hp,90);assert.equal(r.events.at(-1).heroes.nina.hp,78);});
 
-test('Koharu joins as a commanded healer: she heals, revives, shields, and never attacks',()=>{
+test('Koharu joins as chemist (薬の番): she supports allies and throws exothermic medicine (炎熱の投げ薬) to melt ice and drive off spirits',()=>{
  const C=require('../core.js'),assert=require('node:assert/strict');
  const plain=C.newBattle('guardian'),helped=C.newBattle('guardian',{support:'koharu'});assert.equal(plain.heroes.koharu,undefined);assert.equal(helped.heroes.koharu.hp,70);
  assert.ok(!C.actions('koharu').some(a=>['attack','rescue'].includes(a.id)));
+ assert.ok(C.actions('koharu').some(a=>a.id==='firepot'&&a.target==='enemy'));
  const pairCmd={touma:{skill:'attack',target:0},nina:{skill:'attack',target:0}},order=['touma','nina','koharu'];
  assert.throws(()=>C.resolveTurn(helped,pairCmd,order),/技を選んでください/);
  helped.heroes.touma.hp=60;
@@ -18,10 +19,39 @@ test('Koharu joins as a commanded healer: she heals, revives, shields, and never
  assert.equal(b.heroes.nina.hp-salved.heroes.nina.hp,16);assert.equal(b.heroes.nina.hp-bare.heroes.nina.hp,32);
  // 3ターン目の全体攻撃は、後ろのコハルにも半分届く
  const third=C.resolveTurn(bare,{...pairCmd,koharu:{skill:'tea'}},order);assert.ok(third.events.some(e=>e.effect?.type==='hurt'&&e.effect.hero==='koharu'&&e.effect.amount===8));
+ // 炎熱の投げ薬は氷殻を溶かし、精霊に炎熱ダメージを与え、ボスの突進溜めも阻止できる
+ const crabBattle=C.newBattle('crab',{support:'koharu'});
+ assert.equal(crabBattle.enemies[0].ice,true);
+ const melted=C.resolveTurn(crabBattle,{touma:{skill:'guard'},nina:{skill:'guard'},koharu:{skill:'firepot',target:0}},order);
+ assert.equal(melted.enemies[0].ice,false);
+ assert.equal(crabBattle.enemies[0].hp-melted.enemies[0].hp,18);
+ assert.ok(melted.events.some(e=>e.actor==='koharu'&&e.effect?.type==='fire'&&e.effect.enemy===0&&e.effect.amount===18));
+ const bossBattle=C.newBattle('alphaBeast',{support:'koharu'});
+ bossBattle.enemies[0].enraged=true;
+ bossBattle.enemies[0].charged=true;
+ bossBattle.turn=3;
+ const interrupted=C.resolveTurn(bossBattle,{touma:{skill:'guard'},nina:{skill:'guard'},koharu:{skill:'firepot',target:0}},order);
+ assert.equal(interrupted.enemies[0].charged,false);
+ assert.ok(interrupted.logs.some(l=>/猛突進を阻止した/.test(l)));
  // 倒れた仲間を起こせる。二人とも倒れたら、コハルが立っていても負け。
  const down=C.newBattle('mochi',{support:'koharu'});down.heroes.nina.hp=0;
  assert.throws(()=>C.resolveTurn(down,{touma:{skill:'attack',target:0},koharu:{skill:'rouse',target:'touma'}},order),/倒れている仲間はいません/);
  const up=C.resolveTurn(down,{touma:{skill:'attack',target:0},koharu:{skill:'rouse',target:'nina'}},order);assert.ok(up.heroes.nina.hp>0);
  const lost=C.newBattle('guardian',{support:'koharu'});lost.heroes.nina.hp=0;lost.heroes.touma.hp=1;
  assert.equal(C.resolveTurn(lost,{touma:{skill:'attack',target:0},koharu:{skill:'guard'}},order).status,'defeat');
+});
+
+test('BattleUI treats Koharu’s 炎熱の投げ薬 as a ranged fire spell beat with fireHit + iceBreak SFX',()=>{
+ const UI=require('../battle-ui.js');
+ const b=C.newBattle('crab',{support:'koharu'});
+ const commands={touma:{skill:'guard'},nina:{skill:'guard'},koharu:{skill:'firepot',target:0}};
+ const out=C.resolveTurn(b,commands,['touma','nina','koharu']);
+ const beats=UI.buildBeats(out,commands);
+ const koharuBeat=beats.find(x=>x.actor==='koharu');
+ assert.ok(koharuBeat);
+ assert.equal(koharuBeat.kind,'spell','Koharu throws from range rather than dashing into melee');
+ assert.equal(koharuBeat.label,'コハル · 炎熱の投げ薬');
+ const sfx=UI.beatSounds(koharuBeat,b,{});
+ assert.deepEqual(sfx.start,['cast']);
+ assert.deepEqual(sfx.impact,['fireHit','iceBreak']);
 });

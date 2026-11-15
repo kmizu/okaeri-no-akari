@@ -69,7 +69,7 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
 
 
 
-/* コハル（支え役）。命令は受けず、毎ターンの終わりに温め草を使う。 */
+/* コハル（薬の番）。後衛から補助薬と炎熱の投げ薬を使う。 */
 .actor-koharu .hero-battle-sprite{background-image:url('assets/koharu-battle-quarter.png');background-size:300% 100%}
 .actor-koharu{--unit-size:clamp(88px,16cqw,140px)}
 

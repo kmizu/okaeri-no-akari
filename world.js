@@ -171,7 +171,11 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='waitingLight'){lantern(c,x,y,!!s.flags.waitingLit);}
   if(o.type==='npc'){if(['elna','orlf'].includes(o.id))OkaeriResidentsArt.drawMap(c,o.id,x,y);else OkaeriCast.drawMap(c,o.id==='sae'?'sae':'maro',x,y,t);}
   if(o.type==='lamp')lantern(c,x,y);
-  if(o.type==='episodeEvent'){if(o.base?.type==='npc'){if(['elna','orlf'].includes(o.base.id))OkaeriResidentsArt.drawMap(c,o.base.id,x,y);else OkaeriCast.drawMap(c,o.base.id==='sae'?'sae':'maro',x,y,t);}ellipse(c,x,y+4,23,9,'#e1c58288');line(c,[[x-16,y-5],[x,y-18],[x+16,y-5]],'#ffe2a4',3);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#fff1cc';c.fillText('◆',x,y-27);}
+  if(o.type==='episodeEvent'){
+   if(o.base?.type==='npc'){if(['elna','orlf'].includes(o.base.id))OkaeriResidentsArt.drawMap(c,o.base.id,x,y);else OkaeriCast.drawMap(c,o.base.id==='sae'?'sae':'maro',x,y,t);}
+   if(o.battle)drawEventMonster(c,o.battle,x,y,t);
+   else{ellipse(c,x,y+4,23,9,'#e1c58288');line(c,[[x-16,y-5],[x,y-18],[x+16,y-5]],'#ffe2a4',3);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#fff1cc';c.fillText('◆',x,y-27);}
+  }
   if(o.type==='episodeNpc'||(o.type==='episodeEvent'&&['リツ','ユラ'].includes(o.person))){OkaeriResidentsArt.drawMap(c,o.id==='koharu'?'koharu':o.id==='yura'||o.person==='ユラ'?'yura':'ritsu',x,y);}
   if(o.type==='repair'){lantern(c,x+33,y-20,s.flags.repair);if(!s.flags.repair){line(c,[[x-15,y-5],[x+11,y+5]],'#ae8a59',4);ellipse(c,x,y-5,6,6,'#dfbb77');}}
   if(o.type==='mochi')OkaeriCast.drawMap(c,o.type,x,y,t);
@@ -179,7 +183,8 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='guardian')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':['ourHome','clinicDoor'].includes(o.id)?'⌂':['houseExit','clinicExit'].includes(o.id)?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
   const ready=(['log','waterGate','windbreak'].includes(o.id)?s.lead==='touma':['repair','regulator','hillLens'].includes(o.id)?s.lead==='nina':true);const distance=Math.hypot(s.x-o.x,s.y-o.y);
-  if(distance<2&&mode==='explore'){ellipse(c,x,y-(o.type==='guardian'?115:o.type==='npc'?82:56)+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(o.type==='guardian'?111:o.type==='npc'?78:52)+Math.sin(t*3)*2);}
+  const promptH=o.battle==='alphaBeast'?132:(o.type==='guardian'||o.battle==='guardian'||o.battle==='beast'||o.battle==='echo')?115:o.type==='npc'?82:56;
+  if(distance<2&&mode==='explore'){ellipse(c,x,y-promptH+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(promptH-4)+Math.sin(t*3)*2);}
  }});}
  let moving=false,followersMoving=false,thirdMoving=false;
  if(homeBreakfast(s)){
@@ -243,6 +248,37 @@ Renderer.prototype.draw=function(s,time,mode){
 // 専用の絵がある精霊・魔獣（色ちがいの代わりに使う）。ice は氷殻が溶けたあとの差分。
 const OWN_ART={hail:['arare-mochi'],sleet:['mizore-yadokari-frozen','mizore-yadokari-thawed'],echo:['kodama-guardian'],beast:['higui'],alphaBeast:['oo-higui-blaze','oo-higui'],moss:['koke-dama'],bat:['tsurara-bat'],hare:['yuki-usagi-light']};
 const roamCache={};function roamArt(name){if(!roamCache[name]&&typeof Image!=='undefined'){const im=new Image();im.src='assets/monsters/web/'+name+'.png';roamCache[name]=im;}return roamCache[name];}
+function drawOwnMonster(c,artName,x,y,w,flip=false,bob=0){
+ const im=roamArt(artName);
+ if(!im||!im.complete||!im.naturalWidth)return false;
+ const h=w*im.naturalHeight/im.naturalWidth;
+ c.save();c.translate(x,y+12+bob);if(flip)c.scale(-1,1);
+ c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+ c.drawImage(im,-w/2,-h,w,h);c.restore();
+ return true;
+}
+function drawEventMonster(c,kind,x,y,t){
+ const bob=Math.sin(t*2.4)*2;
+ if(kind==='alphaBeast'){
+  const pulse=.78+Math.sin(t*3.2)*.22;
+  ellipse(c,x,y+10,60,18,'rgba(210,54,48,'+(0.38*pulse)+')');
+  ellipse(c,x,y+10,42,12,'rgba(170,235,255,'+(0.32*pulse)+')');
+  if(!drawOwnMonster(c,'oo-higui-blaze',x,y,148,true,bob))OkaeriCast.drawMap(c,'guardian',x,y,t);
+  return;
+ }
+ if(kind==='beast'){
+  ellipse(c,x+20,y+4,32,10,'rgba(210,58,52,.36)');
+  OkaeriCast.drawMap(c,'guardian',x-24,y+10,t);
+  if(!drawOwnMonster(c,'higui',x+20,y-4,86,true,bob))OkaeriCast.drawMap(c,'guardian',x+16,y,t);
+  return;
+ }
+ ellipse(c,x,y+6,24,8,'#e1c58270');
+ if(kind==='echo'&&drawOwnMonster(c,'kodama-guardian',x,y,84,false,bob))return;
+ if(kind==='sleet'&&drawOwnMonster(c,'mizore-yadokari-frozen',x,y,64,false,bob))return;
+ if(kind==='hail'&&drawOwnMonster(c,'arare-mochi-trio',x,y,68,false,bob))return;
+ OkaeriCast.drawMap(c,kind==='guardian'||kind==='echo'?'guardian':kind==='crab'||kind==='sleet'||kind==='mix'?'crab':'mochi',x,y,t);
+}
+if(typeof Image!=='undefined'){roamArt('oo-higui-blaze');roamArt('oo-higui');roamArt('higui');}
 const ownArt=(e,name)=>'assets/monsters/web/'+name+'.png';
 function enemySvg(type,e){
  const own=e&&OWN_ART[e.tint];if(!own)return OkaeriCast.battleArt(type);

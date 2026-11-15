@@ -440,6 +440,7 @@
         y: e.y,
         label: e.label,
         base,
+        battle: e.battle || null,
         person: e.scene === 'town' && e.x === 20 ? 'リツ' : e.scene === 'clinic' && e.x === 11 ? 'ユラ' : e.lines[0][0]
       });
     }

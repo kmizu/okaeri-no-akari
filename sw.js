@@ -1,6 +1,6 @@
 // おかえりの灯：ホーム画面に置いたあと、電波のない所でも開けるようにする。
 // 処理と台本（html/js/css）は、つながる時は新しいものを取りに行く。絵と音は、一度取ったものを使い回す。
-const CACHE='okaeri-v1';
+const CACHE='okaeri-v2';
 const SHELL=['./','index.html','style.css','battle.css','opening-film.css','manifest.webmanifest'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

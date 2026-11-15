@@ -61,13 +61,19 @@ function bootGame(raw) {
       draw() {}
     }
   };
+  const musicLog = [];
   const ctx = vm.createContext({
     OkaeriWorld: worldStub,
     OkaeriMusic: class {
       static sceneFor() {
         return 'village';
       }
-      select() {
+      select(scene) {
+        musicLog.push(['select', scene]);
+        return Promise.resolve();
+      }
+      cue(name) {
+        musicLog.push(['cue', name]);
         return Promise.resolve();
       }
       stop() {}
@@ -116,6 +122,7 @@ function bootGame(raw) {
     el,
     data,
     worldStub,
+    musicLog,
     press(key) {
       for (const fn of keyHandlers) fn({ key, repeat: false, target: { tagName: 'DIV' }, preventDefault() {} });
     },
@@ -440,4 +447,80 @@ test('roaming symbol encounters spawn on outdoor maps after tutorial, trigger ba
   assert.equal(bRest.saved().rpg.hp.touma, 130, 'forest rest cabin restores full HP');
   assert.equal(bRest.saved().rpg.sp.nina, 8, 'forest rest cabin restores full MP');
   assert.ok(countBefore >= 1);
+});
+
+test('Episode 8 boss BGM track, intense battle music switching, field boss visibility, and battle arena boss framing work', () => {
+  const Music = require('../music.js');
+  const bossOgg = path.join(__dirname, '..', 'assets', 'music', 'boss.ogg');
+  assert.ok(fs.existsSync(bossOgg), 'assets/music/boss.ogg exists');
+  assert.ok(fs.statSync(bossOgg).size > 100000, 'assets/music/boss.ogg is a full rendered Vorbis track');
+  assert.equal(Music.level('boss'), 0.38);
+  assert.equal(Music.title('boss'), '「吹雪の牙と護りの火」');
+  const m = new Music(src => ({ src, pause() {}, play: () => Promise.resolve(), volume: 0 }));
+  assert.equal(m.tracks.boss.src, 'assets/music/boss.ogg');
+  assert.equal(m.tracks.boss.loop, true);
+
+  // Episode 8 activeObjects expose battle='beast' at step 2 and battle='alphaBeast' at step 3
+  const b8 = bootGame();
+  const s8 = b8.ctx.OkaeriEpisodes.create(8);
+  s8.episode.step = 2;
+  s8.scene = 'hill';
+  const step2Event = b8.ctx.OkaeriStory.activeObjects(s8).find(o => o.type === 'episodeEvent');
+  assert.equal(step2Event.battle, 'beast', 'Step 2 episodeEvent exposes beast sprite on field');
+
+  s8.episode.step = 3;
+  const step3Event = b8.ctx.OkaeriStory.activeObjects(s8).find(o => o.type === 'episodeEvent');
+  assert.equal(step3Event.battle, 'alphaBeast', 'Step 3 episodeEvent exposes alphaBeast boss sprite on field');
+
+  // Verify Episode 8 summit confrontation clears tension cue and selects 'boss' BGM upon battle start
+  s8.x = 15;
+  s8.y = 6;
+  const bSummit = bootGame(JSON.stringify(s8));
+  bSummit.el('continueButton').onclick();
+  bSummit.musicLog.length = 0;
+  bSummit.el('interactButton').onclick();
+  while (!bSummit.el('dialogue').hidden) bSummit.el('nextDialogue').onclick();
+  assert.equal(bSummit.el('battleScreen').hidden, false, 'summit boss battle started');
+  assert.ok(
+    bSummit.musicLog.some(([op, val]) => op === 'select' && val === 'boss'),
+    'Episode 8 summit boss battle selects intense boss BGM'
+  );
+  const lastSelect = [...bSummit.musicLog].reverse().find(([op]) => op === 'select');
+  assert.deepEqual(lastSelect, ['select', 'boss']);
+  assert.match(
+    bSummit.el('battleScreen').html,
+    /left:32%;top:76%/,
+    'alphaBeast boss is framed at left:32%;top:76% inside the arena without clipping'
+  );
+
+  // Verify world.js enemySvg switches cleanly between oo-higui-blaze.png (frozen) and oo-higui.png (thawed)
+  const wCtx = vm.createContext({ globalThis: null, Image: class { constructor() { this.complete = true; this.naturalWidth = 680; this.naturalHeight = 508; } } });
+  wCtx.globalThis = wCtx;
+  vm.runInContext(fs.readFileSync(require.resolve('../world.js'), 'utf8'), wCtx, { filename: 'world.js' });
+  assert.match(wCtx.OkaeriWorld.enemySvg('guardian', { tint: 'alphaBeast', ice: true }), /src="assets\/monsters\/web\/oo-higui-blaze\.png"/);
+  assert.match(wCtx.OkaeriWorld.enemySvg('guardian', { tint: 'alphaBeast', ice: false }), /src="assets\/monsters\/web\/oo-higui\.png"/);
+
+  // Verify Chapter 1 normal battle still selects lighthearted 'battle' BGM
+  const mochiObj = b8.ctx.OkaeriStory.objects.forest.find(o => o.id === 'mochi');
+  const s1 = {
+    version: 1,
+    scene: 'forest',
+    x: mochiObj.x,
+    y: mochiObj.y,
+    lead: 'touma',
+    flags: { board: true },
+    courage: 0
+  };
+  const b1 = bootGame(JSON.stringify(s1));
+  b1.el('battleScreen').hidden = true;
+  b1.el('dialogue').hidden = true;
+  b1.el('continueButton').onclick();
+  b1.musicLog.length = 0;
+  b1.el('interactButton').onclick();
+  for (let i = 0; i < 30 && !b1.el('dialogue').hidden; i++) b1.el('nextDialogue').onclick();
+  assert.equal(b1.el('battleScreen').hidden, false);
+  assert.ok(
+    b1.musicLog.some(([op, val]) => op === 'select' && val === 'battle'),
+    'Chapter 1 mochi battle selects standard battle BGM'
+  );
 });

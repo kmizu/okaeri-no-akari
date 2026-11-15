@@ -303,8 +303,8 @@
         '<div class="combatant-slot" data-depth="' + z + '" style="left:' + x + '%;top:' + y + '%;z-index:' + z + '">' + body + '</div>';
       const enemies = b.enemies
         .map((e, i) => {
-          const x = b.enemies.length === 1 ? 29 : 25 + i * 14,
-            y = b.enemies.length === 1 ? 66 : 66 - i * 25;
+          const x = b.enemies.length === 1 ? (e.boss ? 32 : 29) : 25 + i * 14,
+            y = b.enemies.length === 1 ? (e.boss ? 76 : 66) : 66 - i * 25;
           const canPick = choosing && this.selected.target === 'enemy' && e.hp > 0,
             label = e.name + (b.enemies.length > 1 ? ' ' + String.fromCharCode(65 + i) : '');
           return slot(

@@ -566,6 +566,78 @@ def battle():
     return s
 
 
+def boss():
+    """「吹雪の牙と護りの火」 — 第8話・灯喰い＆隻眼の大灯喰い決戦曲（ニ短調・156BPM）。"""
+    s = Song('boss', 156, 4, 32)
+    piano = s.inst('piano', 0, 98, 54, 48)
+    violin = s.inst('violin', 40, 92, 78, 62)
+    spicc = s.inst('spicc', 48, 86, 68, 50)
+    horn = s.inst('horn', 60, 82, 46, 72)
+    strings = s.inst('strings', 49, 68, 64, 78)
+    low = s.inst('low', 43, 98, 62, 36)
+    timp = s.inst('timp', 47, 92, 60, 62)
+    drums = s.inst('drums', 'drums', 86, 64, 42)
+    a1 = ['D5:.5 D5:.5 A5:1 F5:.5 G5:.5 A5:1', 'Bb5:1 A5:.5 G5:.5 F5:1 D5:1',
+          'G5:.5 G5:.5 Bb5:1 A5:.5 G5:.5 F5:1', 'E5:1.5 C#5:.5 A4:1 A5:1',
+          'D5:.5 F5:.5 A5:1 D6:1 C6:1', 'Bb5:1 A5:.5 G5:.5 F5:1.5 G5:.5',
+          'A5:1 G5:1 F5:.5 E5:.5 D5:1', 'E5:1.5 F5:.5 E5:1 C#5:1']
+    a_ch = ['Dm', 'Bb', 'Gm', 'A7', 'Dm', 'Bb', 'Gm', 'A7']
+    a2 = ['D6:.5 D6:.5 A5:1 F5:.5 G5:.5 A5:1', 'C6:1 Bb5:.5 A5:.5 F5:1 D5:1',
+          'Bb5:.5 A5:.5 G5:1 A5:.5 G5:.5 F5:1', 'G5:1 E5:1 C#5:1 A5:1',
+          'D6:1 A5:.5 F5:.5 D6:1.5 C6:.5', 'Bb5:1 C6:.5 Bb5:.5 A5:1 F5:1',
+          'G5:1 Bb5:1 A5:.5 G5:.5 F5:1', 'E5:1 A5:1 C#6:1 A5:1']
+    b = ['F5:1 A5:1 C6:1.5 A5:.5', 'G5:1 C6:1 E6:2',
+         'D5:1 F5:1 A5:1.5 G5:.5', 'F5:2 D5:1 F5:1',
+         'Bb5:1 D6:1 F6:1.5 E6:.5', 'E6:1 C6:1 G5:2',
+         'A5:1 D6:1.5 E6:.5 F6:1', 'E6:2 C#6:1 A5:1']
+    b_ch = ['F', 'C', 'Dm', 'Dm/A', 'Bb', 'C', 'Dm', 'A7']
+    c = ['D6:.5 A5:.5 F5:.5 A5:.5 D6:1.5 E6:.5', 'F6:1.5 E6:.5 D6:1 A5:1',
+         'Bb5:.5 C6:.5 D6:1 C6:.5 Bb5:.5 A5:1', 'G5:1 Bb5:1 A5:1 C#6:1',
+         'D6:1 F6:1 E6:.5 D6:.5 C6:1', 'Bb5:1 D6:1 A5:1.5 F5:.5',
+         'G5:.5 A5:.5 Bb5:1 A5:.5 G5:.5 E5:1', 'D5:2 A4:1 C#5:1']
+    c_ch = ['Dm', 'Dm', 'Bb', 'Gm>A7', 'Dm', 'Bb>F', 'Gm>A7', 'Dm>A7']
+    plan = [(a1, a_ch, 0), (a2, a_ch, 1), (b, b_ch, 2), (c, c_ch, 3)]
+    for n, (mel, chords, level) in enumerate(plan):
+        for i, m in enumerate(mel):
+            bar = n * 8 + i
+            s.melody(violin, bar, m, 88 + level * 2, legato=.88)
+            s.melody(piano, bar, m, 82 + level * 2, legato=.78)
+            if level in (1, 3):
+                s.melody(piano, bar, m, 66, shift=-12, legato=.78)
+            if level >= 2:
+                s.melody(horn, bar, m, 72, shift=-12, legato=.92)
+            parts = split(chords[i])
+            for j, part in enumerate(parts):
+                span = 4 / len(parts)
+                root, notes = chord(part, 3)
+                seq = [notes[0], notes[1], notes[2], notes[0] + 12, notes[2], notes[1], notes[0], notes[2]]
+                for k in range(int(span * 2)):
+                    s.note(spicc, bar * 4 + j * span + k * .5, .36, seq[k % len(seq)], 66 + (12 if k % 4 == 0 else 0))
+                for q in range(int(span)):
+                    bp = root if q % 2 == 0 else (root + 7 if root + 7 < 48 else root)
+                    s.note(low, bar * 4 + j * span + q, .75, bp, 86 + level * 2)
+                if level >= 1:
+                    _, hi = chord(part, 4)
+                    for p in hi[:3]:
+                        s.note(strings, bar * 4 + j * span, span, p, 48 + level * 3, legato=1.0)
+                if j == 0 and (i % 2 == 0 or level == 3):
+                    s.note(timp, bar * 4, 1.2, root, 82 + level * 3)
+            for beat in range(4):
+                base = bar * 4 + beat
+                if beat in (0, 2):
+                    s.note(drums, base, .2, 36, 84)
+                if beat in (1, 3):
+                    s.note(drums, base, .2, 38, 72 if level else 64)
+                s.note(drums, base, .1, 42, 46)
+                s.note(drums, base + .5, .1, 42, 34)
+            if i == 7:
+                for k in range(4):
+                    s.note(drums, bar * 4 + 3 + k * .25, .12, 38, 56 + k * 8)
+                    s.note(timp, bar * 4 + 3 + k * .25, .22, pitch('A2'), 64 + k * 6)
+    s.swell(strings, 64, 126, 76, 122)
+    return s
+
+
 def tension():
     s = Song('tension', 126, 4, 16)
     low = s.inst('low', 48, 96, 54, 60)
@@ -719,8 +791,8 @@ def clashes(song):
     return sorted(set(found))
 
 
-SONGS = {f.__name__.replace('_', '-'): f for f in (title, tender, ending, quiet, village, journey, battle, tension, festival, jingle_lit, jingle_night)}
-LEVELS = {'battle': -17.5, 'festival': -18, 'tension': -18.5, 'quiet': -22, 'tender': -20.5, 'jingle-lit': -18, 'jingle-night': -20}
+SONGS = {f.__name__.replace('_', '-'): f for f in (title, tender, ending, quiet, village, journey, battle, boss, tension, festival, jingle_lit, jingle_night)}
+LEVELS = {'battle': -17.5, 'boss': -17.2, 'festival': -18, 'tension': -18.5, 'quiet': -22, 'tender': -20.5, 'jingle-lit': -18, 'jingle-night': -20}
 
 if __name__ == '__main__':
     args = sys.argv[1:]

@@ -1224,7 +1224,9 @@
   let fieldWin = null; // 寄り道や徘徊シンボル精霊を落ち着かせたあとに呼ぶ
   function startBattle(kind, onWin = null, opts = {}) {
     fieldWin = onWin;
-    setMusic('battle');
+    const isIntense = state.episode?.chapter === 8 || ['beast', 'pack', 'alphaBeast'].includes(kind);
+    musicCue(null);
+    setMusic(isIntense ? 'boss' : 'battle');
     battleOrigin = kind;
     if (opts.retry) C.rpgFullHeal?.(state);
     const rpg = C.ensureRpg?.(state);

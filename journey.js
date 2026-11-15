@@ -44,10 +44,10 @@ function target(s){
 }
 function advance(a,step){a.state.journey.step=step;a.save();a.updateHud();}
 const departure=[
- ['','南のカルデの灯工房へ参加の返事を出す前に、二人にはもうひとつ外の町からの頼まれごとが舞い込んだ。\n配達人のオルフが、ユキネの東に広がる大きな凍結湖「氷湖（ひょうこ）」の向こう岸にある集落からの伝言を運んできたのだ。'],
- ['オルフ','お前さんたち、『ミナモ』って渡し場の集落を知ってるか？　東の氷湖の向こう岸にあって、南のカルデや海沿いの港町へ荷を送る中継地になってる町だ。あそこの港を照らす『迎え灯』の光が、この冬に入ってから急に弱まってるらしくてな。夕暮れの定期舟が、吹雪の日に港の位置を見つけにくくて難儀してるんだと。'],
+ ['','南のカルデの灯工房へ参加の返事を出す前に、二人にはもうひとつ外の町からの頼まれごとが舞い込んだ。\n配達人のオルフが、ユキネの南東に広がる大きな凍結湖「氷湖（ひょうこ）」の向こう岸にある集落からの伝言を運んできたのだ。'],
+ ['オルフ','お前さんたち、『ミナモ』って渡し場の集落を知ってるか？　南東の氷湖の向こう岸にあって、南のカルデや海沿いの港町へ荷を送る中継地になってる町だ。あそこの港を照らす『迎え灯』の光が、この冬に入ってから急に弱まってるらしくてな。夕暮れの定期舟が、吹雪の日に港の位置を見つけにくくて難儀してるんだと。'],
  ['オルフ','あっちの集落の灯守は年老いた爺さんが一人きりでな、高い足場や細かい調整に手が回らない。『ユキネに腕のいい若い二人組の灯守がいるなら、一度仕掛けを診てもらえないか』って頼まれたのさ。'],
- ['touma','東の氷湖の向こう岸ですよね。日帰りで今日のうちに行って帰ってこられますか？'],
+ ['touma','南東の氷湖の向こう岸ですよね。日帰りで今日のうちに行って帰ってこられますか？'],
  ['オルフ','凍った湖の真ん中を突っ切るのだけはやめとけよ、春先で氷が薄い所がある。湖岸を回る『旧街道』を歩いていけば、昼前には安全にミナモへ着く。俺は荷車で一足先に行って港で待ってるから、昼過ぎに直し終えれば、日暮れ前にはユキネへ帰ってこられるさ。'],
  ['nina','よその町の『迎え灯』かあ……私たちのユキネの『護りの灯火』と、やっぱり同じ仕組みなのかな。'],
  ['オルフ','大元は同じ技術だそうだぞ。何十年か前に南のカルデの灯工房の職人が立ち寄って組んでいった古い灯守小屋が残っててな、当時の作業日誌も机に保管されてる。小屋の鍵は爺さんから預かってきた。'],
@@ -55,7 +55,7 @@ const departure=[
  ['touma','よし、引き受けよう。もし俺たちの手にあまる故障だったら、構造を図面に写して帰ってサエさんに相談すればいい。温かい水筒と替えの手袋を用意して出よう。'],
  ['オルフ','そうそう、コハルのやつは今日一日、ユラの診療所の薬草の仕入れでどうしても手が離せないそうだ。『二人だけで知らない町へ行くなんてずるい！』って頬を膨らませながら、それでも籠いっぱいの傷薬を餞別（せんべつ）に預けてくれたよ。'],
  ['nina','ふふ、コハルらしいなあ。……帰ったら夕飯の時に、向こうの町の景色をいっぱいお土産話にしてあげないとね。','happy'],
- ['','家のストーブの火種を確かめ、戸口の護りの灯火をともして、トウマとニナはユキネの東門から延びる氷湖の旧街道へと踏み出した。\n知らない町の灯りを直して、夕飯の時間にはまたいつもの三人の家へ帰ってくる――小さな一日旅の始まりだった。']
+ ['','家のストーブの火種を確かめ、戸口の護りの灯火をともして、トウマとニナはユキネの南東の木戸から延びる氷湖の旧街道へと踏み出した。\n知らない町の灯りを直して、夕飯の時間にはまたいつもの三人の家へ帰ってくる――小さな一日旅の始まりだった。']
 ];
 function begin(a){
  if(active(a.state)){a.toast(objective(a.state));return;}
@@ -73,7 +73,7 @@ function work(a,id,key,needs,lines){
 }
 function handle(id,a){
  const s=a.state,j=s.journey;
- if(id==='journeyGate'){if(!s.episode||s.episode.chapter<6)return false;if(s.episode.chapter===6&&!j&&s.episode.step<3)return hint(a,'小旅行の前に、手紙と旅行鞄の用意を済ませよう。');if(active(s)&&j.step<8)return hint(a,'今は旅先の用事を進めよう。手帳で、二人の現在の目的を確かめられる。');a.scene('lake',...spawns.lake);return true;}
+ if(id==='journeyGate'){if(!s.episode||s.episode.chapter<6)return false;if(s.episode.chapter===8&&!s.episode.complete)return hint(a,'吹雪が激しい。今は西の風待ちの丘が先だ。');if(s.episode.chapter===9&&!s.episode.complete)return hint(a,'今夜は護りの灯火祭りだ。広場のお店をゆっくり回ろう。');if(s.episode.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&(s.episode.step===2||s.episode.complete))return hint(a,'今はユキネの町でコハルと過ごす時間だ。');if(s.episode.chapter===6&&!j&&s.episode.step<3)return hint(a,'小旅行の前に、手紙と旅行鞄の用意を済ませよう。');if(active(s)&&j.step<8)return hint(a,'今は旅先の用事を進めよう。手帳で、二人の現在の目的を確かめられる。');a.scene('lake',...spawns.lake);return true;}
  if(id==='journeyHome'&&active(s)&&j.step===8&&s.scene==='house'){
   j.step=9;E.finishEvent(a);E.handle('episodeEvent',a);return true;
  }
@@ -82,7 +82,7 @@ function handle(id,a){
  if(id==='journeyCargo')return hint(a,'荷札には「リュカ港の塩」「カルデ盆地の乾燥豆」。道の先には、この町の台所とつながる知らない土地がある。');
  if(id==='journeyMap')return hint(a,'古い灯路図。ユキネは左下の小さな印だ。海沿いにも、山の向こうにも道が延び、右端は別の紙につながるように途切れている。');
  if(id==='lakeToTown'){
-  if(active(s)&&j.step!==8)return hint(a,'帰りの待ち合わせは、ミナモの港。今日の用事を確かめてから帰ろう。');a.scene('town',22,12);return true;
+  if(active(s)&&j.step!==8)return hint(a,'帰りの待ち合わせは、ミナモの港。今日の用事を確かめてから帰ろう。');a.scene('town',22,10);return true;
  }
  if(id==='lakeToVillage'){
   if(active(s)&&j.step<2)return hint(a,'道標と、岸の迎え灯を確かめてから進もう。');a.scene('lakeside',...spawns.lakeside);return true;
@@ -233,7 +233,7 @@ const previousObjects=S.activeObjects;
 S.activeObjects=function(s){
  if(names[s.scene])return maps[s.scene];let list=previousObjects(s);
  if(active(s))list=list.filter(o=>o.id!=='episodeEvent');
- if(s.scene==='town'&&s.episode?.chapter>=6)list=[...list,prop('journeyGate',22,12,'氷湖の旧街道へ','exit')];
+ if(s.scene==='town'&&s.episode?.chapter>=6)list=[...list,prop('journeyGate',22,10,'氷湖の旧街道へ','exit')];
  if(active(s)&&s.scene==='house'&&s.journey.step===8)list=list.map(o=>o.id==='homeTable'?{...o,id:'journeyHome',label:'二人の食卓で、旅の話をする'}:o);
  return list;
 };

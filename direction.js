@@ -90,7 +90,7 @@
               : s.openingStage !== undefined || !f.board
                 ? 'morning'
                 : 'day';
-      else if (ep.complete) {
+      else if (ep.complete && !E.playingEpilogue?.()) {
         time = 'night';
         if (ep.chapter === 10) bgm = 'ending';
       } else if (e) {
@@ -134,39 +134,42 @@
     if (s.openingStage !== undefined) return s.openingStage > 0; // 第1話の朝：戸が開いて起きてきてから、広場まで三人で歩く
     if (s.prologueStage !== undefined) return false;
     const ep = s.episode;
+    if (ep?.chapter === 10 && ep.complete && !root.OkaeriJourney?.active(s)) return !!root.OkaeriCore?.route(ep.route)?.koharu;
     // 家の中で三人が揃っている場面（帰宅して夜の会話で寝室へ入るまで、または最終話のコハル同席ルート）。
     if (ep && !ep.complete && ['house', 'clinic'].includes(s.scene)) {
       if (s.scene === 'clinic') return [2, 3, 5, 8].includes(ep.chapter) || (ep.chapter === 10 && !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1);
-      if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu;
+      if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1;
       if (ep.chapter === 2 && ep.step === 3) return true;
       if (ep.chapter === 3 && ep.step === 5) return true;
       if (ep.chapter === 4 && ep.step === 3) return true;
-      if (ep.chapter === 5 && ep.step === 3) return true;
+      if (ep.chapter === 5 && (ep.step === 1 || ep.step === 3)) return true;
       if (ep.chapter === 9 && ep.route === 'both') return true;
       return false;
     }
     if (!ep || ep.complete || ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
-    if (root.OkaeriField?.names[s.scene]) return ep.chapter >= 2 && ep.chapter !== 4;
-    // 薬の番として加わった第2話からは、当番の日は町の中も三人で歩く。
+    // 薬の番として加わった第2話からは、当番の日は町や野道も三人で歩く。
     if (ep.chapter === 2) return true;
     if (ep.chapter === 3) return ep.step === 0 || ep.step >= 4; // 事故の間（1〜3）は一人ずつ動く。診療所と帰り道は三人一緒
     if (ep.chapter === 5) return ep.step >= 1;
-    if (ep.chapter === 8) return ep.step <= 4; // 丘から戻ったあと（帰宅時）は眠っておぶわれている
+    if (ep.chapter === 8) return ep.step <= 5; // 丘から広場へ帰還するまで三人一緒。自宅の夜は眠って寝室にいる
     if (ep.chapter === 9) return ep.step <= 1 || ep.route === 'both'; // 祭りの途中で姿が見えなくなるが、both では三人で帰る
     if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1;
     return false;
   }
   // 次の目的地。いまの地図にあればその場所を、別の地図ならそこへ向かう出口を指す。
   const WAY = {
-    town: { forest: [12, 2], canal: [22, 9], hill: [1, 9], house: [3, 13], clinic: [10, 13], lake: [22, 12], lakeside: [22, 12], lampworkshop: [22, 12] },
-    forest: { '*': [5, 14] },
+    town: { forest: [12, 2], herbvale: [12, 2], canal: [22, 9], hill: [1, 9], oldpass: [1, 9], house: [3, 13], clinic: [10, 13], lake: [22, 10], lakeside: [22, 10], lampworkshop: [22, 10] },
+    forest: { herbvale: [1, 13], '*': [5, 14] },
     canal: { '*': [3, 13] },
-    hill: { '*': [4, 14] },
+    hill: { oldpass: [21, 6], '*': [4, 14] },
     house: { '*': [12, 13] },
     koharuRoom: { '*': [12, 13] },
     clinic: { '*': [12, 13] },
     herbvale: { '*': [2, 13] },
-    oldpass: { '*': [2, 13] }
+    oldpass: { '*': [2, 13] },
+    lake: { lakeside: [21, 4], lampworkshop: [21, 4], '*': [2, 13] },
+    lakeside: { lampworkshop: [12, 6], '*': [3, 13] },
+    lampworkshop: { '*': [7, 13] }
   };
   function goal(s) {
     const ep = s.episode,
@@ -223,6 +226,7 @@
     if (cue.flood) stage.over.flood = true;
     if (cue.lit) stage.over.lit = true;
     if (cue.breakfast !== undefined) stage.over.breakfast = cue.breakfast;
+    if (cue.nina !== undefined) stage.over.nina = cue.nina;
     if (cue.koharu) stage.over.koharu = cue.koharu === 'seat' ? { mode: 'seat', start: t } : cue.koharu;
     if (cue.shake && !calm) stage.shake = { start: t, power: cue.shake === true ? 1 : cue.shake, ms: cue.shakeMs || 520 };
     if (cue.flash) stage.flash = { start: t, color: cue.flash === 'warm' ? '255,222,160' : '255,255,255', ms: calm ? 200 : 520 };

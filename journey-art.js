@@ -27,11 +27,11 @@ function background(c,scene,h){
   for(let i=0;i<5;i++){const x=660+i*51,y=246-Math.sin(i)*8;block(c,x,y,4,10,2,'#7b9aa5','#6b8a99','#dbe6dd');ellipse(c,x+2,y+2,1.5,2,'#ffe7af');}
   text('湖岸の旧街道',230,690,13);text('対岸の灯り',890,225,11,'#516f83');
  }else if(scene==='lakeside'){
-  rect(c,0,0,1152,768,'#d9e6df');poly(c,[[0,592],[400,537],[755,538],[1152,493],[1152,768],[0,768]],'#709eaf');
-  for(let i=0;i<14;i++)line(c,[[50+i*87,620+i%3*27],[140+i*87,615+i%3*27]],'#bce0df55',2);
-  root.OkaeriTownArt?.sheet(c,'lakeside',[[0,592],[400,537],[755,538],[1152,493],[1152,768],[0,768]],'#9cc6d6','#4f86a2');
-  {const q=[];{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,440],[338,422],[636,437],[749,409],[1152,401],[1152,510],[767,555],[398,553],[0,617]],'#93b1b6');}root.OkaeriTownArt?.lands(c,'side1',q);}
-  {const q=[];{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,414],[337,400],[638,414],[748,385],[1152,376],[1152,490],[767,531],[398,530],[0,595]],'#f0f0e3');}root.OkaeriTownArt?.lands(c,'side2',q);}
+  rect(c,0,0,1152,768,'#d9e6df');poly(c,[[0,680],[235,668],[400,537],[755,538],[1152,493],[1152,768],[0,768]],'#709eaf');
+  for(let i=0;i<14;i++)line(c,[[250+i*67,620+i%3*27],[330+i*67,615+i%3*27]],'#bce0df55',2);
+  root.OkaeriTownArt?.sheet(c,'lakeside',[[0,680],[235,668],[400,537],[755,538],[1152,493],[1152,768],[0,768]],'#9cc6d6','#4f86a2');
+  {const q=[];{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,440],[338,422],[636,437],[749,409],[1152,401],[1152,510],[767,555],[398,553],[235,682],[0,694]],'#93b1b6');}root.OkaeriTownArt?.lands(c,'side1',q);}
+  {const q=[];{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,414],[337,400],[638,414],[748,385],[1152,376],[1152,490],[767,531],[398,530],[232,664],[0,676]],'#f0f0e3');}root.OkaeriTownArt?.lands(c,'side2',q);}
   root.OkaeriTownArt?.trail(c,'lakeside',[[P(3),P(13)],[P(3),P(9)],[P(19),P(9)]],84);
   // The landing is wide enough to work with gloves on; side faces remain visible.
   root.OkaeriTownArt?.dock(c);
@@ -47,7 +47,7 @@ function object(c,o,x,y,s,t,h){
  if(o.type!=='journeyProp')return;
  const {rect,poly,line,ellipse,block,lantern,glow}=h,j=s.journey||{};
  const label=(str,yy=y-50)=>{c.font='bold 12px "Yu Gothic UI",sans-serif';c.textAlign='center';c.fillStyle=s.scene==='lampworkshop'?'#f1dfb5':'#46626d';c.fillText(str,x,yy);};
- if(o.kind==='orlf'){root.OkaeriResidentsArt.drawMap(c,'orlf',x,y);return;}
+ if(o.kind==='orlf'){if(root.OkaeriJourney?.active(s))root.OkaeriResidentsArt.drawMap(c,'orlf',x,y);else{root.OkaeriTownArt?.jprop(c,'cargo',0,x,y);label('配達鞄',y-48);}return;}
  if(['exit','door','home'].includes(o.kind)){ellipse(c,x,y,18,7,'#d5c18a99');label(o.kind==='home'?'食卓':o.kind==='door'?'扉':'道の先',y-21);return;}
  if(o.kind==='sign'){block(c,x-5,y-50,10,62,5,'#8c795c','#4f6c68','#d4c69f');block(c,x-49,y-55,99,24,8,'#a58f68','#627566','#f1edda');label('ミナモ →',y-38);}
  if(o.kind==='light'){block(c,x-22,y-12,44,18,13,'#9fb5b3','#648492','#d8e4db');lantern(c,x-8,y-18);ellipse(c,x+5,y-42,8,21,'#dfefdf88');}

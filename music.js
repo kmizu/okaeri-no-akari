@@ -116,7 +116,7 @@
         if (name === 'ending' && previousScene !== 'ending')
           try {
             target.currentTime = 0;
-          } catch {}
+          } catch { }
         try {
           await target.play();
         } catch (error) {
@@ -174,7 +174,7 @@
         setTimeout(restore, 9000);
         const p = a.play();
         if (p && p.catch) p.catch(restore);
-      } catch {}
+      } catch { }
     }
   }
   root.OkaeriMusic = Music;

@@ -234,17 +234,19 @@ test('climax boss alphaBeast has dedicated sprites, 2-phase enrage + guardian as
   assert.equal(sim.status, 'victory', 'Chapter 8 party defeats alphaBeast cleanly');
 });
 
-test('Episode 8 features vanguard beast followed by summit alphaBeast boss and keeps Koharu through step 4', () => {
+test('Episode 8 features vanguard beast followed by summit alphaBeast boss, town return at step 5, and home night at step 6', () => {
   const b = bootGame();
   const ep8 = b.ctx.OkaeriEpisodesData.episodes[8];
-  assert.equal(ep8.length, 6);
+  assert.equal(ep8.length, 7);
   assert.equal(ep8[2].battle, 'beast');
   assert.equal(ep8[3].battle, 'alphaBeast');
   assert.equal(ep8[3].x, 15);
   assert.equal(ep8[3].y, 6);
+  assert.equal(ep8[5].scene, 'town');
+  assert.equal(ep8[6].scene, 'house');
   assert.ok(
     ep8[5].lines.some(l => /左目を斬り裂いて/.test(l[1])) && ep8[5].lines.some(l => /十二年前/.test(l[1])),
-    'Sae recognizes the 12-year-old scar'
+    'Sae recognizes the 12-year-old scar at the town bulletin board'
   );
 
   const s = b.ctx.OkaeriEpisodes.create(8);
@@ -253,11 +255,90 @@ test('Episode 8 features vanguard beast followed by summit alphaBeast boss and k
   s.episode.step = 4;
   assert.equal(b.ctx.OkaeriDirector.companion(s), true);
   s.episode.step = 5;
+  s.scene = 'town';
+  assert.equal(b.ctx.OkaeriDirector.companion(s), true);
+  s.episode.step = 6;
+  s.scene = 'house';
   assert.equal(b.ctx.OkaeriDirector.companion(s), false);
 
-  assert.ok(Core.restoreSave(JSON.stringify(s)), 'step 5 save is valid');
-  s.episode.step = 6;
-  assert.equal(Core.restoreSave(JSON.stringify(s)), null, 'step 6 out-of-range save is rejected');
+  assert.ok(Core.restoreSave(JSON.stringify(s)), 'step 6 save is valid');
+  s.episode.step = 7;
+  assert.equal(Core.restoreSave(JSON.stringify(s)), null, 'step 7 out-of-range save is rejected');
+});
+
+test('Scenario, battle, and placement audit invariants hold across chapters, routes, and epilogues', () => {
+  // 1. Story battles set canEscape=false; roamers / optional field battles allow escape; KO'd allies recover to 1 HP post-battle
+  const storyBattle = Core.newBattle('beast', { support: 'koharu', canEscape: false });
+  assert.equal(storyBattle.canEscape, false);
+  const roamerBattle = Core.newBattle('mochi', { canEscape: true });
+  assert.equal(roamerBattle.canEscape, true);
+
+  // Koharu can be revived via rescue (`手を貸す`) and KO'd heroes clamp to 1 HP after victory
+  const koState = {
+    version: 1,
+    scene: 'hill',
+    x: 12,
+    y: 9,
+    lead: 'touma',
+    flags: { board: true, mochi: true },
+    courage: 0,
+    rpg: Core.createRpg(8)
+  };
+  let bRescue = Core.newBattle('beast', { support: 'koharu', rpg: koState.rpg });
+  bRescue.heroes.koharu.hp = 0;
+  bRescue = Core.resolveTurn(
+    bRescue,
+    { touma: { skill: 'rescue', target: 'koharu' }, nina: { skill: 'guard' } },
+    ['touma', 'nina']
+  );
+  assert.ok(bRescue.heroes.koharu.hp > 0, 'rescue revives fallen Koharu');
+
+  bRescue.heroes.nina.hp = 0;
+  const syncRes = Core.rpgSyncAfterBattle(koState, bRescue, true);
+  assert.equal(syncRes.leveledUp, false);
+  assert.equal(koState.rpg.hp.nina, 1, 'KOd ally recovers to 1 HP on field after victory');
+  const consecutive = Core.newBattle('alphaBeast', { support: 'koharu', rpg: koState.rpg });
+  assert.equal(consecutive.heroes.nina.hp, 1, 'next consecutive battle starts with 1 HP rather than dead');
+
+  // 2. Friends route has its own non-romantic night9 scene; touma vs nina epilogues match their respective Ep.10 setups
+  const g = bootGame();
+  const D = g.ctx.OkaeriEpisodesData;
+  assert.equal(Core.route('friends').night, 'friends');
+  assert.ok(D.night9.friends.some(l => /二人の宿題/.test(l[1])), 'friends night9 references their homework promise');
+  assert.ok(!D.night9.friends.some(l => /デート/.test(l[1])), 'friends night9 has no romantic date plan');
+  assert.ok(
+    JSON.stringify(D.epilogues.touma).includes('段取り表') && !JSON.stringify(D.epilogues.nina).includes('段取り表'),
+    'nina epilogue does not reference touma-only 段取り表'
+  );
+
+  // 3. clinicDesk is at (10, 6) clear of yura (11, 7), and Ep.1 completed state does not block house exit or table
+  const clinicObjs = g.ctx.OkaeriStory.activeObjects({
+    scene: 'clinic',
+    flags: {},
+    episode: { chapter: 2, step: 0, route: null, complete: false }
+  });
+  const desk = clinicObjs.find(o => o.id === 'clinicDesk');
+  const yura = clinicObjs.find(o => o.id === 'yura');
+  assert.deepEqual([desk.x, desk.y], [10, 6]);
+  assert.deepEqual([yura.x, yura.y], [11, 7]);
+  assert.notEqual(desk.x, yura.x);
+
+  const ep1Done = {
+    version: 1,
+    scene: 'house',
+    x: 11,
+    y: 10,
+    lead: 'touma',
+    flags: { board: true, mochi: true, log: true, repair: true, crab: true, guardian: true, lit: true, returned: true },
+    courage: 0,
+    episode: { chapter: 1, step: 0, route: null, complete: true }
+  };
+  const gEp1 = bootGame(JSON.stringify(ep1Done));
+  gEp1.el('continueButton').onclick();
+  gEp1.el('modal').hidden = true;
+  gEp1.el('interactButton').onclick();
+  assert.equal(gEp1.el('modal').hidden, false, 'interacting with homeTable after Ep.1 家で過ごす reopens end-of-day modal');
+  assert.match(gEp1.el('modalContent').html, /第1話 · おしまい/);
 });
 
 test('RPG leveling, equipment upgrades, medicine crafting, persistent HP/MP, and strict save validation work', () => {

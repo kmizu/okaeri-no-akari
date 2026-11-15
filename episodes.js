@@ -75,6 +75,7 @@
     if (e.arrival) {
       a.scene(...e.arrival);
     } else if (a.state.scene !== e.scene) a.scene(e.scene, ...spawns[e.scene]);
+    else a.refreshRoamers?.();
     a.save();
     a.updateHud();
   }
@@ -114,7 +115,7 @@
     a.scene(s.scene, s.x, s.y);
     a.toast(title(s));
   }
-  function endDay(a) {
+  function endDay(a, afterEpilogue = false) {
     const s = a.state,
       ep = s.episode;
     const buttons = [['家で過ごす', a.closeModal, true]];
@@ -151,8 +152,11 @@
           a.closeModal();
           ep.step = 0;
           ep.complete = false;
+          delete ep.heard9_2;
+          s.lead = 'touma';
           a.save();
-          go(a, current(s));
+          if (a.beginChapter) a.beginChapter();
+          else go(a, current(s));
         }
       ]);
     }
@@ -164,7 +168,9 @@
         D.titles[ep.chapter - 1] +
         '</h2><p>' +
         (ep.chapter === 10
-          ? '春になれば、ニナは南へ発ちます。そして三週間後、この家の戸口には護りの灯火がともっているはずです。<br>遊んでくれて、ありがとうございました。'
+          ? afterEpilogue
+            ? '季節が巡っても、ユキネの道とこの家の戸口には、あたたかな護りの灯火がともり続けています。<br>遊んでくれて、ありがとうございました。'
+            : '春になれば、ニナは南へ発ちます。そして三週間後、この家の戸口には護りの灯火がともっているはずです。<br>遊んでくれて、ありがとうございました。'
           : D.closings?.[ep.chapter] || '今日の出来事を家に置いて、明日へ。') +
         '</p>',
       buttons,
@@ -182,14 +188,18 @@
     let i = 0;
     const step = () => {
       const p = epi.parts[i++];
+      a.resetStage?.();
       if (!p) {
         playing = null;
         a.scene('house', 11, 11);
-        endDay(a);
+        endDay(a, true);
         return;
       }
       a.scene(p.scene, p.x, p.y);
-      a.talk(i === 1 ? [['', '後日譚　' + epi.title + '\n' + epi.lead, { fade: 'black' }], ...p.lines] : p.lines, step);
+      const firstCue = (root.OkaeriDirector?.normalize(p.lines[0])?.cue) || {},
+        headCue = { fade: 'black' };
+      for (const k of ['time', 'weather', 'bgm']) if (firstCue[k] !== undefined) headCue[k] = firstCue[k];
+      a.talk(i === 1 ? [['', '後日譚　' + epi.title + '\n' + epi.lead, headCue], ...p.lines] : p.lines, step);
     };
     step();
     return true;
@@ -252,7 +262,13 @@
         ['ニナの告白を受け止める', () => pick('nina')],
         ['今の二人の関係を選ぶ', () => pick('friends')],
         ['先に、姿の見えないコハルを探しに行く', seek],
-        ['もう少し考える', a.closeModal]
+        [
+          'もう少し考える',
+          () => {
+            if (a.state.episode) a.state.episode.heard9_2 = true;
+            a.closeModal();
+          }
+        ]
       ],
       'explore'
     );
@@ -301,7 +317,15 @@
       );
       return true;
     }
+    if (s.episode.complete && id === 'homeTable') {
+      endDay(a);
+      return true;
+    }
     if (s.episode.chapter === 1) {
+      if (s.episode.complete && ['canalExit', 'hillExit', 'exit'].includes(id)) {
+        a.talk([['touma', '今日の見回りはもう終わった。家の食卓で休んで、明日に備えよう。']]);
+        return true;
+      }
       if (id === 'ritsu' || id === 'yura') {
         a.talk(
           id === 'ritsu'
@@ -321,10 +345,6 @@
       }
       return false;
     }
-    if (s.episode.complete && id === 'homeTable') {
-      endDay(a);
-      return true;
-    }
     if (id === 'episodeEvent') {
       const e = current(s);
       if (!e || e.scene !== s.scene) return true;
@@ -337,6 +357,10 @@
       const fight = () => (a.startBattle ? a.startBattle(e.battle) : won(a));
       if (e.battleIntro) {
         a.talk(e.battleIntro, fight);
+        return true;
+      }
+      if (e.choice && s.episode.heard9_2) {
+        a.talk([['nina', '……ねえ、トウマ。この灯りの下で、少しだけ話していかない？', { bgm: 'tender' }]], () => choose(a));
         return true;
       }
       a.talk(e.lines, () => {
@@ -359,6 +383,14 @@
       ['ourHome', 'clinicHerbs', 'clinicDesk', 'clinicBed', 'clinicWaiting', 'clinicStove'].includes(id)
     )
       return false;
+    if (id === 'canalHome' && s.episode.chapter === 3 && s.episode.step >= 1 && s.episode.step <= 3) {
+      a.toast('今は水路の救助が先だ！');
+      return true;
+    }
+    if (s.episode.chapter === 9 && !s.episode.complete && ['exit', 'canalExit', 'hillExit'].includes(id)) {
+      a.talk([['nina', '今夜は護りの灯火祭りだよ。広場のお店をゆっくり回ろう！', 'happy']]);
+      return true;
+    }
     const exits = {
       exit: ['forest', 5, 13],
       home: ['town', 12, 3],
@@ -374,11 +406,22 @@
       return true;
     }
     // 町の人や掲示板は、出来事の合間にいつでも話しかけられる。
-    // 寄り道（針仕事帳・帰還札・白樺の待ち場）は、吹雪の日を除いていつでも進められる。
-    if (s.episode.chapter !== 8 && root.OkaeriSideStories?.handle(id, a)) return true;
+    // 寄り道（針仕事帳・帰還札・白樺の待ち場）は、吹雪や不和や祭りの最中を除いて進められる。
+    if ((s.episode.complete || (![4, 8, 9].includes(s.episode.chapter) && !current(s)?.solo)) && root.OkaeriSideStories?.handle(id, a))
+      return true;
     const chat = D.chatter?.[s.episode.chapter]?.[id] || D.idle?.[id];
     if (chat) {
       a.talk(chat);
+      return true;
+    }
+    const ninaGone =
+      current(s)?.solo || (s.episode.chapter === 10 && C.route(s.episode.route)?.ninaAway && (s.episode.step === 2 || s.episode.complete));
+    if (ninaGone) {
+      a.talk([['touma', s.episode.complete ? '今日の話は、家でゆっくり振り返ろう。' : '今は「' + current(s).label + '」が先だ。']]);
+      return true;
+    }
+    if (s.episode.chapter === 4 && !s.episode.complete) {
+      a.talk([['touma', '……今は「' + current(s).label + '」を片づけよう。']]);
       return true;
     }
     a.talk([
@@ -411,26 +454,48 @@
   S.activeObjects = function (s) {
     let list = originalObjects(s);
     if (!s.episode) return list;
-    // 第8話のオルフは丘の小屋にいる。全員が帰るまで、広場には立っていない。
-    if (s.scene === 'town' && s.episode.chapter === 8 && !s.episode.complete) list = list.filter(o => o.id !== 'orlf');
+    const ch = s.episode.chapter,
+      st = s.episode.step,
+      done = !!s.episode.complete;
+    // 第8話のオルフは丘の小屋にいる（広場へ帰還するまで広場には立っていない）。水路出動中のリツも広場から外す。
+    if (s.scene === 'town' && ch === 8 && !done && st <= 4) list = list.filter(o => o.id !== 'orlf');
     if (s.scene === 'town') {
-      list = [...list, { id: 'ritsu', type: 'episodeNpc', x: 20, y: 9, label: '水番のリツ' }];
-      if (s.episode.chapter === 9 && !s.episode.complete)
-        list = [...list, { id: 'yura', type: 'episodeNpc', x: 9, y: 9, label: '医師のユラ' }];
+      const ritsuAway = !done && ((ch === 2 && st >= 1 && st <= 2) || (ch === 3 && st <= 4) || (ch === 8 && st >= 1 && st <= 4));
+      if (!ritsuAway) list = [...list, { id: 'ritsu', type: 'episodeNpc', x: 20, y: 9, label: '水番のリツ' }];
+      if (!done && ((ch === 8 && (st === 0 || st === 5)) || ch === 9))
+        list = [...list, { id: 'yura', type: 'episodeNpc', x: ch === 8 ? 13 : 9, y: ch === 8 ? 10 : 9, label: '医師のユラ' }];
     }
-    if (s.scene === 'clinic' && !(s.episode.chapter === 9 && !s.episode.complete))
-      list = [...list, { id: 'yura', type: 'episodeNpc', x: 11, y: 7, label: '医師のユラ' }];
-    // コハルは第1話から、薬草の籠を提げて広場に立つ。二人と一緒に歩いている間と、丘へ登っている間はいない。
+    if (s.scene === 'clinic') {
+      const yuraInTown = !done && (ch === 9 || (ch === 8 && (st === 0 || st === 5)));
+      if (!yuraInTown) list = [...list, { id: 'yura', type: 'episodeNpc', x: 11, y: 7, label: '医師のユラ' }];
+      if (!done && ch === 3 && st === 4) list = [...list, { id: 'ritsu', type: 'episodeNpc', x: 9, y: 8, label: '水番のリツ' }];
+    }
+    if (s.scene === 'canal' && !done) {
+      if ((ch === 2 && st >= 1 && st <= 2) || (ch === 3 && st <= 3))
+        list = [...list, { id: 'ritsu', type: 'episodeNpc', x: 7, y: 8, label: '水番のリツ' }];
+      if (ch === 3 && (st === 1 || st === 3)) list = [...list, { id: 'nina', type: 'episodeNpc', x: 14, y: 7, label: '避難棚のニナ' }];
+      if (ch === 3 && st === 2) list = [...list, { id: 'touma', type: 'episodeNpc', x: 7, y: 10, label: '岸のトウマ' }];
+    }
+    if (s.scene === 'hill' && !done && ch === 8) {
+      if (st === 1 || st === 4) list = [...list, { id: 'ritsu', type: 'episodeNpc', x: 7, y: 10, label: '水番のリツ' }];
+      if (st === 4) list = [...list, { id: 'orlf', type: 'episodeNpc', x: 5, y: 9, label: '配達人のオルフ' }];
+    }
+    // コハルは第1話から、薬草の籠を提げて広場に立つ。同行中・夜間帰宅後・事故や吹雪・祭りの後半・後日譚中はいない。
     if (
       s.scene === 'town' &&
+      !playing &&
+      !done &&
       !root.OkaeriDirector?.companion(s) &&
-      !(s.episode.chapter === 8 && s.episode.step >= 1 && !s.episode.complete) &&
-      !(s.episode.chapter === 2 && s.episode.step >= 1 && !s.episode.complete) &&
-      !(s.episode.chapter === 3 && s.episode.step < 4)
+      ch !== 4 &&
+      !(ch === 2 && st >= 1) &&
+      !(ch === 3 && st < 4) &&
+      !(ch === 8 && st >= 1) &&
+      !(ch === 9 && st >= 2) &&
+      !(ch === 10 && (!C.route(s.episode.route)?.koharu ? st >= 3 : st === 0))
     )
       list = [...list, { id: 'koharu', type: 'episodeNpc', x: 13, y: 12, label: '薬師見習いのコハル' }];
     const e = current(s);
-    if (!s.episode.complete && e?.scene === s.scene) {
+    if (!done && !playing && e?.scene === s.scene) {
       const base = list.find(o => o.x === e.x && o.y === e.y);
       list = list.filter(o => o !== base);
       list.push({
@@ -441,7 +506,7 @@
         label: e.label,
         base,
         battle: e.battle || null,
-        person: e.scene === 'town' && e.x === 20 ? 'リツ' : e.scene === 'clinic' && e.x === 11 ? 'ユラ' : e.lines[0][0]
+        person: e.scene === 'town' && e.x === 20 && e.y === 9 ? 'リツ' : e.scene === 'clinic' && e.x === 11 && e.y === 7 ? 'ユラ' : e.lines[0][0]
       });
     }
     return list;

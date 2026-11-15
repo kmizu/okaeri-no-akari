@@ -43,14 +43,25 @@
   function syncRoamers() {
     if (W) W.roamers = roamers;
   }
+  function canRoam(s = state) {
+    if (!C.ROAM_POOLS?.[s.scene]) return false;
+    if (s.openingStage !== undefined || s.prologueStage !== undefined) return false;
+    if (globalThis.OkaeriEpisodes?.playingEpilogue?.()) return false;
+    if (globalThis.OkaeriJourney?.split(s)) return false;
+    if (s.scene === 'forest' && !s.flags.mochi && !(s.episode && (s.episode.chapter > 1 || s.episode.step > 2))) return false;
+    if (s.episode) {
+      if (globalThis.OkaeriEpisodes?.current(s)?.solo) return false;
+      if (s.episode.chapter === 8 && !s.episode.complete) return false;
+      if (s.episode.chapter === 9 && !s.episode.complete) return false;
+      if (s.episode.chapter === 10 && C.route(s.episode.route)?.ninaAway && (s.episode.step === 2 || s.episode.complete)) return false;
+    }
+    return true;
+  }
   function spawnRoamers() {
     roamers = [];
     syncRoamers();
     const pool = C.ROAM_POOLS?.[state.scene];
-    if (!pool) return;
-    if (state.scene === 'forest' && !state.flags.mochi && !(state.episode && (state.episode.chapter > 1 || state.episode.step > 2))) return;
-    if (state.episode && globalThis.OkaeriEpisodes?.current(state)?.solo) return;
-    if (globalThis.OkaeriEpisodes?.playingEpilogue?.()) return;
+    if (!pool || !canRoam(state)) return;
     const objs = S.activeObjects(state),
       candidates = [];
     for (let y = 2; y <= 14; y++) {
@@ -80,6 +91,13 @@
     syncRoamers();
   }
   function checkRoamerTouch(t = nowMs()) {
+    if (!canRoam(state)) {
+      if (roamers.length) {
+        roamers = [];
+        syncRoamers();
+      }
+      return false;
+    }
     if (mode !== 'explore' || t < roamGraceUntil || !roamers.length) return false;
     const hit = roamers.find(r => r.scene === state.scene && Math.hypot(r.x - state.x, r.y - state.y) < 0.85);
     if (!hit) return false;
@@ -94,6 +112,13 @@
     return true;
   }
   function tickRoamers(t) {
+    if (!canRoam(state)) {
+      if (roamers.length) {
+        roamers = [];
+        syncRoamers();
+      }
+      return;
+    }
     if (mode !== 'explore' || !roamers.length || t - lastRoamTick < 920) return;
     lastRoamTick = t;
     const objs = S.activeObjects(state),
@@ -325,6 +350,8 @@
   function talk(lines, done) {
     held = {};
     route = [];
+    if ($('toast')) $('toast').hidden = true;
+    clearTimeout(toast.timer);
     queue = lines.map(D.normalize);
     queueIndex = 0;
     afterTalk = done;
@@ -365,7 +392,7 @@
       'aria-label',
       speaker ? name(speaker) + 'の表情：' + { neutral: '通常', happy: '笑顔', shy: '照れ' }[m.face] : '語り'
     );
-    $('portrait').textContent = faceId ? '' : speaker ? speaker.slice(0, 2) : '';
+    $('portrait').textContent = faceId ? '' : speaker === '子ども' ? '子' : speaker ? speaker.slice(0, 2) : '';
     $('portraitMark').innerHTML = speaker && m.mark ? D.markSvg(m.mark) : '';
     $('portraitMark').hidden = !(speaker && m.mark);
     $('choices').replaceChildren();
@@ -383,6 +410,7 @@
         $('choices').append(b);
       }
     // きっかけ: 画面は Director、音はここで鳴らす。
+    if (Array.isArray(cue.scene)) scene(...cue.scene);
     D.apply(cue, speaker);
     if (m.mark && speaker && !cue.emote) D.emote(speaker, m.mark);
     if (cue.bgm !== undefined) musicCue(cue.bgm);
@@ -634,7 +662,19 @@
     if (mode !== 'explore') return;
     if (globalThis.OkaeriJourney?.switchActor(episodeApi())) return;
     if (state.episode && OkaeriEpisodes.current(state)?.solo) {
-      toast('今は' + (state.lead === 'nina' ? '避難棚にいるニナ' : '岸にいるトウマ') + 'を操作しています。画面の目的を進めよう。');
+      const who =
+        state.episode.chapter === 3
+          ? state.lead === 'nina'
+            ? '避難棚にいるニナ'
+            : '岸にいるトウマ'
+          : state.lead === 'nina'
+            ? 'ニナ'
+            : 'トウマ';
+      toast('今は' + who + 'を操作しています。画面の目的を進めよう。');
+      return;
+    }
+    if (state.episode?.chapter === 10 && C.route(state.episode.route)?.ninaAway && (state.episode.step === 2 || state.episode.complete)) {
+      toast('今はトウマを操作しています。');
       return;
     }
     state.lead = state.lead === 'touma' ? 'nina' : 'touma';
@@ -643,8 +683,9 @@
     Sfx?.play('swap');
   }
   function scene(next, x, y) {
+    const inEpi = !!globalThis.OkaeriEpisodes?.playingEpilogue?.();
     const indoor = s => ['house', 'koharuRoom', 'clinic', 'lampworkshop'].includes(s);
-    const door = next !== state.scene && (indoor(next) || indoor(state.scene));
+    const door = !inEpi && next !== state.scene && (indoor(next) || indoor(state.scene));
     if (next !== state.scene) {
       D.fade('black');
       if (door) Sfx?.play('door');
@@ -656,7 +697,7 @@
     spawnRoamers();
     renderer.reset(state);
     route = [];
-    save();
+    if (!inEpi) save();
     updateHud();
   }
   function interact() {
@@ -684,6 +725,14 @@
       closeModal,
       startBattle,
       beginChapter: () => playEpisodePrologue(0, true),
+      refreshRoamers: spawnRoamers,
+      resetStage: () => {
+        D.clearOverrides();
+        Stills?.hide();
+        Stills?.intro(null);
+        Stills?.diagram?.(null);
+        musicCue(null);
+      },
       jingle: n => bgm.jingle?.(n),
       sfx: n => Sfx?.play(n)
     };
@@ -1168,11 +1217,11 @@
           ],
           [
             '',
-            'だが日暮れと重なって急な猛吹雪が山を包み、さらにその夜、北の白嶺から下りてきた大柄な魔獣がこの「森の灯台」を襲った。\n魔獣は灯台の火を叩き落として灯りの輪を北で断ち切り、そのまま手薄になった町の家々へなだれ込もうとした。'
+            'だが日暮れと重なって急な猛吹雪が山を包み、さらにその夜、北の白嶺から下りてきた二頭の魔獣がこの「森の灯台」を襲った。\n魔獣は灯台の火を叩き落として灯りの輪を北で断ち切り、そのまま手薄になった町の家々へなだれ込もうとした。'
           ],
           [
             '',
-            'その夜の当番だったサエは、魔獣を町へ一歩も入れまいと吹雪の森でひとり立ちふさがった。\n夜通し斬り結んでようやく魔獣を討ち果たしたものの、サエ自身も深手を負って動けなくなり、この灯台まで登って火を入れ直すことができなかった。'
+            'その夜の当番だったサエは、魔獣を町へ一歩も入れまいと吹雪の森でひとり立ちふさがった。\n夜通し斬り結んで一頭を討ち果たし、もう一頭の左目を斬り裂いて谷底へ退けたものの、サエ自身も深手を負って動けなくなり、この灯台まで登って火を入れ直すことができなかった。'
           ],
           [
             '',
@@ -1222,9 +1271,11 @@
   }
   let classicBattle = null;
   let fieldWin = null; // 寄り道や徘徊シンボル精霊を落ち着かせたあとに呼ぶ
+  let lastBattleOpts = {};
   function startBattle(kind, onWin = null, opts = {}) {
     fieldWin = onWin;
-    const isIntense = state.episode?.chapter === 8 || ['beast', 'pack', 'alphaBeast'].includes(kind);
+    lastBattleOpts = { canEscape: !!(opts.roamer || opts.canEscape), roamer: !!opts.roamer };
+    const isIntense = (state.episode?.chapter === 8 && !opts.roamer) || ['beast', 'pack', 'alphaBeast'].includes(kind);
     musicCue(null);
     setMusic(isIntense ? 'boss' : 'battle');
     battleOrigin = kind;
@@ -1233,7 +1284,8 @@
     battle = C.newBattle(kind, {
       ...(D.companion(state) ? { support: 'koharu' } : {}),
       ...(state.flags.ointmentGiven || state.ointments !== undefined ? { ointments: state.ointments || 0 } : {}),
-      ...(rpg ? { rpg, fullHeal: !!opts.retry } : {})
+      ...(rpg ? { rpg, fullHeal: !!opts.retry } : {}),
+      canEscape: lastBattleOpts.canEscape
     });
     order = battle.heroes.koharu ? ['touma', 'nina', 'koharu'] : ['touma', 'nina'];
     commands = {};
@@ -1248,7 +1300,7 @@
           resolve(team);
         },
         onVictory: victory,
-        onRetry: () => startBattle(battleOrigin, fieldWin, { retry: true }),
+        onRetry: () => startBattle(battleOrigin, fieldWin, { ...lastBattleOpts, retry: true }),
         onEscape: () => {
           fieldWin = null;
           if (battle?.ointments !== undefined) state.ointments = battle.ointments;
@@ -1260,7 +1312,7 @@
           mode = 'explore';
           updateHud();
           canvas.focus();
-          toast('二人は 道へもどった。');
+          toast((D.companion(state) ? '三人は' : '二人は') + ' 道へもどった。');
         }
       });
     classicBattle.begin(battle);
@@ -1688,12 +1740,12 @@
       const ep = state.episode,
         e = OkaeriEpisodes.current(state),
         buttons = [['閉じる', closeModal, true]];
-      if (e && !ep.complete)
+      if (e && !ep.complete && state.scene !== e.scene && !e.solo && ![8, 9].includes(ep.chapter))
         buttons.push([
           '目的地のあるマップへ',
           () => {
             closeModal();
-            scene(e.scene, ...OkaeriEpisodes.spawns[e.scene]);
+            scene(...(e.arrival || [e.scene, ...OkaeriEpisodes.spawns[e.scene]]));
           }
         ]);
       const overview = OkaeriEpisodesData.contexts?.[ep.chapter];
@@ -2009,30 +2061,45 @@
         scene('town', 10, 13);
         return true;
       }
+      const ninaAwayNow =
+        (state.episode && OkaeriEpisodes.current(state)?.solo) ||
+        (state.episode?.chapter === 10 && C.route(state.episode.route)?.ninaAway && (state.episode.step === 2 || state.episode.complete));
+      const chairKnown = !state.episode || state.episode.chapter > 7 || (state.episode.chapter === 7 && (state.episode.step >= 2 || state.episode.complete));
       const clinicLines = {
         clinicHerbs: [
           ['', '壁一面の薬棚。白嶺のふもとや薬草の谷で摘んだ干し草と、塗り薬の小瓶が効能ごとに整然と並んでいる。\n下の段には、見習いのコハルが間違えないよう葉の形を描いた丸い字の札が結んであった。'],
-          ['nina', 'コハルがうちの棚に貼ってる絵札、ここのユラ先生の棚をまねしたんだね。', 'happy'],
+          ...(ninaAwayNow ? [] : [['nina', 'コハルがうちの棚に貼ってる絵札、ここのユラ先生の棚をまねしたんだね。', 'happy']]),
           ['touma', '凍傷の軟膏の瓶が一番手前に並べてあるな。冬場は町じゅうの人がもらいに来るんだろう。']
         ],
         clinicDesk: [
           ['', 'よく使いこまれた診察机と、薬草をすり潰す乳鉢。\n引き出しの脇には、ユキネの住民全員の持病や怪我の控えが丁寧に綴じられている。'],
           ['touma', '俺とニナの頁、子どもの頃の擦り傷だけで何枚もありそうだな……。', 'sweat'],
-          ['nina', 'ほとんどトウマが木から落ちた記録でしょ！', 'fluster']
+          ...(ninaAwayNow ? [] : [['nina', 'ほとんどトウマが木から落ちた記録でしょ！', 'fluster']])
         ],
         clinicBed: [
           ['', '清潔な白い麻布が敷かれた休養用の寝台。衝立の陰にあり、吹雪で冷えきった人や熱を出した子どもが一晩休めるようになっている。'],
-          ['nina', '昔、コハルがまだこの診療所の奥に寝泊まりしてた頃、熱を出した私のお見舞いに何度もカーテンから顔をのぞかせてくれたっけ。']
+          ...(ninaAwayNow
+            ? [['touma', 'コハルが診療所の奥に寝泊まりしてた頃、よくこのカーテンの陰から顔をのぞかせてたな。']]
+            : [['nina', '昔、コハルがまだこの診療所の奥に寝泊まりしてた頃、熱を出した私のお見舞いに何度もカーテンから顔をのぞかせてくれたっけ。']])
         ],
         clinicStove: [
           ['', '診療所の薪ストーブ。いつ急患が運びこまれてもすぐ湯が使えるよう、やかんが絶えず白い湯気を立てている。', { se: 'fire' }],
           ['touma', '薬草を煎じた匂いがする。ここにいるだけで指先がほどけるな。']
         ],
-        clinicWaiting: [
-          ['', '待合の小さな机と、一脚だけ置かれた木の椅子。\nよく見ると床の敷物には、もう一脚ぶんの丸い脚跡がうっすら残っている。'],
-          ['nina', '……あ、ここ。三年前に私たちが今の家へ越した時、ユラ先生が「うちは一脚で足りるから」って譲ってくれた椅子の場所だ。'],
-          ['touma', 'おかげでうちの食卓は、オルフさんの椅子とここの椅子で二脚そろったんだよな。大事に使わないと。']
-        ]
+        clinicWaiting: chairKnown
+          ? [
+              ['', '待合の小さな机と、一脚だけ置かれた木の椅子。\nよく見ると床の敷物には、もう一脚ぶんの丸い脚跡がうっすら残っている。'],
+              ...(ninaAwayNow
+                ? [['touma', '三年前に今の家へ越した時、ユラ先生が譲ってくれた椅子の跡だ。うちの食卓で大事に使わせてもらってる。']]
+                : [
+                    ['nina', '……あ、ここ。三年前に私たちが今の家へ越した時、ユラ先生が「うちは一脚で足りるから」って譲ってくれた椅子の場所だ。'],
+                    ['touma', 'おかげでうちの食卓は、オルフさんの椅子とここの椅子で二脚そろったんだよな。大事に使わないと。']
+                  ])
+            ]
+          : [
+              ['', '待合の小さな机と、一脚だけ置かれた木の椅子。\nよく見ると床の敷物には、もう一脚ぶんの丸い脚跡がうっすら残っている。'],
+              ['touma', '前は二脚並んでたんだろうか。年季の入ったいい椅子だな。']
+            ]
       };
       if (clinicLines[id]) {
         if (id === 'clinicBed' || id === 'clinicStove') {
@@ -2052,6 +2119,10 @@
     if (id === 'homeTable') {
       if (state.episode) {
         if (state.episode.complete) OkaeriEpisodes.endDay(episodeApi());
+        else if (state.episode.chapter === 10 && C.route(state.episode.route)?.ninaAway && state.episode.step === 2)
+          talk([['touma', '今日の用事が済んだら、この食卓でコハルとお茶を淹れよう。']]);
+        else if (state.episode.chapter === 4)
+          talk([['touma', '……まずは外の用事を済ませてこよう。話は帰ってからだ。']]);
         else
           talk([
             ['nina', '今日の用事が済んだら、ここでゆっくり話そうね。'],
@@ -2195,7 +2266,14 @@
         C.rpgFullHeal?.(state);
         save();
       }
-      talk(lines[id]);
+      const ninaMissingInHouse =
+        (state.episode && OkaeriEpisodes.current(state)?.solo) ||
+        (state.episode?.chapter === 10 && state.episode.route === 'both' && state.episode.step === 0) ||
+        (state.episode?.chapter === 10 && C.route(state.episode.route)?.ninaAway && (state.episode.step === 2 || state.episode.complete));
+      const strained = state.episode?.chapter === 4 && !state.episode.complete;
+      const filtered =
+        ninaMissingInHouse || strained ? lines[id].filter(l => l[0] === '' || (ninaMissingInHouse && l[0] === 'touma')) : lines[id];
+      talk(filtered.length ? filtered : [lines[id][0]]);
       return true;
     }
     return false;

@@ -36,7 +36,7 @@
   const routes = [
     { id: 'touma', select: 'トウマから告白して恋人', epilogue: 'トウマから告白した二人', flag: 'endingTouma' },
     { id: 'nina', select: 'ニナから告白して恋人', epilogue: 'ニナから告白した二人', flag: 'endingNina' },
-    { id: 'friends', select: '今の二人のまま', flag: 'endingFriends' },
+    { id: 'friends', select: '今の二人のまま', flag: 'endingFriends', night: 'friends' },
     { id: 'koharu', select: 'コハルと：三人で仲良く', koharu: true, night: 'koharu' },
     { id: 'both', select: 'コハルと：コハルのことも選ぶ', epilogue: 'コハルのことも選んだ三人', koharu: true, night: 'both' },
     {
@@ -200,11 +200,10 @@
       if (Number.isInteger(battle.items)) rpg.herbs = Math.max(0, Math.min(12, battle.items));
       for (const id of ['touma', 'nina', 'koharu']) {
         if (battle.heroes?.[id]) {
-          rpg.hp[id] = Math.max(0, battle.heroes[id].hp);
+          rpg.hp[id] = Math.max(1, battle.heroes[id].hp);
           rpg.sp[id] = Math.max(0, battle.heroes[id].sp);
         }
       }
-      if (rpg.hp.touma <= 0 && rpg.hp.nina <= 0) rpg.hp.touma = 1;
     }
     if (!isVictory) return { exp: 0, drops: [], leveledUp: false, lv: rpg.lv };
     const reward = ENCOUNTER_REWARDS[battle?.kind] || { exp: 15, drops: [['crystal', 1]] };
@@ -329,7 +328,7 @@
       if (!st) return { name, hp: baseHp, max: baseHp, sp: baseSp, maxSp: baseSp, chill: 0, buff: 0 };
       const max = st[id].max,
         maxSp = st[id].maxSp,
-        hp = healAll ? max : Math.max(0, Math.min(max, rpg.hp?.[id] ?? max)),
+        hp = healAll ? max : Math.max(1, Math.min(max, rpg.hp?.[id] ?? max)),
         sp = healAll ? maxSp : Math.max(0, Math.min(maxSp, rpg.sp?.[id] ?? maxSp));
       return { name, hp, max, sp, maxSp, chill: 0, buff: 0 };
     };
@@ -338,13 +337,13 @@
       nina: mkHero('nina', 'ニナ', 90, 8),
       ...(options.support === 'koharu' ? { koharu: mkHero('koharu', 'コハル', 70, 10) } : {})
     };
-    if (st && heroes.touma.hp <= 0 && heroes.nina.hp <= 0) heroes.touma.hp = Math.max(1, Math.round(heroes.touma.max * 0.3));
     return {
       kind,
       turn: 1,
       gauge: 0,
       items: st ? (healAll ? Math.max(3, rpg.herbs ?? 3) : (rpg.herbs ?? 3)) : 3,
       ...(options.ointments !== undefined ? { ointments: options.ointments } : {}),
+      ...(options.canEscape !== undefined ? { canEscape: !!options.canEscape } : {}),
       ...(st ? { rpgMods: { atk: st.atkMult, mag: st.magMult, def: st.defMult } } : {}),
       status: 'active',
       logs: [],
@@ -390,7 +389,7 @@
           ? { target: 'nina', damage: k(24), label: '灯りへ飛びかかる → ニナ ' + k(24) }
           : phase === 1
             ? { target: 'nina', damage: k(30), label: '牙 → ニナ ' + k(30) }
-            : { target: 'all', damage: k(14), label: '咆哮 → 二人に' + k(14) };
+            : { target: 'all', damage: k(14), label: '咆哮 → ' + (b.heroes.koharu ? '全員に' : '二人に') + k(14) };
       }
       if (e.bat) {
         const target = (b.turn + i) % 2 ? 'nina' : 'touma',
@@ -413,7 +412,7 @@
           ? { target: 'touma', damage: k(18), label: '枝の腕 → トウマ ' + k(18) }
           : phase === 1
             ? { target: 'nina', damage: k(32), label: '大きな踏み込み → ニナ ' + k(32) }
-            : { target: 'all', damage: k(16), label: '木の葉の嵐 → 二人に' + k(16) };
+            : { target: 'all', damage: k(16), label: '木の葉の嵐 → ' + (b.heroes.koharu ? '全員に' : '二人に') + k(16) };
       }
       if (e.type === 'crab')
         return {
@@ -461,8 +460,12 @@
         if (a.target === 'ally' && !input.heroes[commands[id].target]) throw Error('味方を選んでください');
         if (a.id === 'rouse' && !(['touma', 'nina'].includes(commands[id].target) && input.heroes[commands[id].target].hp <= 0))
           throw Error('倒れている仲間はいません');
-        if (a.id === 'rescue' && (id === 'koharu' || input.heroes[id === 'touma' ? 'nina' : 'touma'].hp > 0))
-          throw Error('二人とも立っています');
+        if (a.id === 'cheer' && input.heroes.nina.hp <= 0) throw Error('倒れている相手には「手を貸す」を使おう');
+        if (a.id === 'rescue') {
+          const rt = commands[id].target || (input.heroes[id === 'touma' ? 'nina' : 'touma'].hp <= 0 ? (id === 'touma' ? 'nina' : 'touma') : input.heroes.koharu?.hp <= 0 ? 'koharu' : null);
+          if (id === 'koharu' || !rt || rt === id || !input.heroes[rt] || input.heroes[rt].hp > 0)
+            throw Error('倒れている仲間はいません');
+        }
       }
     if (!commands.team && order.filter(id => input.heroes[id].hp > 0 && commands[id]?.skill === 'herb').length > (input.items || 0))
       throw Error('薬草が足りません');
@@ -641,10 +644,11 @@
           emit('「起きて、お兄ちゃんたちの番だよ」── ' + t.name + 'が立ち上がった。', { type: 'heal', hero: c.target, amount: t.hp }, id);
         }
         if (c.skill === 'rescue') {
-          b.heroes[other].hp = Math.round(b.heroes[other].max * 0.3);
+          const rTarget = c.target && b.heroes[c.target]?.hp <= 0 ? c.target : b.heroes[other].hp <= 0 ? other : b.heroes.koharu?.hp <= 0 ? 'koharu' : other;
+          b.heroes[rTarget].hp = Math.round(b.heroes[rTarget].max * 0.3);
           emit(
-            '「大丈夫。手、貸して」── ' + b.heroes[other].name + 'が立ち上がった。',
-            { type: 'heal', hero: other, amount: b.heroes[other].hp },
+            '「大丈夫。手、貸して」── ' + b.heroes[rTarget].name + 'が立ち上がった。',
+            { type: 'heal', hero: rTarget, amount: b.heroes[rTarget].hp },
             id
           );
         }
@@ -740,7 +744,7 @@
           (x >= 3 && x <= 7 && y <= 5) ||
           (x >= 9 && x <= 13 && y <= 5) ||
           (x >= 15 && x <= 20 && y <= 6) ||
-          (y >= 11 && x >= 8 && !(x >= 15 && x <= 19))
+          (y >= 11 && !(x >= 2 && x <= 4 && y <= 13) && !(x >= 15 && x <= 19))
         )
       );
     if (scene === 'lampworkshop')
@@ -815,7 +819,7 @@
       let episode;
       if (s.episode !== undefined) {
         const e = s.episode,
-          counts = [0, 0, 4, 6, 4, 4, 4, 4, 6, 4, 4];
+          counts = [0, 0, 4, 6, 4, 4, 4, 4, 7, 4, 4];
         if (
           !e ||
           !Number.isInteger(e.chapter) ||

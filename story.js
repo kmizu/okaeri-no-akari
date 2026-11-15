@@ -1,7 +1,7 @@
 (function(root){
 const objects={
 house:[{id:'toumaRoom',x:4,y:4,label:'トウマの部屋',type:'homeBed'},{id:'toumaBooks',x:5,y:3,label:'書き込みのある本棚',type:'homeBooks'},{id:'toumaDesk',x:7,y:4,label:'トウマの修理机',type:'homeDesk'},{id:'koharuHerbs',x:9,y:3,label:'薬草と小瓶の棚',type:'homeKoharuHerbs'},{id:'koharuDesk',x:11,y:3,label:'コハルの薬草机',type:'homeKoharuDesk'},{id:'koharuBed',x:12,y:4,label:'コハルの寝台',type:'homeKoharuBed'},{id:'koharuKeepsakes',x:9,y:5,label:'思い出の箱',type:'homeKoharuBox'},{id:'ninaMirror',x:15,y:4,label:'ニナの鏡台',type:'homeMirror'},{id:'ninaRoom',x:18,y:4,label:'ニナの部屋',type:'homeBed'},{id:'ninaWardrobe',x:20,y:3,label:'糸と冬服の棚',type:'homeWardrobe'},{id:'houseExit',x:12,y:13,label:'町へ出る',type:'exit'},{id:'homeTable',x:11,y:9,label:'食卓・一日の思い出',type:'homeTable'},{id:'homeStove',x:5,y:9,label:'薪ストーブ',type:'homeStove'},{id:'homeShelf',x:8,y:11,label:'古い写真と家の鍵',type:'homeShelf'},{id:'homeSewing',x:18,y:10,label:'窓辺の繕い机',type:'homeSewing'}],
-clinic:[{id:'clinicExit',x:12,y:13,label:'広場へ出る',type:'exit'},{id:'clinicHerbs',x:6,y:4,label:'薬草と薬瓶の棚',type:'homeClinicHerbs'},{id:'clinicDesk',x:11,y:6,label:'診察机と乳鉢',type:'homeClinicDesk'},{id:'clinicBed',x:18,y:6,label:'休養用の寝台',type:'homeClinicBed'},{id:'clinicStove',x:5,y:9,label:'診療所の薪ストーブ',type:'homeStove'},{id:'clinicWaiting',x:16,y:10,label:'一脚だけ残った待合の椅子',type:'homeClinicWaiting'}],
+clinic:[{id:'clinicExit',x:12,y:13,label:'広場へ出る',type:'exit'},{id:'clinicHerbs',x:6,y:4,label:'薬草と薬瓶の棚',type:'homeClinicHerbs'},{id:'clinicDesk',x:10,y:6,label:'診察机と乳鉢',type:'homeClinicDesk'},{id:'clinicBed',x:18,y:6,label:'休養用の寝台',type:'homeClinicBed'},{id:'clinicStove',x:5,y:9,label:'診療所の薪ストーブ',type:'homeStove'},{id:'clinicWaiting',x:16,y:10,label:'一脚だけ残った待合の椅子',type:'homeClinicWaiting'}],
 hill:[{id:'returnSign',x:7,y:9,label:'小屋の帰還札',type:'returnSign'},{id:'hillHome',x:4,y:14,label:'ユキネへ戻る',type:'exit'},{id:'windbreak',x:8,y:11,label:'外れた風よけ',type:'windbreak'},{id:'hillRest',x:6,y:8,label:'風待ちの小屋',type:'camp'},{id:'hillGuardian',x:12,y:9,label:'尾根の番人',type:'guardian',hide:'hillGuardian'},{id:'hillLens',x:17,y:5,label:'霜のついたレンズ',type:'hillLens'},{id:'hillBeacon',x:20,y:3,label:'丘の灯台',type:'hillBeacon'}],
 canal:[{id:'canalHome',x:3,y:13,label:'ユキネへ戻る',type:'exit'},{id:'waterGate',x:8,y:10,label:'凍りついた水門',type:'waterGate'},{id:'canalRest',x:6,y:7,label:'水番の休憩所',type:'camp'},{id:'canalCrab',x:12,y:10,label:'水路のヤドカリ',type:'crab',hide:'canalCrab'},{id:'regulator',x:15,y:6,label:'三つの調整灯',type:'regulator'},{id:'waterBeacon',x:20,y:3,label:'水路の護りの灯火',type:'waterBeacon'}],
 town:[{id:'ourHome',x:3,y:13,label:'三人の家へ',type:'exit'},{id:'clinicDoor',x:10,y:13,label:'ユラの診療所へ',type:'exit'},{id:'elna',x:7,y:11,label:'織り手のエルナ',type:'npc'},{id:'orlf',x:16,y:10,label:'配達人のオルフ',type:'npc'},{id:'hillExit',x:1,y:9,label:'風待ちの丘へ',type:'exit'},{id:'canalExit',x:22,y:9,label:'共同水路へ',type:'exit'},{id:'board',x:10,y:8,label:'出発札',type:'board'},{id:'sae',x:14,y:9,label:'師匠のサエ',type:'npc'},{id:'bakery',x:6,y:8,label:'パン屋のマロ',type:'npc'},{id:'lamp',x:18,y:9,label:'護りの灯火',type:'lamp'},{id:'gift',x:4,y:11,label:'繕いものの籠',type:'basket'},{id:'exit',x:12,y:2,label:'森へ続く道',type:'exit'}],
@@ -25,11 +25,12 @@ function walkable(s,x,y){
   return path&&!(!s.flags.windbreak&&x===8)&&!(!s.flags.hillGuardian&&y===8&&x>=11)&&!(!s.flags.hillLens&&x===19);
  }
  if(s.scene==='canal'){
+  if(s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3&&x>=10&&x<=13)return false;
   const path=(x>=2&&x<=7&&y>=9&&y<=13)||(x>=5&&x<=7&&y>=7&&y<=10)||(x>=7&&x<=15&&y>=9&&y<=11)||(x>=14&&x<=16&&y>=4&&y<=11)||(x>=14&&x<=21&&y>=3&&y<=5);
   return path&&!(!s.flags.waterGate&&x===8)&&!(!s.flags.canalCrab&&x===13)&&!(!s.flags.waterFlow&&y===5);
  }
  if(s.scene==='town'){
-  const houses=[[3,3,5,6],[16,3,5,4],[2,11,2,2],[9,11,3,2],[18,11,4,3],[9,5,1,1],[14,5,2,1],[16,13,1,1]]; // 家五軒と、井戸・粉の荷車・薪の山
+  const houses=[[3,3,5,6],[16,3,5,4],[2,11,2,2],[5,13,3,1],[9,11,3,2],[18,11,4,3],[9,5,1,1],[14,5,2,1],[16,13,1,1]]; // 家五軒と、柵・井戸・粉の荷車・薪の山
   return !houses.some(([a,b,w,h])=>x>=a&&x<a+w&&y>=b&&y<b+h);
  }
  let path=(x>=1&&x<=3&&y>=11&&y<=13)||(x>=1&&x<=2&&y>=9&&y<=10)||(x>=4&&x<=6&&y>=7&&y<=14)||(x>=5&&x<=13&&y>=8&&y<=10)||(x>=11&&x<=13&&y>=3&&y<=9)||(x>=12&&x<=21&&y>=3&&y<=5)||(x>=19&&x<=21&&y>=2&&y<=5);

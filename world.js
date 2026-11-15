@@ -176,7 +176,11 @@ Renderer.prototype.draw=function(s,time,mode){
    if(o.battle)drawEventMonster(c,o.battle,x,y,t);
    else{ellipse(c,x,y+4,23,9,'#e1c58288');line(c,[[x-16,y-5],[x,y-18],[x+16,y-5]],'#ffe2a4',3);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#fff1cc';c.fillText('◆',x,y-27);}
   }
-  if(o.type==='episodeNpc'||(o.type==='episodeEvent'&&['リツ','ユラ'].includes(o.person))){OkaeriResidentsArt.drawMap(c,o.id==='koharu'?'koharu':o.id==='yura'||o.person==='ユラ'?'yura':'ritsu',x,y);}
+  if(o.type==='episodeNpc'||(o.type==='episodeEvent'&&['リツ','ユラ'].includes(o.person))){
+   if(['touma','nina'].includes(o.id))OkaeriSprites.draw(c,x,y,o.id,o.dir||'down',false,t,false);
+   else if(['sae','maro'].includes(o.id))OkaeriCast.drawMap(c,o.id,x,y,t);
+   else OkaeriResidentsArt.drawMap(c,o.id==='koharu'?'koharu':o.id==='yura'||o.person==='ユラ'?'yura':o.id==='orlf'?'orlf':o.id==='elna'?'elna':'ritsu',x,y);
+  }
   if(o.type==='repair'){lantern(c,x+33,y-20,s.flags.repair);if(!s.flags.repair){line(c,[[x-15,y-5],[x+11,y+5]],'#ae8a59',4);ellipse(c,x,y-5,6,6,'#dfbb77');}}
   if(o.type==='mochi')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='crab')OkaeriCast.drawMap(c,o.type,x,y,t);
@@ -200,10 +204,12 @@ Renderer.prototype.draw=function(s,time,mode){
   const gx=this.follow2.x-this.g.x,gy=this.follow2.y-this.g.y;this.g.dir=OkaeriSprites.facing(gx,gy,this.g.dir);this.g.x+=gx*.2;this.g.y+=gy*.2;
   thirdMoving=Math.hypot(gx,gy)>1;
  }
- const third=D?.companion(s)&&OkaeriSprites.has?.('koharu');
+ const third=D?.companion(s)&&OkaeriSprites.has?.('koharu'),ninaOver=D?.stage?.over?.nina;
+ const ninaHidden=ninaOver==='gone'||(ninaOver!=='present'&&((s.prologueStage!==undefined&&s.episode?.chapter===10)||(s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&s.episode.route==='both'&&s.episode.step===0)||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&(s.episode.step===2||s.episode.complete))||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s)));
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
- const shown=party.filter(actor=>!((s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&s.episode.step===2)||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s))||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
- if(third)shown.push({...this.g,id:'koharu',moving:thirdMoving});
+ const shown=party.filter(actor=>!ninaHidden||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
+ const koharuSlot=shown.length===1&&!homeBreakfast(s)?{...this.f,moving:followersMoving}:{...this.g,moving:thirdMoving};
+ if(third)shown.push({...koharuSlot,id:'koharu'});
  for(const actor of shown)drawables.push({y:actor.y,draw:()=>OkaeriSprites.draw(c,actor.x,actor.y,actor.id,actor.dir||'down',(actor.moving&&mode==='explore')||!!actor.scriptWalk,t,actor.seated)});
  for(const r of root.OkaeriWorld?.roamers||[]){
   if(r.scene!==s.scene)continue;
@@ -238,8 +244,8 @@ Renderer.prototype.draw=function(s,time,mode){
  const follower=s.lead==='touma'?'nina':'touma',objects=OkaeriStory.activeObjects(s);
  D?.post(c,time,who=>{
   if(who===s.lead)return {x:this.p.x,y:this.p.y-82-lift};
-  if(who===follower)return drawnParty.includes(who)?{x:this.f.x,y:this.f.y-82-lift}:null;
-  if(who==='コハル'&&third)return {x:this.g.x,y:this.g.y-78-lift};
+  if(who===follower){if(drawnParty.includes(who))return {x:this.f.x,y:this.f.y-82-lift};const fo=objects.find(o=>o.id===who);return fo?{x:fo.x*T+24,y:fo.y*T+24-82-lift}:null;}
+  if(who==='コハル'&&third)return {x:koharuSlot.x,y:koharuSlot.y-78-lift};
   const id=D.speakerIds[who];if(!id)return null;
   const o=objects.find(o=>o.id===id||o.base?.id===id||(o.person===who)||(o.type==='journeyProp'&&o.kind===id));
   return o?{x:o.x*T+24,y:o.y*T+24-96-lift}:null;

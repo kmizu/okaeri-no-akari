@@ -345,7 +345,9 @@
       const heroes = Object.entries(b.heroes)
         .map(([id, h], i) => {
           const canPick =
-              choosing && this.selected.target === 'ally' && (this.selected.id === 'rouse' ? h.hp <= 0 && id !== 'koharu' : h.hp > 0),
+              choosing &&
+              this.selected.target === 'ally' &&
+              (['rouse', 'rescue'].includes(this.selected.id) ? h.hp <= 0 && id !== actor : h.hp > 0),
             active = input && actor === id;
           const command = input ? this.flow.commands[id] : null,
             guard = this.guards[id] || (command && ['guard', 'protect', 'counter'].includes(command.skill));
@@ -451,13 +453,19 @@
               sfx('guard');
               this.message = '番人を落ち着かせなければ 灯台へ進めない！';
               this.render();
+            } else if (b.canEscape === false) {
+              sfx('guard');
+              this.message = '目の前の相手を落ち着かせるまで、ここからは離れられない！';
+              this.render();
             } else {
               sfx('cancel');
               this.callbacks.onEscape();
             }
           },
           false,
-          '通常の戦闘からは確実に離脱できます。'
+          b.canEscape === false || b.enemies.some(e => e.boss) || ['beast', 'guardian'].includes(b.kind)
+            ? '物語の節目の相手からは離脱できません。'
+            : '道中の精霊や魔獣からは確実に離脱できます。'
         );
       } else if (this.phase === 'actor') {
         title.textContent = nm(actor);
@@ -477,7 +485,8 @@
         for (const a of OkaeriCore.actions(actor).filter(a => !['attack', 'tend', 'guard', 'herb', 'ointment'].includes(a.id))) {
           const unavailable =
             this.b.heroes[actor].sp < a.cost ||
-            (a.id === 'rescue' && this.b.heroes[actor === 'touma' ? 'nina' : 'touma'].hp > 0) ||
+            (a.id === 'cheer' && this.b.heroes.nina.hp <= 0) ||
+            (a.id === 'rescue' && Object.entries(this.b.heroes).every(([k, h]) => k === actor || h.hp > 0)) ||
             (a.id === 'rouse' && [this.b.heroes.touma, this.b.heroes.nina].every(h => h.hp > 0));
           add(a.name + '　' + a.cost + ' MP', () => this.selectSkill(a.id), unavailable, a.desc);
         }
@@ -517,7 +526,7 @@
             add(
               nm(id) + '　HP ' + h.hp,
               () => this.commit({ skill: this.selected.id, target: id }),
-              this.selected.id === 'rouse' ? !(h.hp <= 0 && id !== 'koharu') : h.hp <= 0,
+              ['rouse', 'rescue'].includes(this.selected.id) ? !(h.hp <= 0 && id !== actor) : h.hp <= 0,
               '',
               ['hero', id]
             );
@@ -532,7 +541,8 @@
         if (b.status === 'victory') add('冒険へもどる', () => this.callbacks.onVictory());
         else {
           add('もう一度 挑む', () => this.callbacks.onRetry());
-          if (!b.enemies.some(e => e.boss)) add('道へもどる', () => this.callbacks.onEscape());
+          if (b.canEscape !== false && !b.enemies.some(e => e.boss) && !['beast', 'guardian'].includes(b.kind))
+            add('道へもどる', () => this.callbacks.onEscape());
         }
       }
       if (this.phase === 'target') {
@@ -571,6 +581,19 @@
     selectSkill(id) {
       this.selected = OkaeriCore.actions(this.flow.actor).find(a => a.id === id);
       this.previous = this.phase;
+      if (id === 'rescue') {
+        const fallen = Object.entries(this.b.heroes).filter(([k, h]) => k !== this.flow.actor && h.hp <= 0);
+        if (fallen.length > 1) {
+          this.selected = { ...this.selected, target: 'ally' };
+          this.phase = 'target';
+          this.render();
+          return;
+        }
+        if (fallen[0]?.[0] === 'koharu') {
+          this.commit({ skill: 'rescue', target: 'koharu' });
+          return;
+        }
+      }
       if (this.selected.target) {
         this.phase = 'target';
         this.render();

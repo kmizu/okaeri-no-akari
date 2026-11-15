@@ -16,7 +16,7 @@
 .is-striking .hero-battle-sprite,.is-casting .hero-battle-sprite{background-position-x:50%}
 .is-guarding .hero-battle-sprite{background-position-x:100%}
 .battle-combatant .combatant-body.is-striking .hero-battle-sprite{background-position-x:50%}
-.is-down .combatant-body{transform:rotate(-65deg) translateY(-10%);opacity:.55}.is-down .combatant-shadow{opacity:.4}.is-chilled .hero-battle-sprite{filter:drop-shadow(0 0 5px #8fe8ff)}
+.is-down .combatant-body{transform:rotate(-65deg) translateY(-10%);opacity:.55}.is-down .combatant-shadow{opacity:.4}
 .foe{--unit-size:clamp(76px,13cqw,128px)}.foe-crab{--unit-size:clamp(100px,17cqw,164px)}.foe-guardian{--unit-size:clamp(145px,23cqw,220px)}
 .combatant-body .enemy-art,.combatant-body svg{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
 .foe-mochi .enemy-art{animation:spirit-breathe 3s ease-in-out infinite}.foe-guardian .combatant-shadow{left:12%;right:12%}
@@ -70,7 +70,7 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
 
 
 /* コハル（支え役）。命令は受けず、毎ターンの終わりに温め草を使う。 */
-.actor-koharu .hero-battle-sprite{background:url('assets/koharu-battle-quarter.png') 0% 0%/300% 100% no-repeat}
+.actor-koharu .hero-battle-sprite{background-image:url('assets/koharu-battle-quarter.png');background-size:300% 100%}
 .actor-koharu{--unit-size:clamp(88px,16cqw,140px)}
 
 /* 専用の絵の精霊の大きさ */

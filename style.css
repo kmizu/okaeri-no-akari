@@ -403,3 +403,14 @@ html body{color:var(--ink);font-family:'Yu Gothic UI','Meiryo',sans-serif}
 .rpg-craft-btn:hover:not(:disabled){background:linear-gradient(180deg,#fae0ab,#e8b96d)}
 .rpg-craft-btn:disabled{background:#122933;color:#6f8b92;border-color:#ffffff1c;cursor:default}
 @media(max-width:680px){.rpg-mat-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.rpg-craft-card{flex-direction:column;align-items:stretch}.rpg-craft-btn{width:100%;text-align:center}}
+
+/* 7. 全画面サイズでのボタン到達性保証（モーダル・章選択・会話選択肢・タイトル・ヘッダー） */
+#stage{max-height:calc(100dvh - 118px)}
+.dialogue{max-height:calc(100% - 32px);overflow-y:auto}
+.modal{display:flex;align-items:center;justify-content:center;overflow-y:auto}
+.modal-card{max-height:100%;min-height:0;overflow-y:auto;margin:auto}
+.modal-card .actions:has(button:nth-child(8)){display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px}
+.modal-card .actions:has(button:nth-child(8)) button{width:100%;text-align:left;font-size:15.5px;padding:10px 14px}
+.still-viewer{overflow-y:auto}
+@media(max-width:600px) and (orientation:portrait){#stage{max-height:none}.dialogue{max-height:none}}
+@media(max-height:520px) and (orientation:landscape){#stage{max-height:100dvh}.dialogue{max-height:calc(100% - 16px)}}

@@ -89,6 +89,7 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
  .quarter-battle{grid-template-rows:minmax(190px,1fr) 256px 20px;gap:10px}
  .classic-lower{grid-template-columns:minmax(270px,27%) minmax(0,1fr) minmax(300px,29%)}
  .classic-menu-title{font-size:14px}.classic-options .classic-command{font-size:18px;min-height:30px;padding:4px 6px 4px 26px;white-space:nowrap}
+ .classic-options:has(.classic-command:nth-child(7)) .classic-command{font-size:16px;min-height:25px;padding:2px 6px 2px 24px}
  .classic-options .classic-command:focus:before,.classic-options .classic-command:hover:before{left:9px;top:5px}
  .classic-text{padding:16px 20px}.classic-message{font-size:20px;line-height:1.5;min-height:62px}.classic-forecast{font-size:14px;line-height:1.6}.classic-description{font-size:15px;line-height:1.5;margin-top:6px}
  .classic-status{gap:4px;padding:8px 12px}.status-box{padding:5px 8px;gap:10px}.status-face{width:50px;height:58px;flex-basis:50px}

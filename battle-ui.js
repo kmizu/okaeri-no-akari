@@ -427,11 +427,21 @@
         Object.entries(b.heroes)
           .map(([id, h]) => this.heroStatus(id, h, input && actor === id))
           .join('') +
-        '</div></div><div class="classic-help">↑ ↓ 選択　Enter / Z 決定　Esc / X 戻る<span>全員のコマンドを決めると、ターンが進みます</span></div>';
+        '</div></div><div class="classic-help">↑↓ / WS 選択　1-7 直接選択　Enter / Z 決定　Esc / X 戻る<span>全員のコマンドを決めると、ターンが進みます</span></div>';
       const title = this.el.querySelector('.classic-menu-title'),
         options = this.el.querySelector('.classic-options'),
         message = this.el.querySelector('.classic-message'),
-        tips = this.el.querySelector('.classic-forecast');
+        tips = this.el.querySelector('.classic-forecast'),
+        textWin = this.el.querySelector('.classic-text'),
+        arenaWin = this.el.querySelector('.classic-arena');
+      if (textWin)
+        textWin.onclick = e => {
+          if (this.phase === 'result' && e.target?.tagName !== 'BUTTON') this.nextMessage();
+        };
+      if (arenaWin)
+        arenaWin.onclick = e => {
+          if (this.phase === 'result' && e.target?.tagName !== 'BUTTON') this.nextMessage();
+        };
       message.textContent = this.message || '';
       if (!['result', 'outcome'].includes(this.phase))
         tips.innerHTML = forecast
@@ -994,19 +1004,40 @@
     key(e) {
       if (this.phase === 'busy') return;
       const k = e.key.toLowerCase();
-      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'enter', ' ', 'z', 'x', 'escape'].includes(k)) {
+      if (
+        ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd', 'enter', ' ', 'z', 'x', 'escape'].includes(k) ||
+        (k.length === 1 && k >= '1' && k <= '9')
+      ) {
         e.preventDefault();
         e.stopImmediatePropagation();
       }
-      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) {
-        const buttons = [...this.el.querySelectorAll('.classic-options button:not(:disabled)')],
+      if (this.phase === 'result' && ['enter', ' ', 'z'].includes(k)) {
+        this.nextMessage();
+        return;
+      }
+      if (k.length === 1 && k >= '1' && k <= '9') {
+        const allBtns = [...this.el.querySelectorAll('.classic-options button')],
+          pick = allBtns[Number(k) - 1];
+        if (pick && !pick.disabled) {
+          pick.focus({ preventScroll: true });
+          pick.click();
+        }
+        return;
+      }
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) {
+        const targetSelector = this.phase === 'target' ? '.battle-combatant:not(:disabled), .classic-options button:not(:disabled)' : '.classic-options button:not(:disabled)';
+        const buttons = [...this.el.querySelectorAll(targetSelector)],
           i = buttons.indexOf(document.activeElement),
-          delta = ['arrowup', 'arrowleft'].includes(k) ? -1 : 1,
+          delta = ['arrowup', 'arrowleft', 'w', 'a'].includes(k) ? -1 : 1,
           next = buttons[(i + delta + buttons.length) % buttons.length];
         if (next && next !== document.activeElement) sfx('cursor');
-        next?.focus();
+        next?.focus({ preventScroll: true });
       } else if (['enter', ' ', 'z'].includes(k)) {
         if (this.el.contains(document.activeElement) && document.activeElement.tagName === 'BUTTON') document.activeElement.click();
+        else {
+          const first = this.el.querySelector('.classic-options button:not(:disabled)');
+          first?.click();
+        }
       } else if (k === 'x' || k === 'escape') this.back();
     }
   }

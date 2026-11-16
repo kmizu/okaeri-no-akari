@@ -233,6 +233,21 @@ Renderer.prototype.draw=function(s,time,mode){
   }});
  }
  drawables.sort((a,b)=>a.y-b.y);for(const item of drawables)item.draw();
+ // クリック移動の目標地点とホバー表示（探索時のみ）
+ if(mode==='explore'){
+  const wt=root.OkaeriWorld?.walkTarget,ht=root.OkaeriWorld?.hoverTile;
+  if(ht&&ht.scene===s.scene&&(ht.interact||ht.walkable)&&!(wt&&wt.x===ht.x&&wt.y===ht.y)){
+   const hx=ht.x*T+24,hy=ht.y*T+24;
+   c.save();c.strokeStyle=ht.interact?'rgba(255,214,130,.65)':'rgba(195,235,242,.34)';c.lineWidth=ht.interact?2.2:1.5;
+   c.beginPath();c.ellipse(hx,hy+6,ht.interact?20:14,ht.interact?8:5.5,0,0,Math.PI*2);c.stroke();c.restore();
+  }
+  if(wt&&wt.scene===s.scene){
+   const wx=wt.x*T+24,wy=wt.y*T+24,wp=(t*2.1)%1;
+   c.save();c.strokeStyle=wt.interact?'rgba(255,216,132,'+(.9*(1-wp*.65))+')':'rgba(155,232,238,'+(.85*(1-wp*.65))+')';c.lineWidth=2.5;
+   c.beginPath();c.ellipse(wx,wy+6,10+wp*14,4+wp*5.5,0,0,Math.PI*2);c.stroke();
+   c.fillStyle=wt.interact?'rgba(255,216,132,.85)':'rgba(155,232,238,.8)';c.beginPath();c.ellipse(wx,wy+6,4.2,1.9,0,0,Math.PI*2);c.fill();c.restore();
+  }
+ }
  // 次の目的地の目印。歩ける時だけ、足元の輪と、上下に揺れる矢印で示す。
  const guide=mode==='explore'?D?.guide(s):null;
  if(guide){

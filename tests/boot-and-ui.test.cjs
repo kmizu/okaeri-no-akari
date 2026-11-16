@@ -325,3 +325,62 @@ test('character placements, combat motion effects, and scenario invariants hold 
   assert.deepEqual(plain(B.beatSounds(revBeat, down, {})), { start: ['cast'], impact: ['revive'] });
 });
 
+test('OP Koharu continuity, late-game Nina/Koharu past episodes, and modern UI operability features work', () => {
+  const listeners = {};
+  const { ctx, els } = createBrowserSandbox();
+  ctx.document.getElementById('dialogue').addEventListener = (ev, fn) => ((listeners['dialogue:' + ev] ||= []).push(fn));
+  ctx.document.getElementById('modal').addEventListener = (ev, fn) => ((listeners['modal:' + ev] ||= []).push(fn));
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  for (const rel of [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1])) {
+    vm.runInContext(fs.readFileSync(path.join(ROOT, rel), 'utf8'), ctx, { filename: rel });
+  }
+  const S = ctx.OkaeriStory,
+    ED = ctx.OkaeriEpisodesData;
+
+  // 1. Opening continuity: Koharu reacts to '二人きり' inside the house (opening[0]) and does NOT repeat '二人きりで！？' outside in opening[1]
+  const op0Koharu = S.opening[0].lines.filter(l => l[0] === 'コハル').map(l => l[1]).join('\n');
+  const op1Koharu = S.opening[1].lines.filter(l => l[0] === 'コハル').map(l => l[1]).join('\n');
+  assert.match(op0Koharu, /二人きり/);
+  assert.doesNotMatch(op1Koharu, /二人きりで！？|二人で！？/);
+
+  // 2. Late-game heartwarming past episodes for Nina & Koharu exist in built episodes-data.js
+  const ep8Text = ED.episodes[8].flatMap(ev => ev.lines.map(l => l[1])).join('\n');
+  assert.match(ep8Text, /よもぎと生姜/, 'Ep.8 includes Koharu childhood poultice memory');
+  assert.match(ep8Text, /別々に引き取られたばかりだった夜/, 'Ep.8 includes Nina childhood midnight square memory');
+  const koharuConfText = ED.confessions.koharu.map(l => l[1]).join('\n');
+  assert.match(koharuConfText, /軟膏の壺を落として/, 'Ep.9 Koharu confession includes childhood bulletin-board memory');
+  assert.match(ED.routes.touma.flatMap(ev => ev.lines.map(l => l[1])).join('\n'), /袖口をぎゅって/);
+  assert.match(ED.routes.nina.flatMap(ev => ev.lines.map(l => l[1])).join('\n'), /毛糸のミトン/);
+  assert.match(ED.routes.koharuLove.flatMap(ev => ev.lines.map(l => l[1])).join('\n'), /頑張りだこ/);
+
+  // 3. Modern UI buttons & operability: start game, skip OP, advance via dialogue body click, toggle auto, inspect backlog & close via X/backdrop
+  for (const id of ['craftButton', 'objectiveBox', 'backlogButton', 'autoReadButton']) {
+    assert.equal(typeof els[id]?.onclick, 'function', `${id}.onclick should be wired`);
+  }
+  els.startButton.onclick();
+  els.skipOpening.onclick();
+  assert.equal(els.dialogue.hidden, false);
+  const firstText = els.dialogueText.textContent;
+
+  // Click-anywhere on #dialogue body advances to line 2
+  listeners['dialogue:click'][0]({ target: { closest: () => null } });
+  const secondText = els.dialogueText.textContent;
+  assert.notEqual(secondText, firstText, 'clicking dialogue panel body advances line');
+
+  // Auto-read toggle updates state & visual class
+  els.autoReadButton.onclick({});
+  assert.equal(els.autoReadButton.classList.contains('is-on'), true);
+  els.autoReadButton.onclick({});
+  assert.equal(els.autoReadButton.classList.contains('is-on'), false);
+
+  // Backlog opens mid-dialogue with spoken lines and returns cleanly to dialogue when backdrop is clicked
+  els.backlogButton.onclick({});
+  assert.equal(els.modal.hidden, false);
+  assert.match(els.modalContent.innerHTML, /会話ログ/);
+  assert.ok(els.modalContent.innerHTML.includes(firstText.slice(0, 12)));
+  listeners['modal:click'][0]({ target: els.modal });
+  assert.equal(els.modal.hidden, true);
+  assert.equal(els.dialogue.hidden, false);
+  assert.equal(els.dialogueText.textContent, secondText, 'closing backlog preserves current dialogue line');
+});
+

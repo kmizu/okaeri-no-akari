@@ -35,6 +35,12 @@
   let openingFilm = null,
     typing = null,
     talkSerial = 0,
+    backlog = [],
+    autoRead = false,
+    autoTimer = null,
+    fastTickAt = 0,
+    modalDismissFn = null,
+    backlogOpen = false,
     roamers = [],
     lastRoamTick = 0,
     roamGraceUntil = 0,
@@ -243,6 +249,11 @@
     $('objectiveText').textContent = (state.episode && OkaeriEpisodes.objective(state)) || S.objective(state);
     $('leadText').textContent = name(state.lead) + 'が先頭';
     $('leadDot').style.background = state.lead === 'touma' ? '#77b8b6' : '#cb8267';
+    if ($('lvBadge')) {
+      const lv = C.ensureRpg?.(state)?.lv || 1;
+      $('lvBadge').textContent = '灯守 Lv.' + lv;
+    }
+    if (!route.length && W) W.walkTarget = null;
     const oint = state.ointments || 0,
       hasOint = oint > 0;
     $('bagText').textContent = state.flags.ointmentGiven || oint > 0 ? '持ち物 · 凍傷の軟膏 ×' + oint : '持ち物';
@@ -289,6 +300,7 @@
         ['map', '地図']
       ];
     if (Stills?.gallery) tabs.push(['gallery', '思い出の絵']);
+    tabs.push(['backlog', '会話ログ']);
     return (
       '<div class="rpg-tabs" role="tablist" aria-label="旅のメニュー切り替え">' +
       tabs
@@ -310,13 +322,26 @@
   }
   function openModal(html, buttons, returnMode = mode) {
     Sfx?.play('page');
+    clearAutoTimer();
     $('toast').hidden = true;
     clearTimeout(toast.timer);
     modalReturn = returnMode;
     mode = 'modal';
     held = {};
     route = [];
-    $('modalContent').innerHTML = html + '<div class="actions" id="modalActions"></div>';
+    if (W) W.walkTarget = null;
+    const dismiss = returnMode !== 'battle' ? buttons.find(([label]) => /^(閉じる|戻る|冒険に戻る)$/.test(label)) : null;
+    modalDismissFn = dismiss ? dismiss[1] : null;
+    $('modalContent').innerHTML =
+      (modalDismissFn ? '<button type="button" class="modal-close-x" id="modalCloseX" aria-label="閉じる" title="閉じる (Esc)">✕</button>' : '') +
+      html +
+      '<div class="actions" id="modalActions"></div>';
+    if (modalDismissFn && $('modalCloseX')) {
+      $('modalCloseX').onclick = () => {
+        Sfx?.play('cancel');
+        modalDismissFn?.();
+      };
+    }
     for (const [label, fn, primary] of buttons) {
       const b = document.createElement('button');
       b.textContent = label;
@@ -338,6 +363,7 @@
         else if (target === 'craft') openCraft();
         else if (target === 'journal') journal();
         else if (target === 'map') showMap();
+        else if (target === 'backlog') openBacklog();
         else if (target === 'gallery')
           Stills?.gallery((gHtml, gBtns) => openModal(rpgTabsHtml('gallery') + gHtml, gBtns, 'explore'), closeModal);
       };
@@ -347,9 +373,79 @@
   function closeModal() {
     $('modalContent').parentElement?.classList.remove('map-card');
     $('modal').hidden = true;
+    modalDismissFn = null;
+    backlogOpen = false;
     mode = modalReturn;
+    if (mode === 'dialogue') {
+      scheduleAutoRead();
+      return;
+    }
     canvas.focus();
     updateHud();
+  }
+  function clearAutoTimer() {
+    clearTimeout(autoTimer);
+    autoTimer = null;
+  }
+  function syncAutoReadUi() {
+    const btn = $('autoReadButton');
+    if (!btn) return;
+    btn.classList?.toggle?.('is-on', autoRead);
+    btn.setAttribute?.('aria-pressed', String(autoRead));
+    btn.innerHTML = (autoRead ? 'オート ON' : 'オート') + ' <kbd>A</kbd>';
+    $('dialogue')?.classList?.toggle?.('is-auto', autoRead);
+  }
+  function scheduleAutoRead() {
+    clearAutoTimer();
+    const q = queue[queueIndex];
+    if (!autoRead || mode !== 'dialogue' || !q || q.choices || !typing || !typing.done) return;
+    const delay = Math.max(1250, Math.min(3400, 900 + (q.text?.length || 0) * 38));
+    autoTimer = setTimeout(() => {
+      autoTimer = null;
+      if (autoRead && mode === 'dialogue' && !queue[queueIndex]?.choices) {
+        hideChapterCard();
+        nextDialogue();
+      }
+    }, delay);
+  }
+  function toggleAutoRead() {
+    autoRead = !autoRead;
+    Sfx?.play(autoRead ? 'confirm' : 'cancel');
+    syncAutoReadUi();
+    if (autoRead) {
+      if (mode === 'dialogue' && typing && typing.done && !queue[queueIndex]?.choices) scheduleAutoRead();
+    } else clearAutoTimer();
+  }
+  function openBacklog() {
+    if (!['dialogue', 'explore', 'modal'].includes(mode)) return;
+    const back = mode === 'modal' ? modalReturn : mode;
+    if (mode === 'modal') closeModal();
+    const rows = backlog.length
+      ? '<div class="backlog-list" id="backlogList">' +
+        backlog
+          .map(
+            item =>
+              '<div class="backlog-item' +
+              (item.speaker ? '' : ' is-narration') +
+              '">' +
+              (item.speaker ? '<span class="backlog-speaker">' + escape(item.speaker) + '</span>' : '') +
+              '<p>' +
+              escape(item.text) +
+              '</p></div>'
+          )
+          .join('') +
+        '</div>'
+      : '<p class="rpg-note">まだ会話の記録がありません。物語を進めると、ここに直近の台詞が残ります。</p>';
+    openModal(
+      (back === 'explore' ? rpgTabsHtml('backlog') : '') +
+        '<span class="tag">BACKLOG · 会話の記録</span><h2>会話ログ</h2>' +
+        rows,
+      [['閉じる', closeModal, true]],
+      back
+    );
+    backlogOpen = true;
+    const listEl = $('backlogList');
+    if (listEl) listEl.scrollTop = 999999;
   }
   function talk(lines, done) {
     held = {};
@@ -379,16 +475,31 @@
     ユラ: 'yura'
   };
   function showLine() {
+    clearAutoTimer();
     const q = queue[queueIndex],
       speaker = q.speaker,
       moodName = q.mood || S.faceCues[q.text] || 'neutral',
       faceId = faceIds[speaker],
       cue = q.cue || {};
+    if (q.text) {
+      const spkName = speaker ? name(speaker) : '',
+        prev = backlog.at(-1);
+      if (!prev || prev.speaker !== spkName || prev.text !== q.text) {
+        backlog.push({ speaker: spkName, text: q.text });
+        if (backlog.length > 80) backlog.shift();
+      }
+    }
     // コハルは「ふくれ顔」「泣きそう」の絵を持つので、その二つは記号を重ねない。
     let m = D.mood(moodName);
     if (faceId === 'koharu' && ['angry', 'sad'].includes(moodName)) m = { face: m.face };
-    $('dialogue').className = 'dialogue' + (speaker ? '' : ' narration') + (m.tone ? ' tone-' + m.tone : '');
+    $('dialogue').className =
+      'dialogue' +
+      (speaker ? '' : ' narration') +
+      (m.tone ? ' tone-' + m.tone : '') +
+      (q.choices ? ' has-choices' : '') +
+      (autoRead ? ' is-auto' : '');
     $('speaker').textContent = speaker ? name(speaker) : '';
+    if ($('dialogueStep')) $('dialogueStep').textContent = queue.length > 1 ? queueIndex + 1 + ' / ' + queue.length : '';
     $('dialogueText').textContent = q.text;
     $('portrait').className = 'portrait ' + (faceId ? faceId + ' ' + m.face : 'other');
     $('portrait').style.setProperty?.('--k', faceId === 'koharu' ? koharuFaces[moodName] || 0 : 0);
@@ -401,7 +512,7 @@
     $('portraitMark').hidden = !(speaker && m.mark);
     $('choices').replaceChildren();
     $('nextDialogue').hidden = !!q.choices;
-    if (q.choices)
+    if (q.choices) {
       for (const [label, action] of q.choices) {
         const b = document.createElement('button');
         b.textContent = label;
@@ -413,6 +524,8 @@
         };
         $('choices').append(b);
       }
+      $('choices').children?.[0]?.focus?.({ preventScroll: true });
+    }
     // きっかけ: 画面は Director、音はここで鳴らす。
     if (Array.isArray(cue.scene)) scene(...cue.scene);
     D.apply(cue, speaker);
@@ -437,6 +550,15 @@
   }
   // 文字送り。描画ループから呼ばれる（描画が回らない環境では、最初から全文が出ている）。
   function typeTick(t) {
+    if (mode === 'dialogue' && (held.Control || held.control) && !queue[queueIndex]?.choices) {
+      if (typing && !typing.done) finishTyping();
+      if (t - fastTickAt > 95) {
+        fastTickAt = t;
+        hideChapterCard();
+        nextDialogue();
+      }
+      return;
+    }
     const ty = typing;
     if (!ty || ty.done || mode !== 'dialogue') return;
     if (!ty.started) {
@@ -477,9 +599,11 @@
       $('dialogueText').textContent = typing.text;
       $('dialogue').classList.remove('typing');
     }
+    scheduleAutoRead();
   }
   function nextDialogue() {
     if (mode !== 'dialogue') return;
+    clearAutoTimer();
     if (typing && typing.started && !typing.done) {
       finishTyping();
       return;
@@ -489,6 +613,7 @@
       showLine();
       return;
     }
+    clearAutoTimer();
     $('dialogue').hidden = true;
     mode = 'explore';
     typing = null;
@@ -608,12 +733,14 @@
     setMusic('opening');
     $('hud').hidden = true;
     $('controls').hidden = true;
+    if ($('craftButton')) $('craftButton').disabled = true;
     $('journalButton').disabled = true;
     $('menuButton').disabled = true;
     openingFilm = new OkaeriOpeningFilm();
     openingFilm.play(() => {
       delete state.openingPrelude;
       $('controls').hidden = false;
+      if ($('craftButton')) $('craftButton').disabled = false;
       $('journalButton').disabled = false;
       $('menuButton').disabled = false;
       $('hud').hidden = false;
@@ -2369,6 +2496,15 @@
     if (found) {
       route = found;
       routeTarget = o?.id || null;
+      if (W) {
+        let dx = state.x,
+          dy = state.y;
+        for (const [sx, sy] of found) {
+          dx += sx;
+          dy += sy;
+        }
+        W.walkTarget = found.length ? { scene: state.scene, x: o ? o.x : dx, y: o ? o.y : dy, interact: !!o } : null;
+      }
       if (!route.length && o) {
         routeTarget = null;
         handle(o.id);
@@ -2531,10 +2667,47 @@
     hideChapterCard();
     nextDialogue();
   };
+  if ($('backlogButton'))
+    $('backlogButton').onclick = e => {
+      e?.stopPropagation?.();
+      openBacklog();
+    };
+  if ($('autoReadButton'))
+    $('autoReadButton').onclick = e => {
+      e?.stopPropagation?.();
+      toggleAutoRead();
+    };
+  $('dialogue')?.addEventListener?.('click', e => {
+    if (mode !== 'dialogue') return;
+    if (e.target?.closest?.('button, #choices, #dialogueTools')) return;
+    if (globalThis.getSelection?.()?.toString?.()) return;
+    hideChapterCard();
+    if (queue[queueIndex]?.choices) {
+      finishTyping();
+      return;
+    }
+    nextDialogue();
+  });
+  $('modal')?.addEventListener?.('click', e => {
+    if (mode === 'modal' && e.target === $('modal') && modalDismissFn) {
+      Sfx?.play('cancel');
+      modalDismissFn();
+    }
+  });
   $('leadButton').onclick = switchLead;
   $('bagButton').onclick = openBag;
   $('interactButton').onclick = interact;
   $('interactPrompt').onclick = interact; // スマホでは、この札をそのまま押して調べられる
+  if ($('craftButton')) $('craftButton').onclick = () => openCraft();
+  if ($('objectiveBox')) {
+    $('objectiveBox').onclick = () => journal();
+    $('objectiveBox').onkeydown = e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        journal();
+      }
+    };
+  }
   $('journalButton').onclick = journal;
   // 地図。町のまわりと、世界の中のユキネ。会話や戦闘の外で、いつでも開ける。
   function showMap(which = 'local') {
@@ -2579,6 +2752,7 @@
   };
   document.addEventListener('keydown', e => {
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (e.key === 'Control') held.control = true;
     if (mode === 'opening') {
       if (!e.repeat && key === 'Escape') {
         e.preventDefault();
@@ -2587,13 +2761,14 @@
       return;
     }
     if (mode === 'battle') {
-      if (!e.repeat || key.startsWith('Arrow')) classicBattle.key(e);
+      if (!e.repeat || key.startsWith('Arrow') || ['w', 'a', 's', 'd'].includes(key)) classicBattle.key(e);
       return;
     }
     if (dirs[key] && mode === 'explore') {
       e.preventDefault();
       held[key] = true;
       route = [];
+      if (W) W.walkTarget = null;
       return;
     }
     if (e.repeat) return;
@@ -2602,12 +2777,83 @@
       hideChapterCard();
       return;
     }
-    if ((key === 'Enter' || key === ' ' || key === 'e') && mode === 'dialogue') {
-      e.preventDefault();
-      if (!queue[queueIndex].choices) nextDialogue();
+    if (mode === 'dialogue') {
+      if (key === 'l') {
+        e.preventDefault();
+        openBacklog();
+        return;
+      }
+      if (key === 'a') {
+        e.preventDefault();
+        toggleAutoRead();
+        return;
+      }
+      if (key === 'Shift') {
+        finishTyping();
+        return;
+      }
+      if (queue[queueIndex]?.choices) {
+        const chBtns = $('choices').children || [];
+        if (key >= '1' && key <= '9') {
+          const pick = chBtns[Number(key) - 1];
+          if (pick) {
+            e.preventDefault();
+            pick.onclick?.();
+          }
+          return;
+        }
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key) && chBtns.length) {
+          e.preventDefault();
+          const idx = chBtns.indexOf(document.activeElement),
+            delta = key === 'ArrowUp' || key === 'ArrowLeft' ? -1 : 1,
+            next = chBtns[(idx + delta + chBtns.length) % chBtns.length];
+          Sfx?.play('cursor');
+          next?.focus?.({ preventScroll: true });
+          return;
+        }
+      }
+      if (key === 'Enter' || key === ' ' || key === 'e') {
+        if (queue[queueIndex]?.choices && e.target?.tagName === 'BUTTON' && (key === 'Enter' || key === ' ')) return;
+        e.preventDefault();
+        if (!queue[queueIndex].choices) nextDialogue();
+        return;
+      }
       return;
     }
-    if (e.target.tagName === 'BUTTON' && key === 'Enter') return;
+    if (mode === 'modal') {
+      if (key === 'l' && backlogOpen) {
+        e.preventDefault();
+        closeModal();
+        return;
+      }
+      if (key === '[' || key === ']' || ((key === 'ArrowLeft' || key === 'ArrowRight') && $('modalContent').querySelectorAll?.('[data-menu-tab]')?.length)) {
+        const tabs = [...($('modalContent').querySelectorAll?.('[data-menu-tab]') || [])];
+        if (tabs.length > 1) {
+          e.preventDefault();
+          const cur = tabs.findIndex(t => t.getAttribute?.('aria-selected') === 'true'),
+            delta = key === '[' || key === 'ArrowLeft' ? -1 : 1,
+            nextTab = tabs[((cur < 0 ? 0 : cur) + delta + tabs.length) % tabs.length];
+          nextTab?.onclick?.();
+          return;
+        }
+      }
+      const mBtns = $('modalActions')?.children || [];
+      if (key >= '1' && key <= '9' && mBtns[Number(key) - 1]) {
+        e.preventDefault();
+        mBtns[Number(key) - 1].onclick?.();
+        return;
+      }
+      if ((key === 'ArrowUp' || key === 'ArrowDown') && mBtns.length) {
+        e.preventDefault();
+        const idx = mBtns.indexOf(document.activeElement),
+          delta = key === 'ArrowUp' ? -1 : 1,
+          next = mBtns[(idx + delta + mBtns.length) % mBtns.length];
+        Sfx?.play('cursor');
+        next?.focus?.({ preventScroll: true });
+        return;
+      }
+    }
+    if (e.target?.tagName === 'BUTTON' && key === 'Enter') return;
     if (key === 'e' || key === 'Enter') {
       if (mode === 'explore') {
         e.preventDefault();
@@ -2619,6 +2865,7 @@
     if (key === 'c') openCraft();
     if (key === 'j') journal();
     if (key === 'm') showMap();
+    if (key === 'l' && mode === 'explore') openBacklog();
     if (key === 'Escape') {
       if (mode === 'modal') {
         if (modalReturn === 'battle') toast('下のボタンから戦闘を進めてください');
@@ -2627,6 +2874,7 @@
     }
   });
   document.addEventListener('keyup', e => {
+    if (e.key === 'Control') delete held.control;
     const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     delete held[k];
     if (mode === 'explore') save();
@@ -2634,6 +2882,10 @@
   window.addEventListener('blur', () => {
     held = {};
     route = [];
+    if (W) {
+      W.walkTarget = null;
+      W.hoverTile = null;
+    }
   });
   for (const btn of document.querySelectorAll('[data-move]')) {
     const key = { left: 'a', right: 'd', up: 'w', down: 's' }[btn.dataset.move];
@@ -2641,6 +2893,7 @@
       e.preventDefault();
       held[key] = true;
       route = [];
+      if (W) W.walkTarget = null;
       btn.setPointerCapture(e.pointerId);
     });
     for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
@@ -2649,6 +2902,24 @@
         if (mode === 'explore') save();
       });
   }
+  canvas.addEventListener('pointermove', e => {
+    if (mode !== 'explore') {
+      if (W) W.hoverTile = null;
+      canvas.style.cursor = 'default';
+      return;
+    }
+    const r = canvas.getBoundingClientRect();
+    const tx = Math.floor(((e.clientX - r.left) / r.width) * 24),
+      ty = Math.floor(((e.clientY - r.top) / r.height) * 16),
+      obj = S.activeObjects(state).find(o => Math.hypot(o.x - tx, o.y - ty) < 1),
+      walk = S.walkable(state, tx, ty);
+    if (W) W.hoverTile = { scene: state.scene, x: tx, y: ty, interact: !!obj, walkable: walk };
+    canvas.style.cursor = obj ? 'pointer' : walk ? 'crosshair' : 'default';
+  });
+  canvas.addEventListener('pointerleave', () => {
+    if (W) W.hoverTile = null;
+    canvas.style.cursor = 'default';
+  });
   canvas.addEventListener('pointerdown', e => {
     if (mode !== 'explore') return;
     const r = canvas.getBoundingClientRect();

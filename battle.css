@@ -118,3 +118,19 @@ body:has(.quarter-battle:not([hidden])) #controls .keyboard-help,body:has(.quart
  .classic-message{font-size:15px;line-height:1.55;min-height:0}.classic-forecast{font-size:12px;line-height:1.6}.classic-description{font-size:12px}
  .status-box{flex:1;padding:4px;gap:5px}.status-face{width:30px;height:36px;flex-basis:30px}.status-details strong{font-size:12px}.status-details strong small{display:none}.status-line{font-size:11px}
 }
+
+/* モダン戦闘UIポリッシュ（コマンド番号ヒント・アクティブ強調・グラデーションゲージ） */
+.classic-arena{border-radius:11px;border-color:#e9be7859;box-shadow:inset 0 1px 0 #ffffff24,0 10px 30px #04121b66}
+.battle-place,.classic-battle-info{backdrop-filter:blur(8px);border-radius:8px}
+.classic-window{border-radius:11px;backdrop-filter:blur(8px)}
+.classic-options{counter-reset:bcmd}
+.classic-options .classic-command{counter-increment:bcmd;padding-right:24px;border-radius:6px;transition:background .12s,color .12s,transform .1s}
+.classic-options .classic-command::after{content:counter(bcmd);position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:#9eb8be;opacity:.65}
+.classic-options .classic-command:hover:not(:disabled),.classic-options .classic-command:focus:not(:disabled){background:linear-gradient(90deg,#e9be782e,#e9be780d);transform:translateX(2px)}
+.classic-options .classic-command:hover:not(:disabled)::after,.classic-options .classic-command:focus:not(:disabled)::after{color:#ffe2a3;opacity:1}
+.classic-options .classic-command:disabled::after{opacity:.22}
+.status-box{border-radius:8px;transition:background .18s,border-color .18s,box-shadow .18s}
+.status-box.active-hero{background:linear-gradient(135deg,#e9be7824,#1a3d4bd9);border-color:#f0cb85bd;box-shadow:0 0 14px #e9be7829,inset 0 1px 0 #ffe9ba30}
+.status-meter{border-radius:999px;background:#061823}
+.status-meter i{border-radius:999px;background:linear-gradient(90deg,#6fc29e,#bce6b5);transition:width .32s ease}
+@media(max-width:760px){.classic-options .classic-command::after{display:none}.classic-options .classic-command{padding-right:6px}}

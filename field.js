@@ -106,8 +106,10 @@
     const s = a.state,
       f = s.flags,
       ep = s.episode;
+    const ninaAwayRoute = ep?.chapter === 10 && root.OkaeriCore?.route(ep.route)?.ninaAway && (ep.step === 2 || ep.complete);
     if (id === 'valeGate') {
-      if (root.OkaeriEpisodes?.current(s)?.solo) return say(a, '今は別行動の最中だ。目の前の用事を先に済ませよう。');
+      if (root.OkaeriEpisodes?.current(s)?.solo || ninaAwayRoute) return say(a, '今は目の前の用事を先に済ませよう。');
+      if (ep?.chapter === 4 && !ep.complete) return say(a, 'ニナはまだ病み上がりで外の雪道は止められている。町の用事を先に済ませよう。');
       if (ep?.chapter === 8 && !ep.complete) return say(a, '吹雪が激しくなってきている。今は西の風待ちの丘が先だ。');
       if (ep?.chapter === 9 && !ep.complete) return say(a, '今夜は護りの灯火祭りだ。広場へ戻ろう。');
       a.scene('herbvale', ...spawns.herbvale);
@@ -124,7 +126,8 @@
       return true;
     }
     if (id === 'passGate') {
-      if (root.OkaeriEpisodes?.current(s)?.solo) return say(a, '今は別行動の最中だ。目の前の用事を先に済ませよう。');
+      if (root.OkaeriEpisodes?.current(s)?.solo || ninaAwayRoute) return say(a, '今は目の前の用事を先に済ませよう。');
+      if (ep?.chapter === 4 && !ep.complete) return say(a, 'ニナはまだ病み上がりで外の雪道は止められている。町の用事を先に済ませよう。');
       if (ep?.chapter === 8 && !ep.complete) return say(a, '吹雪で、峠へ続く道は見えない。今は丘の灯台が先だ。');
       if (ep?.chapter === 9 && !ep.complete) return say(a, '今夜は護りの灯火祭りだ。広場へ戻ろう。');
       a.scene('oldpass', ...spawns.oldpass);
@@ -142,7 +145,7 @@
     }
     if (!names[s.scene]) return false;
     if (id === 'valeExit') {
-      a.scene('forest', 2, 12);
+      a.scene('forest', 2, 13);
       return true;
     }
     if (id === 'passExit') {

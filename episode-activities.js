@@ -189,7 +189,21 @@
       .filter(Boolean);
   }
   function keepsake(s) {
-    return keepsakes[s.episode.chapter]?.[s.memories?.gift] || null;
+    const k = s.memories?.gift;
+    if (!k) return null;
+    if (s.episode.chapter === 10 && ['both', 'koharuLove'].includes(s.episode.route)) {
+      return k === 'tea'
+        ? [
+            ['', '酸っぱいお茶が、三つのカップで湯気を立てている。トウマとコハルの方には砂糖がひとさじ、ニナの方にはなし。', { se: 'cup' }],
+            ['コハル', 'えへへ、三人分おそろいの湯気だね。甘酸っぱくておいしい！', 'happy']
+          ]
+        : [
+            ['', '食卓の本には、紺の糸の栞。トウマの感想の下に、ニナの字が一行増えている。「執事じゃなかったね」。', { se: 'page' }],
+            ['touma', '……続きは、春が終わってまた三人で揃ってから読もう。'],
+            ['nina', 'うん。帰ってきたら答え合わせしようね。', 'happy']
+          ];
+    }
+    return keepsakes[s.episode.chapter]?.[k] || null;
   }
   function run(a, event, done) {
     const t = task(a.state);

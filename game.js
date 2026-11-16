@@ -51,6 +51,8 @@
     if (s.scene === 'forest' && !s.flags.mochi && !(s.episode && (s.episode.chapter > 1 || s.episode.step > 2))) return false;
     if (s.episode) {
       if (globalThis.OkaeriEpisodes?.current(s)?.solo) return false;
+      if (s.episode.chapter === 3 && s.episode.step >= 4 && !s.episode.complete) return false;
+      if (s.episode.chapter === 4 && !s.episode.complete) return false;
       if (s.episode.chapter === 8 && !s.episode.complete) return false;
       if (s.episode.chapter === 9 && !s.episode.complete) return false;
       if (s.episode.chapter === 10 && C.route(s.episode.route)?.ninaAway && (s.episode.step === 2 || s.episode.complete)) return false;
@@ -73,7 +75,7 @@
       }
     }
     if (!candidates.length) return;
-    const usablePool = pool.filter(p => p.kind !== 'pack' || state.episode?.chapter >= 8 || state.flags.hillLit),
+    const usablePool = pool.filter(p => p.kind !== 'pack' || (state.episode ? state.episode.chapter >= 8 : !!state.flags.hillLit)),
       want = Math.min(3, Math.max(1, Math.floor(candidates.length / 9))),
       picked = [];
     let seed = (state.scene.charCodeAt(0) * 31 + state.x * 17 + state.y * 13 + (C.ensureRpg?.(state)?.lv || 1) * 7) >>> 0;
@@ -138,6 +140,8 @@
         if (!S.walkable(state, nx, ny)) return false;
         if (objs.some(o => Math.hypot(nx - o.x, ny - o.y) < 1.8)) return false;
         if (roamers.some(o => o !== r && o.x === nx && o.y === ny)) return false;
+        if (renderer.f && Math.hypot(nx * 48 + 24 - renderer.f.x, ny * 48 + 24 - renderer.f.y) < 34) return false;
+        if (D?.companion(state) && renderer.g && Math.hypot(nx * 48 + 24 - renderer.g.x, ny * 48 + 24 - renderer.g.y) < 34) return false;
         if (t < roamGraceUntil && Math.hypot(nx - state.x, ny - state.y) < 2) return false;
         return true;
       });
@@ -711,6 +715,9 @@
       toast('気になるものに近づいて、調べてみよう');
       return;
     }
+    if (renderer.p && (o.x !== state.x || o.y !== state.y) && globalThis.OkaeriSprites?.facing) {
+      renderer.p.dir = OkaeriSprites.facing(o.x - state.x, o.y - state.y, renderer.p.dir);
+    }
     handle(o.id);
   }
   function episodeApi() {
@@ -836,6 +843,14 @@
       return;
     }
     if (id === 'sae') {
+      if (f.returned) {
+        talk([['サエ', '今日はよく頑張ったね。今夜のうちに診療所のユラへ薬の番の相談をしてくるから、明日は早く休みな。', 'happy']]);
+        return;
+      }
+      if (f.lit) {
+        talk([['サエ', '森の灯台の火、ここからもよく見えたよ。さあ、掲示板へ行って自分たちの手で出発札を戻しておいで。', 'happy']]);
+        return;
+      }
       talk(
         [
           ['サエ', '灯守の仕事は、火をつけて終わりじゃない。自分が帰ってくるまでが仕事だよ。'],
@@ -853,6 +868,14 @@
       return;
     }
     if (id === 'bakery') {
+      if (f.returned) {
+        talk([['マロ', '焼きたてのパン、もうお腹に入ったね？　今夜は家で温かいスープを飲んでゆっくり寝るんだよ！', 'happy']]);
+        return;
+      }
+      if (f.lit) {
+        talk([['マロ', 'おかえり！　粉ひき小屋の荷車も無事に着いたよ。先に広場の掲示板で出発札を戻しておいで、焼きたてを用意して待ってるから！', 'happy']]);
+        return;
+      }
       if (f.bread) {
         talk([['マロ', '夕方の焼き上がりを、一つ遅らせとくからね。二人とも、ちゃんと帰っておいで！', 'happy']]);
         return;
@@ -881,6 +904,13 @@
       return;
     }
     if (id === 'lamp') {
+      if (f.lit || f.returned) {
+        talk([
+          ['', '夕闇の降りた家の戸口で、小さな護りの灯火が静かに揺れている。'],
+          ['nina', 'まだ帰ってこない家族を待ってる灯りだね。……今夜のうちに、無事に帰れますように。']
+        ]);
+        return;
+      }
       talk(
         [
           ['', '家の戸口に、小さな護りの灯火がともっている。昼間なのに、消えていない。'],
@@ -901,7 +931,7 @@
         [
           [
             '',
-            '灯守の共同所の前に、繕いものの籠が出してある。\n町の誰でも、破れた手袋や靴下を入れていい。手の空いた人が直して戻す決まりだ。'
+            '広場の南西角、織りもの屋の近くに繕いものの籠が出してある。\n町の誰でも、破れた手袋や靴下を入れていい。手の空いた人が直して戻す決まりだ。'
           ],
           ['nina', 'トウマの右の手袋、次はこっちの太い糸にしようかな。今のは柔らかいけど、道具を握る所がまた擦れそう。'],
           ['touma', '……まだ今朝直したばかりだろ。これだけ繕ってもらうと、新しいのを買った方が早い気もする。'],
@@ -925,7 +955,7 @@
       scene('forest', 5, 13);
       if (!f.mochi)
         talk([
-          ['', 'ユキネの北門を抜けると、白嶺のふもとへ続く「粉ひきの森」に入る。\n奥の渓谷には水車の粉ひき小屋があり、北の峠を越えて運ばれてくる小麦をここで挽いて町へ届けている。森の灯台は、その分かれ道を見下ろす高台だ。'],
+          ['', 'ユキネの北門を抜けると、白嶺のふもとへ続く「粉ひきの森」に入る。\n奥の渓谷には水車の粉ひき小屋があり、秋に南西から届いた小麦を冬のあいだ少しずつ挽いて町へ届けている。森の灯台は、北の峠道と粉ひき小屋の分かれ道を見下ろす高台だ。'],
           ['nina', '広場の中より、ずっと雪が深いね……。昨日の足跡も、ひと晩ですっかり埋まってる。'],
           ['touma', '新雪は俺が先に踏み固める。ニナは後ろから道標の向きを見ててくれ。少しでも逸れたら声をかけろ。'],
           ['nina', '了解。……あれ。トウマ、あの最初の道標の下を見て。何か丸いのが跳ねてない？', 'question']
@@ -1007,7 +1037,7 @@
         ['nina', 'きのことチーズ。好きでしょ。端っこに具が寄ってるから、そっちから食べて。', 'happy'],
         ['touma', '……うまい。', 'happy'],
         ['nina', 'ほんと？　よかった。朝、閉じ目がなかなかくっつかなくて、三個だめにしたの。'],
-        ['touma', '知ってる。だめにした三個が、俺の朝飯だったから。'],
+        ['touma', '知ってる。出がけに、台所の皿によけてあった一個をつまみ食いしたから。'],
         ['nina', 'あれ食べたの！？', 'fluster'],
         ['touma', 'うまかった。'],
         ['', '窓際の棚に、大小ふぞろいのカップが並んでいる。\n一つだけ、青い取っ手を継いだ跡があった。'],
@@ -1212,7 +1242,7 @@
           ['touma', '……ああ。これでもう、道を間違えずに町まで帰れる。'],
           [
             '',
-            '――今から十二年前の冬、まだトウマとニナが幼かった大雪の夕暮れのことだ。\nあの日、トウマの両親とニナの両親は、冬越しの小麦や塩を積んだ町の荷車の列に加わり、深い雪で道が閉ざされる前に北の峠からユキネへ帰る途中だった。',
+            '――今から十二年前の冬、まだトウマとニナが幼かった大雪の夕暮れのことだ。\nあの日、トウマの両親とニナの両親は、北の峠の小集落へ冬越しの塩を届けた帰り、渓谷の粉ひき小屋で町用の小麦粉を積み込み、深い雪で道が閉ざされる前に北の峠道からユキネへ戻る途中だった。',
             { wait: 500 }
           ],
           [
@@ -1513,10 +1543,25 @@
           state.ointments = Math.max(0, (state.ointments || 0) - 1);
           save();
           closeModal();
+          const withK = D?.companion(state),
+            soloNow =
+              (state.episode && OkaeriEpisodes.current(state)?.solo) ||
+              globalThis.OkaeriJourney?.split(state) ||
+              (state.episode?.chapter === 10 && C.route(state.episode.route)?.ninaAway && (state.episode.step === 2 || state.episode.complete)),
+            strainedNow = state.episode?.chapter === 4 && !state.episode.complete;
           talk([
             ['', '小瓶の蓋を開けると、乾かした薬草の甘い匂いが立った。\n指先に少しずつ塗って、コハルに言われた通りに十数える。', { se: 'item' }],
-            ['nina', '……いち、にい……じゅう。ほんとだ、指の先までぽかぽかする。', 'happy'],
-            ['touma', '手袋の中でも効いてるな。……あいつ、ずいぶん腕が上がった。']
+            ...(withK
+              ? [
+                  ['コハル', '……いち、にい……じゅう！　ほら、指先までちゃんと温まったでしょ？', 'happy'],
+                  ['touma', 'ああ、手袋の中でもよく効いてる。助かるぞ、コハル。']
+                ]
+              : soloNow || strainedNow
+                ? [[state.lead, '……よし、指先の感覚が戻った。先を急ごう。']]
+                : [
+                    ['nina', '……いち、にい……じゅう。ほんとだ、指の先までぽかぽかする。', 'happy'],
+                    ['touma', '手袋の中でも効いてるな。……あいつ、ずいぶん腕が上がった。']
+                  ])
           ]);
         },
         true
@@ -1785,7 +1830,7 @@
     }
     if (mode === 'title') {
       openModal(
-        '<span class="tag">GUIDE · はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染。雪で消える道の方角を知らせ、魔獣を退ける「護りの灯火」の番をする、灯守（ひもり）です。トウマは木や金具の修理、ニナは火を扱う「灯術」が得意です。</p><p>二人の仕事と暮らしを、全10話でたどります。第9話で二人の関係を選ぶと、最終話が三通りに変わります。</p><p class="rpg-note">操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代、Iで持ち物。Jの「旅の手帳」で今日の用事と次の行き先を確かめられます。右上の「音」で音楽と効果音が入ります。</p>',
+        '<span class="tag">GUIDE · はじめに</span><h2>二人で、灯りを届ける</h2><p>トウマとニナは、雪の町ユキネで一緒に暮らす幼馴染。雪で消える道の方角を知らせ、魔獣を退ける「護りの灯火」の番をする、灯守（ひもり）です。トウマは木や金具の修理、ニナは火を扱う「灯術」が得意です。</p><p>二人の仕事と暮らしを、全10話でたどります。第9話で関係を選ぶと、最終話が六通りに変わります。</p><p class="rpg-note">操作：矢印 / WASDで移動、E・Enterで調べる、Qで交代、Iで持ち物。Jの「旅の手帳」で今日の用事と次の行き先を確かめられます。右上の「音」で音楽と効果音が入ります。</p>',
         [['閉じる', closeModal, true]],
         'title'
       );
@@ -1991,7 +2036,7 @@
         '<div class="rpg-member' +
         (withKoharu ? ' is-lead' : '') +
         '"><span class="rpg-face face-koharu" aria-hidden="true"></span><div class="rpg-member-info"><strong>コハル <span class="rpg-role-pill">' +
-        (withKoharu ? '同行中' : '薬師見習い') +
+        (withKoharu ? '同行中' : state.episode?.chapter >= 2 ? '薬の番' : '薬師見習い') +
         '</span></strong><small>' +
         (withKoharu ? '補助薬と投げ薬 · 薬の番' : '三人の家 · 調合と手当て') +
         '</small>' +
@@ -2058,7 +2103,7 @@
     }
     if (state.scene === 'clinic') {
       if (id === 'clinicExit') {
-        scene('town', 10, 13);
+        scene('town', 11, 13);
         return true;
       }
       const ninaAwayNow =
@@ -2113,7 +2158,7 @@
     }
     if (state.scene !== 'house') return false;
     if (id === 'houseExit') {
-      scene('town', 3, 13);
+      scene('town', 4, 13);
       return true;
     }
     if (id === 'homeTable') {
@@ -2271,8 +2316,11 @@
         (state.episode?.chapter === 10 && state.episode.route === 'both' && state.episode.step === 0) ||
         (state.episode?.chapter === 10 && C.route(state.episode.route)?.ninaAway && (state.episode.step === 2 || state.episode.complete));
       const strained = state.episode?.chapter === 4 && !state.episode.complete;
+      const hasNinaReply = lines[id].some(l => l[0] === 'nina');
       const filtered =
-        ninaMissingInHouse || strained ? lines[id].filter(l => l[0] === '' || (ninaMissingInHouse && l[0] === 'touma')) : lines[id];
+        ninaMissingInHouse || strained
+          ? lines[id].filter(l => l[0] === '' || (ninaMissingInHouse && !hasNinaReply && l[0] === 'touma'))
+          : lines[id];
       talk(filtered.length ? filtered : [lines[id][0]]);
       return true;
     }

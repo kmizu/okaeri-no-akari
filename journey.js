@@ -44,11 +44,11 @@ function target(s){
 }
 function advance(a,step){a.state.journey.step=step;a.save();a.updateHud();}
 const departure=[
- ['','南のカルデの灯工房へ参加の返事を出す前に、二人にはもうひとつ外の町からの頼まれごとが舞い込んだ。\n配達人のオルフが、ユキネの南東に広がる大きな凍結湖「氷湖（ひょうこ）」の向こう岸にある集落からの伝言を運んできたのだ。'],
+ ['','南のカルデの灯工房へ参加の返事を出す前に、二人にはもうひとつ外の町からの頼まれごとが舞い込んだ。\n配達人のオルフが、ユキネの南東に広がる冬になると岸辺に氷が張り詰める大きな湖「氷湖（ひょうこ）」の向こう岸にある集落からの伝言を運んできたのだ。'],
  ['オルフ','お前さんたち、『ミナモ』って渡し場の集落を知ってるか？　南東の氷湖の向こう岸にあって、南のカルデや海沿いの港町へ荷を送る中継地になってる町だ。あそこの港を照らす『迎え灯』の光が、この冬に入ってから急に弱まってるらしくてな。夕暮れの定期舟が、吹雪の日に港の位置を見つけにくくて難儀してるんだと。'],
  ['オルフ','あっちの集落の灯守は年老いた爺さんが一人きりでな、高い足場や細かい調整に手が回らない。『ユキネに腕のいい若い二人組の灯守がいるなら、一度仕掛けを診てもらえないか』って頼まれたのさ。'],
  ['touma','南東の氷湖の向こう岸ですよね。日帰りで今日のうちに行って帰ってこられますか？'],
- ['オルフ','凍った湖の真ん中を突っ切るのだけはやめとけよ、春先で氷が薄い所がある。湖岸を回る『旧街道』を歩いていけば、昼前には安全にミナモへ着く。俺は荷車で一足先に行って港で待ってるから、昼過ぎに直し終えれば、日暮れ前にはユキネへ帰ってこられるさ。'],
+ ['オルフ','湖の真ん中は深くて冬でも凍らないから定期舟が通るが、入り江に張り出した氷の上を近道して突っ切るのだけはやめとけよ、春先で氷が薄い所がある。湖岸を回る『旧街道』を歩いていけば、昼前には安全にミナモへ着く。俺は荷車で一足先に行って港で待ってるから、昼過ぎに直し終えれば、日暮れ前にはユキネへ帰ってこられるさ。'],
  ['nina','よその町の『迎え灯』かあ……私たちのユキネの『護りの灯火』と、やっぱり同じ仕組みなのかな。'],
  ['オルフ','大元は同じ技術だそうだぞ。何十年か前に南のカルデの灯工房の職人が立ち寄って組んでいった古い灯守小屋が残っててな、当時の作業日誌も机に保管されてる。小屋の鍵は爺さんから預かってきた。'],
  ['nina','えっ、本場の灯工房の職人さんが書いた作業日誌！？　すごい、実物を見てみたい！　春の研修へ行く前の、これ以上ない予習になるね！','happy'],
@@ -82,7 +82,7 @@ function handle(id,a){
  if(id==='journeyCargo')return hint(a,'荷札には「リュカ港の塩」「カルデ盆地の乾燥豆」。道の先には、この町の台所とつながる知らない土地がある。');
  if(id==='journeyMap')return hint(a,'古い灯路図。ユキネは左下の小さな印だ。海沿いにも、山の向こうにも道が延び、右端は別の紙につながるように途切れている。');
  if(id==='lakeToTown'){
-  if(active(s)&&j.step!==8)return hint(a,'帰りの待ち合わせは、ミナモの港。今日の用事を確かめてから帰ろう。');a.scene('town',22,10);return true;
+  if(active(s)&&j.step!==8)return hint(a,'帰りの待ち合わせは、ミナモの港。今日の用事を確かめてから帰ろう。');a.scene('town',21,10);return true;
  }
  if(id==='lakeToVillage'){
   if(active(s)&&j.step<2)return hint(a,'道標と、岸の迎え灯を確かめてから進もう。');a.scene('lakeside',...spawns.lakeside);return true;
@@ -134,6 +134,7 @@ function handle(id,a){
   ],()=>a.startBattle('sleet',()=>{s.flags.calm_lakeSleet=true;a.save();handle(id,a);}));return true;
  }
  if(id==='journeyShoreLight')return stage(1,'nina',[
+  ...(s.flags.calm_lakeSleet?[['','温まったみぞれヤドカリは、水たまりから湖の浅瀬へことことと帰っていった。']]:[]),
   ['','湖岸に立つ迎え灯。硝子の覆いには、細い筋が何重にも刻まれている。\nユキネの護りの灯火には、ない細工だ。'],
   ['nina','芯はうちのと同じ。でも、この筋は初めて見た。……火、近づけてみるね。'],
   ['','ニナがランタンを寄せると、筋に沿って光が集まり、湖の方へまっすぐ伸びた。',{se:'flare'}],
@@ -231,7 +232,13 @@ function handle(id,a){
 }
 const previousObjects=S.activeObjects;
 S.activeObjects=function(s){
- if(names[s.scene])return maps[s.scene];let list=previousObjects(s);
+ if(names[s.scene]){
+  let m=maps[s.scene];
+  if(s.scene==='lake'&&active(s)&&s.journey.step===0)m=[...m,{id:'orlf',type:'episodeNpc',x:4,y:12,label:'配達人のオルフ'}];
+  if(s.scene==='lakeside'&&!active(s))m=m.map(o=>o.id==='journeyOrlf'?{...o,label:'港の配達鞄'}:o);
+  return m;
+ }
+ let list=previousObjects(s);
  if(active(s))list=list.filter(o=>o.id!=='episodeEvent');
  if(s.scene==='town'&&s.episode?.chapter>=6)list=[...list,prop('journeyGate',22,10,'氷湖の旧街道へ','exit')];
  if(active(s)&&s.scene==='house'&&s.journey.step===8)list=list.map(o=>o.id==='homeTable'?{...o,id:'journeyHome',label:'二人の食卓で、旅の話をする'}:o);

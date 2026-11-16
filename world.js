@@ -19,7 +19,10 @@ function breakfastPose(s,time=0){const km=koharuMorning(s,time),look=km?.state==
 function Renderer(canvas){this.c=canvas.getContext('2d');this.t=0;this.p={x:600,y:504,dir:'down'};this.f={x:600,y:552,dir:'down'};this.target={x:600,y:504};this.follow={x:600,y:552};this.g={x:600,y:590,dir:'down'};this.follow2={x:600,y:590};this.cache={};}
 Renderer.prototype.reset=function(s){
  if(homeBreakfast(s)){const b=breakfastPose(s);this.p={...b.p};this.f={...b.f};this.g={...b.g};this.target={x:b.p.x,y:b.p.y};this.follow={x:b.f.x,y:b.f.y};this.follow2={x:b.g.x,y:b.g.y};return;}
- const x=s.x*48+24,y=s.y*48+24;this.p={x,y,dir:'down'};this.f={x:x-24,y:y+28,dir:'down'};this.target={x,y};this.follow={x:x-24,y:y+28};this.g={x:x+22,y:y+44,dir:'down'};this.follow2={x:x+22,y:y+44};
+ const x=s.x*48+24,y=s.y*48+24;
+ const faceUp=s.openingStage===1||(s.prologueStage!==undefined&&s.scene==='town')||(['house','clinic','lampworkshop','forest','canal','hill'].includes(s.scene)&&s.y>=11);
+ const dir=faceUp?'up':'down',fy=Math.min(13*48+24,Math.max(4*48+24,faceUp?y+24:y-24)),gy=Math.min(13*48+24,Math.max(4*48+24,faceUp?y+34:y-34));
+ this.p={x,y,dir};this.f={x:x-26,y:fy,dir};this.target={x,y};this.follow={x:x-26,y:fy};this.g={x:x+26,y:gy,dir};this.follow2={x:x+26,y:gy};
 };
 const ellipse=(c,x,y,rx,ry,color)=>{c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();};
 const rect=(c,x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
@@ -90,11 +93,11 @@ Renderer.prototype.background=function(scene){
  if(scene==='town'){
   path([[600,35],[600,730]],108);path([[135,455],[1000,455]],125);flushPaths();
   for(let i=0;i<25;i++){const x=(i*173+12)%W,y=(i*131)%H;if((x<145||x>1030||y<80)&&Math.abs(x-600)>90)tree(c,x,y,1.1+(i%3)*.1);}
-  house(c,150,172,222,187,'#617b88','bread');house(c,779,150,225,170,'#657680','lamp');house(c,420,516,168,130,'#597a74','clinic');house(c,884,533,185,150,'#617b88','thread');house(c,68,551,108,95);
-  for(const [x,y] of [[439,354],[753,378],[867,475],[365,506],[626,182]])lantern(c,x,y);
+  house(c,150,172,222,187,'#617b88','bread');house(c,779,150,225,170,'#657680','lamp');house(c,420,516,168,130,'#597a74','clinic');house(c,228,578,150,104,'#6d6374','thread');house(c,884,533,185,150,'#617b88',{kind:'rest',name:'オルフの荷小屋'});house(c,68,551,108,95);
+  for(const [x,y] of [[439,354],[753,378],[365,506],[626,182]])lantern(c,x,y);
   root.OkaeriTownArt?.props(c);
   for(let i=0;i<11;i++){ellipse(c,220+i*14,367,7,5,'#e2d1a7');}
-  c.font='14px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f4deb3';c.fillText('マロのパン屋',260,346);c.fillStyle='#5e766f';c.fillText('灯守の共同所',887,338);
+  c.font='14px "Yu Gothic UI"';c.textAlign='center';c.fillStyle='#f4deb3';c.fillText('マロのパン屋',260,346);c.fillStyle='#5e766f';c.fillText('灯守の共同所',887,338);c.fillStyle='#ead8e8';c.fillText('織りもの屋',303,572);
  }else if(scene==='hill'){
   const sky=c.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#768fac');sky.addColorStop(.4,'#b8c7d4');sky.addColorStop(1,'#b7ccce');c.fillStyle=sky;c.fillRect(0,0,W,H);
   {const q=[];{const poly=(c,p,col)=>q.push([p,col]);poly(c,[[0,250],[180,90],[330,240],[490,115],[680,265],[840,130],[1152,230],[1152,768],[0,768]],'#91a9bc');}root.OkaeriTownArt?.lands(c,'hill1',q);}
@@ -161,9 +164,13 @@ Renderer.prototype.draw=function(s,time,mode){
    drawables.push({y:y+.8,draw:()=>root.OkaeriHomeArt?.bedKQuilt?.(c,x,y)});
   }
   drawables.push({y,draw:()=>{
-  if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
-  if(o.type?.startsWith('home')){root.OkaeriHomeArt?.object(c,o,x,y,s,t,o.type==='homeTable'&&!!root.OkaeriHomeArt?.tableSeats);return;}
-  if(root.OkaeriTownArt?.object(c,o,x,y,s,t,{towerLit,beaconLit}))return;
+  const drawEpOverlay=()=>{
+   if(source.type!=='episodeEvent')return;
+   if(source.battle){const mx=source.base?x-30:x,my=source.base?y+10:y;drawEventMonster(c,source.battle,mx,my,t);}
+   else if(source.base){ellipse(c,x,y+4,23,9,'#e1c58288');c.textAlign='center';c.font='bold 17px sans-serif';c.fillStyle='#ffe0a1';c.fillText('◆',x,y-88+Math.sin(t*3)*3);}
+  };
+  if(o.type?.startsWith('home')){root.OkaeriHomeArt?.object(c,o,x,y,s,t,o.type==='homeTable'&&!!root.OkaeriHomeArt?.tableSeats);drawEpOverlay();return;}
+  if(root.OkaeriTownArt?.object(c,o,x,y,s,t,{towerLit,beaconLit})){drawEpOverlay();return;}
   if(!['exit','npc','mochi','crab','guardian','camp','fieldSpirit','fieldProp'].includes(o.type))ellipse(c,x+10,y+8,25,8,'#3a56652b');
   root.OkaeriJourneyArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
   root.OkaeriFieldArt?.object(c,o,x,y,s,t,{rect,poly,line,ellipse,block,lantern,glow});
@@ -171,15 +178,16 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='waitingLight'){lantern(c,x,y,!!s.flags.waitingLit);}
   if(o.type==='npc'){if(['elna','orlf'].includes(o.id))OkaeriResidentsArt.drawMap(c,o.id,x,y);else OkaeriCast.drawMap(c,o.id==='sae'?'sae':'maro',x,y,t);}
   if(o.type==='lamp')lantern(c,x,y);
-  if(o.type==='episodeEvent'){
-   if(o.base?.type==='npc'){if(['elna','orlf'].includes(o.base.id))OkaeriResidentsArt.drawMap(c,o.base.id,x,y);else OkaeriCast.drawMap(c,o.base.id==='sae'?'sae':'maro',x,y,t);}
-   if(o.battle)drawEventMonster(c,o.battle,x,y,t);
-   else{ellipse(c,x,y+4,23,9,'#e1c58288');line(c,[[x-16,y-5],[x,y-18],[x+16,y-5]],'#ffe2a4',3);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#fff1cc';c.fillText('◆',x,y-27);}
+  if(source.type==='episodeEvent'){
+   if(source.battle)drawEpOverlay();
+   else if(!source.base&&!['リツ','ユラ'].includes(source.person)){ellipse(c,x,y+4,23,9,'#e1c58288');line(c,[[x-16,y-5],[x,y-18],[x+16,y-5]],'#ffe2a4',3);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#fff1cc';c.fillText('◆',x,y-27);}
+   else if(source.base)drawEpOverlay();
   }
-  if(o.type==='episodeNpc'||(o.type==='episodeEvent'&&['リツ','ユラ'].includes(o.person))){
-   if(['touma','nina'].includes(o.id))OkaeriSprites.draw(c,x,y,o.id,o.dir||'down',false,t,false);
-   else if(['sae','maro'].includes(o.id))OkaeriCast.drawMap(c,o.id,x,y,t);
-   else OkaeriResidentsArt.drawMap(c,o.id==='koharu'?'koharu':o.id==='yura'||o.person==='ユラ'?'yura':o.id==='orlf'?'orlf':o.id==='elna'?'elna':'ritsu',x,y);
+  if(o.type==='episodeNpc'||(source.type==='episodeEvent'&&['リツ','ユラ'].includes(source.person))){
+   const pid=o.type==='episodeNpc'?o.id:source.person==='ユラ'?'yura':'ritsu';
+   if(['touma','nina'].includes(pid))OkaeriSprites.draw(c,x,y,pid,o.dir||'down',false,t,false);
+   else if(['sae','maro'].includes(pid))OkaeriCast.drawMap(c,pid,x,y,t);
+   else OkaeriResidentsArt.drawMap(c,pid==='koharu'?'koharu':pid==='yura'?'yura':pid==='orlf'?'orlf':pid==='elna'?'elna':'ritsu',x,y);
   }
   if(o.type==='repair'){lantern(c,x+33,y-20,s.flags.repair);if(!s.flags.repair){line(c,[[x-15,y-5],[x+11,y+5]],'#ae8a59',4);ellipse(c,x,y-5,6,6,'#dfbb77');}}
   if(o.type==='mochi')OkaeriCast.drawMap(c,o.type,x,y,t);
@@ -187,7 +195,7 @@ Renderer.prototype.draw=function(s,time,mode){
   if(o.type==='guardian')OkaeriCast.drawMap(c,o.type,x,y,t);
   if(o.type==='exit'){c.fillStyle='#4f787e';c.textAlign='center';c.font='18px sans-serif';c.fillText(o.id==='exit'?'↑':['ourHome','clinicDoor'].includes(o.id)?'⌂':['houseExit','clinicExit'].includes(o.id)?'↓':o.id==='canalExit'?'→':o.id==='hillExit'?'←':['home','canalHome','hillHome'].includes(o.id)?'↓':'',x,y);}
   const ready=(['log','waterGate','windbreak'].includes(o.id)?s.lead==='touma':['repair','regulator','hillLens'].includes(o.id)?s.lead==='nina':true);const distance=Math.hypot(s.x-o.x,s.y-o.y);
-  const promptH=o.battle==='alphaBeast'?132:(o.type==='guardian'||o.battle==='guardian'||o.battle==='beast'||o.battle==='echo')?115:o.type==='npc'?82:56;
+  const bKind=source.battle||o.battle,promptH=bKind==='alphaBeast'?132:(o.type==='guardian'||bKind==='guardian'||bKind==='beast'||bKind==='echo')?115:(o.type==='npc'||o.type==='episodeNpc')?82:56;
   if(distance<2&&mode==='explore'){ellipse(c,x,y-promptH+Math.sin(t*3)*2,12,12,ready?'#f0d49be8':'#c6dce5df');c.textAlign='center';c.fillStyle='#37515b';c.font='bold 12px sans-serif';c.fillText('E',x,y-(promptH-4)+Math.sin(t*3)*2);}
  }});}
  let moving=false,followersMoving=false,thirdMoving=false;
@@ -195,7 +203,7 @@ Renderer.prototype.draw=function(s,time,mode){
   const b=breakfastPose(s,time);this.p={...b.p};this.f={...b.f};this.g={...b.g};this.target={x:b.p.x,y:b.p.y};this.follow={x:b.f.x,y:b.f.y};this.follow2={x:b.g.x,y:b.g.y};thirdMoving=!!b.g.scriptWalk;
  }else{
   const tx=s.x*T+24,ty=s.y*T+24;
-  if(tx!==this.target.x||ty!==this.target.y){this.follow2={...this.follow};this.follow={...this.target};this.p.dir=OkaeriSprites.facing(tx-this.target.x,ty-this.target.y,this.p.dir);this.target={x:tx,y:ty};}
+  if(tx!==this.target.x||ty!==this.target.y){if(Math.hypot(tx-this.follow.x,ty-this.follow.y)>=4)this.follow2={...this.follow};this.follow={...this.target};this.p.dir=OkaeriSprites.facing(tx-this.target.x,ty-this.target.y,this.p.dir);this.target={x:tx,y:ty};}
   this.p.x+=(tx-this.p.x)*.22;this.p.y+=(ty-this.p.y)*.22;
   moving=Math.hypot(tx-this.p.x,ty-this.p.y)>1;
   const fx=this.follow.x-this.f.x,fy=this.follow.y-this.f.y;
@@ -205,7 +213,7 @@ Renderer.prototype.draw=function(s,time,mode){
   thirdMoving=Math.hypot(gx,gy)>1;
  }
  const third=D?.companion(s)&&OkaeriSprites.has?.('koharu'),ninaOver=D?.stage?.over?.nina;
- const ninaHidden=ninaOver==='gone'||(ninaOver!=='present'&&((s.prologueStage!==undefined&&s.episode?.chapter===10)||(s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&s.episode.route==='both'&&s.episode.step===0)||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&(s.episode.step===2||s.episode.complete))||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s)));
+ const ninaHidden=ninaOver==='gone'||(ninaOver!=='present'&&((s.prologueStage!==undefined&&s.episode?.chapter===10)||(s.episode?.chapter===3&&s.episode.step>=1&&s.episode.step<=3)||(s.episode?.chapter===10&&s.episode.step===0&&s.scene==='house')||(s.episode?.chapter===10&&root.OkaeriCore?.route(s.episode.route)?.ninaAway&&(s.episode.step===2||s.episode.complete))||root.OkaeriCore?.route(root.OkaeriEpisodes?.playingEpilogue?.())?.ninaAway||root.OkaeriJourney?.split(s)));
  const party=[{...this.p,id:s.lead,moving},{...this.f,id:s.lead==='touma'?'nina':'touma',moving:followersMoving}].sort((a,b)=>a.y-b.y);
  const shown=party.filter(actor=>!ninaHidden||actor.id===s.lead),drawnParty=shown.map(a=>a.id);
  const koharuSlot=shown.length===1&&!homeBreakfast(s)?{...this.f,moving:followersMoving}:{...this.g,moving:thirdMoving};

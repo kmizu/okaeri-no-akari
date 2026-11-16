@@ -52,6 +52,6 @@ test('BattleUI treats Koharu’s 炎熱の投げ薬 as a ranged fire spell beat 
  assert.equal(koharuBeat.kind,'spell','Koharu throws from range rather than dashing into melee');
  assert.equal(koharuBeat.label,'コハル · 炎熱の投げ薬');
  const sfx=UI.beatSounds(koharuBeat,b,{});
- assert.deepEqual(sfx.start,['cast']);
- assert.deepEqual(sfx.impact,['fireHit','iceBreak']);
+ assert.deepEqual(sfx.start,['throwPot']);
+ assert.deepEqual(sfx.impact,['potBurst','fireHit','iceBreak']);
 });

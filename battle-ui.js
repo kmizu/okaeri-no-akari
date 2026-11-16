@@ -30,31 +30,44 @@
   const sfx = name => root.OkaeriSfx?.play(name);
   function beatSounds(beat, before, guards) {
     if (!beat) return { start: [], impact: [] };
+    const isPot = /炎熱の投げ薬/.test(beat.label || ''),
+      isEnemyAoe = Boolean(beat.actor?.startsWith('enemy:') && (beat.effects || []).filter(e => e.type === 'hurt').length >= 2),
+      isBossRoar = beat.kind === 'notice' && Boolean(beat.events?.some(e => /咆哮した|黒い吹雪を身に纏い/.test(e.message)));
     const start =
       beat.kind === 'team'
         ? ['teamCharge']
         : beat.kind === 'guard'
           ? ['guard']
-          : beat.kind === 'spell' || beat.kind === 'support'
-            ? ['cast']
-            : beat.kind === 'strike'
-              ? ['swing']
-              : [];
+          : isPot
+            ? ['throwPot']
+            : beat.kind === 'spell' || beat.kind === 'support'
+              ? ['cast']
+              : isEnemyAoe || isBossRoar
+                ? ['roar']
+                : beat.kind === 'strike'
+                  ? ['swing']
+                  : [];
     const types = new Set((beat.effects || []).map(e => e.type)),
       impact = [];
     if (types.has('team')) impact.push('teamSlash');
-    else if (types.has('fire')) impact.push('fireHit');
-    else if (types.has('ring')) impact.push('ringHit');
+    else if (types.has('fire')) {
+      if (isPot) impact.push('potBurst');
+      impact.push('fireHit');
+    } else if (types.has('ring')) impact.push('ringHit');
+    else if (types.has('buff')) impact.push('buffLamp');
     else if (types.has('slash')) {
       const heavy =
         /崩し斬り|灯返し/.test(beat.label || '') ||
         beat.effects.some(e => before?.enemies?.[e.enemy]?.broken > 0) ||
         Boolean(beat.actor && before?.heroes?.[beat.actor]?.buff > 0);
       impact.push(heavy ? 'heavySlash' : 'slash');
-    } else if (types.has('heal')) impact.push('heal');
-    else if (types.has('hurt')) {
+    } else if (types.has('heal')) {
+      impact.push(beat.events?.some(e => /立ち上がった/.test(e.message)) ? 'revive' : 'heal');
+    } else if (types.has('hurt')) {
       const guarded = beat.effects.some(e => e.type === 'hurt' && (e.covered || guards?.[e.hero]));
       impact.push(guarded ? 'coverHit' : 'enemyHit');
+      if (isEnemyAoe && beat.effects.some(e => e.type === 'hurt' && beat.snapshot?.heroes?.[e.hero]?.chill === 3))
+        impact.push('frostHit');
     }
     if (beat.events?.some(e => /氷殻が溶けた/.test(e.message))) impact.push('iceBreak');
     if (beat.events?.some(e => /二人の息が合った/.test(e.message))) impact.push('bondLamp');
@@ -86,7 +99,7 @@
             : beat.actor
               ? nm(beat.actor) + ' · ' + (commands[beat.actor]?.skill === 'counter' ? '灯返し' : '攻撃')
               : beat.events[0]?.message || '';
-      const magic = effects.some(e => ['fire', 'ring', 'heal'].includes(e.type)) && beat.actor !== 'touma';
+      const magic = effects.some(e => ['fire', 'ring', 'heal', 'buff'].includes(e.type)) && beat.actor !== 'touma';
       const kind =
         beat.actor === 'team'
           ? 'team'
@@ -221,7 +234,8 @@
       this.b = b;
       this.phase = 'root';
       this.flow = new CommandFlow(b.heroes);
-      this.message = b.turn === 1 ? b.enemies.map(e => e.name).join(' と ') + 'が あらわれた！' : '二人の行動を選ぼう';
+      this.message =
+        b.turn === 1 ? b.enemies.map(e => e.name).join(' と ') + 'が あらわれた！' : (b.heroes.koharu ? 'みんなの' : '二人の') + '行動を選ぼう';
       if (b.turn === 1) sfx('encounter');
       this.render();
     }
@@ -505,7 +519,12 @@
         title.textContent = 'どうぐ';
         const reserved = Object.values(this.flow.commands).filter(c => c.skill === 'herb').length,
           remaining = b.items - reserved;
-        add('薬草　× ' + remaining, () => this.selectSkill('herb'), remaining <= 0, '味方一人のHPを45回復。二人で共有。');
+        add(
+          '薬草　× ' + remaining,
+          () => this.selectSkill('herb'),
+          remaining <= 0,
+          '味方一人のHPを45回復、冷えも解除。' + (b.heroes.koharu ? '全員で共有。' : '二人で共有。')
+        );
         if (b.ointments !== undefined) {
           const rOint = Object.values(this.flow.commands).filter(c => c.skill === 'ointment').length,
             remOint = b.ointments - rOint;
@@ -666,18 +685,23 @@
           'is-striking',
           'is-casting',
           'is-guarding',
+          'is-covering',
+          'is-roaring',
+          'is-rising',
           'effect-target',
           'effect-slash',
           'effect-fire',
           'effect-ring',
+          'effect-buff',
           'effect-team',
           'effect-hurt',
           'effect-heal',
           'effect-shield'
         );
       }
+      this.el.querySelector('.classic-arena')?.classList.remove('arena-shake', 'arena-shake-heavy', 'arena-flare');
       for (const n of this.el.querySelectorAll('.combatant-slot')) n.style.zIndex = n.dataset.depth;
-      for (const n of this.el.querySelectorAll('.battle-effect,.battle-charge')) n.remove();
+      for (const n of this.el.querySelectorAll('.battle-effect,.battle-charge,.arena-gust')) n.remove();
       this.el.querySelector('.battle-fx-layer')?.replaceChildren();
       const message = this.el.querySelector('.classic-message');
       if (message && this.phase === 'result') {
@@ -709,8 +733,29 @@
         },
         beat.kind === 'guard' ? 500 : 980
       );
+      const isPot = /炎熱の投げ薬/.test(beat.label || ''),
+        isEnemyAoe = Boolean(beat.actor?.startsWith('enemy:') && beat.effects.filter(e => e.type === 'hurt').length >= 2),
+        isBossRoar = beat.kind === 'notice' && Boolean(beat.events?.some(e => /咆哮した|黒い吹雪を身に纏い/.test(e.message))),
+        fxLayer = this.el.querySelector('.battle-fx-layer');
+      if (isBossRoar) {
+        const bossNode = this.fieldNode('enemy:0');
+        bossNode?.querySelector('.combatant-body')?.classList.add('is-roaring');
+        if (fxLayer) {
+          const gust = document.createElement('span');
+          gust.className = 'arena-gust is-dark';
+          gust.setAttribute('aria-hidden', 'true');
+          fxLayer.append(gust);
+        }
+      }
+      if (beat.actor?.startsWith('enemy:') && beat.effects.some(e => e.covered)) {
+        const coverBody = this.fieldNode('touma')?.querySelector('.combatant-body');
+        if (coverBody) {
+          coverBody.style.setProperty('--beat-time', beat.duration + 'ms');
+          coverBody.classList.add('is-covering');
+        }
+      }
       const sources = beat.actor === 'team' ? ['touma', 'nina'] : beat.actor ? [beat.actor] : [];
-      const effect = beat.effects.find(e => e.enemy !== undefined || e.type === 'hurt' || e.type === 'heal');
+      const effect = beat.effects.find(e => e.enemy !== undefined || e.type === 'hurt' || e.type === 'heal' || e.type === 'buff');
       const target = effect ? this.fieldNode(effect.hero || 'enemy:' + effect.enemy) : null;
       for (const id of sources) {
         const source = this.fieldNode(id);
@@ -722,8 +767,21 @@
           body.classList.add('is-guarding');
           continue;
         }
+        if (isEnemyAoe && id.startsWith('enemy:')) {
+          body.classList.add('is-roaring');
+          if (fxLayer) {
+            const foeObj = this.b.enemies[Number(id.slice(6))],
+              gust = document.createElement('span');
+            gust.className = 'arena-gust' + (foeObj?.beast || foeObj?.boss ? ' is-dark' : '');
+            gust.setAttribute('aria-hidden', 'true');
+            fxLayer.append(gust);
+          }
+          continue;
+        }
         const melee =
-          target && ['strike', 'team'].includes(beat.kind) && (id.startsWith('enemy:') || id === 'touma' || effect?.type === 'slash');
+          target &&
+          ((beat.kind === 'team' && id === 'touma') ||
+            (beat.kind === 'strike' && (id.startsWith('enemy:') || id === 'touma' || effect?.type === 'slash')));
         if (melee) {
           const a = source.getBoundingClientRect(),
             z = target.getBoundingClientRect();
@@ -732,14 +790,15 @@
           body.classList.add('is-striking');
           source.parentElement.style.zIndex = '265';
         } else if (beat.kind !== 'notice') body.classList.add('is-casting');
-        if (['spell', 'support', 'team'].includes(beat.kind)) {
+        if (['spell', 'support'].includes(beat.kind) || (beat.kind === 'team' && id === 'nina')) {
           const charge = document.createElement('span');
           charge.className = 'battle-charge charge-' + beat.kind;
           charge.setAttribute('aria-hidden', 'true');
           body.append(charge);
           for (const fx of beat.effects) {
             const to = this.fieldNode(fx.hero || 'enemy:' + fx.enemy);
-            if (to && to !== source) this.projectile(source, to, fx.type, Math.max(200, beat.impact - 420), 420);
+            if (to && to !== source)
+              this.projectile(source, to, isPot ? 'firepot' : fx.type, Math.max(180, beat.impact - 420), 420, isPot ? 58 : 30);
           }
         }
       }
@@ -783,7 +842,19 @@
       this.updateField();
       this.el.querySelector('.battle-live').textContent = beat.events.map(e => e.message).join(' ');
       if (fast) return;
-      for (const s of beatSounds(beat, before, { ...beforeGuards, ...this.guards }).impact) sfx(s);
+      const sounds = beatSounds(beat, before, { ...beforeGuards, ...this.guards });
+      for (const s of sounds.impact) sfx(s);
+      const arena = this.el.querySelector('.classic-arena');
+      if (arena && !root.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+        if (sounds.impact.includes('teamSlash')) arena.classList.add('arena-flare', 'arena-shake-heavy');
+        else if (
+          sounds.impact.some(s => ['heavySlash', 'frostHit'].includes(s)) ||
+          (beat.actor?.startsWith('enemy:') && this.b.enemies[Number(beat.actor.slice(6))]?.boss)
+        )
+          arena.classList.add('arena-shake-heavy');
+        else if (sounds.impact.some(s => ['slash', 'fireHit', 'potBurst', 'enemyHit'].includes(s)))
+          arena.classList.add('arena-shake');
+      }
       const stack = new Map(),
         show = (id, text, type) => {
           const row = stack.get(id) || 0;
@@ -807,6 +878,14 @@
         body.append(art);
         if (effect.amount !== undefined)
           show(id, (effect.type === 'heal' ? '+' : '') + effect.amount, effect.type === 'heal' ? 'heal' : 'damage');
+        if (effect.mpAmount > 0) show(id, '+' + effect.mpAmount + ' MP', 'mp');
+      }
+      for (const ev of beat.events || []) {
+        const m = !ev.effect && ev.message?.match(/^(トウマ|ニナ|コハル)のMPが (\d+) 戻った/);
+        if (m) {
+          const hid = m[1] === 'トウマ' ? 'touma' : m[1] === 'コハル' ? 'koharu' : 'nina';
+          show(hid, '+' + m[2] + ' MP', 'mp');
+        }
       }
       for (const [kind, entries] of [
         ['hero', Object.entries(this.b.heroes)],
@@ -815,6 +894,9 @@
         for (const [id, now] of entries) {
           const old = kind === 'hero' ? before.heroes[id] : before.enemies[Number(id.slice(6))];
           if (!old || now.hp <= 0) continue;
+          if (kind === 'hero' && old.hp <= 0 && now.hp > 0) {
+            this.fieldNode(id)?.querySelector('.combatant-body')?.classList.add('is-rising');
+          }
           const prev = conditionList(old, kind, beforeGuards[id]),
             next = conditionList(now, kind, this.guards[id]);
           for (const c of next) if (c.key !== 'guard' && !prev.some(p => p.key === c.key)) show(id, c.label, 'condition');
@@ -833,10 +915,10 @@
       const arena = this.el.querySelector('.classic-arena'),
         point = headAnchor(target.getBoundingClientRect(), arena.getBoundingClientRect()),
         n = document.createElement('span');
-      n.className = type === 'damage' || type === 'heal' ? 'battle-number number-' + type : 'battle-condition-pop pop-' + type;
+      n.className = ['damage', 'heal', 'mp'].includes(type) ? 'battle-number number-' + type : 'battle-condition-pop pop-' + type;
       n.style.left = point.x + 'px';
       n.style.top = point.y + row * 22 + 'px';
-      if (type === 'damage' || type === 'heal') {
+      if (['damage', 'heal', 'mp'].includes(type)) {
         for (const [i, char] of [...String(text)].entries()) {
           const digit = document.createElement('span');
           digit.textContent = char;
@@ -862,7 +944,7 @@
         this.el.querySelector('.battle-fx-layer').append(shard);
       }
     }
-    projectile(source, target, type, delay, duration) {
+    projectile(source, target, type, delay, duration, arcLift = 30) {
       const arena = this.el.querySelector('.classic-arena'),
         r = arena.getBoundingClientRect(),
         a = source.getBoundingClientRect(),
@@ -877,7 +959,7 @@
       trail.style.setProperty('--flight-x', dx + 'px');
       trail.style.setProperty('--flight-y', dy + 'px');
       trail.style.setProperty('--arc-x', dx * 0.5 + 'px');
-      trail.style.setProperty('--arc-y', dy * 0.5 - 30 + 'px');
+      trail.style.setProperty('--arc-y', dy * 0.5 - arcLift + 'px');
       trail.style.setProperty('--flight-delay', delay + 'ms');
       trail.style.setProperty('--flight-time', duration + 'ms');
       for (let i = 0; i < 4; i++) {
@@ -906,7 +988,7 @@
             : b.enemies.some(e => e.beast)
               ? '魔獣を山の尾根へと押し返した！'
               : '精霊たちは落ち着いた。道を進もう。'
-          : '二人とも動けない……。体勢を立て直して、もう一度挑めます。';
+          : (b.heroes.koharu ? '前衛の二人が動けない……' : '二人とも動けない……') + '。体勢を立て直して、もう一度挑めます。';
       this.render();
     }
     key(e) {

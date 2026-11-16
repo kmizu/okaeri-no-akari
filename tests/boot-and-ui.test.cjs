@@ -247,3 +247,81 @@ test('index.html boot sequence loads all 33 scripts cleanly and wires title & so
   els.startButton.onclick();
   assert.equal(els.titleScreen.hidden, true);
 });
+
+test('character placements, combat motion effects, and scenario invariants hold across episodes', () => {
+  const { ctx } = createBrowserSandbox();
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  for (const rel of [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1])) {
+    vm.runInContext(fs.readFileSync(path.join(ROOT, rel), 'utf8'), ctx, { filename: rel });
+  }
+  const C = ctx.OkaeriCore,
+    S = ctx.OkaeriStory,
+    E = ctx.OkaeriEpisodes,
+    ED = ctx.OkaeriEpisodesData,
+    D = ctx.OkaeriDirector,
+    B = ctx.OkaeriBattle;
+
+  // 1. Basic skill physics: Touma uses 峰打ち (blunt edge), Nina casts 種火を放つ (fire style, ranged spell)
+  assert.equal(C.actions('touma')[0].name, '峰打ち');
+  assert.equal(C.actions('nina')[0].name, '種火を放つ');
+  const mochiOut = C.resolveTurn(C.newBattle('mochi'), { touma: { skill: 'attack', target: 0 }, nina: { skill: 'attack', target: 1 } }, ['touma', 'nina']);
+  const ninaBeat = B.buildBeats(mochiOut).find(b => b.actor === 'nina');
+  assert.equal(ninaBeat.kind, 'spell', 'Nina casts ranged ember instead of melee bludgeoning');
+
+  const plain = v => JSON.parse(JSON.stringify(v));
+  // 2. Opening Stage 1 places Sae and Maro right beside board (10,8)
+  const op1Objs = S.activeObjects({ version: 1, scene: 'town', x: 10, y: 9, lead: 'touma', openingStage: 1, flags: {} });
+  assert.deepEqual(
+    plain(op1Objs.filter(o => ['sae', 'bakery'].includes(o.id)).map(o => [o.id, o.x, o.y])),
+    [
+      ['sae', 11, 8],
+      ['bakery', 9, 8]
+    ]
+  );
+
+  // 3. Prologues 8 & 9 seat the trio at the dining table (breakfast: true)
+  assert.equal(ED.prologues[8][0].lines[0][2].breakfast, true);
+  assert.equal(ED.prologues[9][0].lines[0][2].breakfast, true);
+
+  // 4. Ep.3 flood places Koharu on the bank and faces Nina left / Touma right
+  const s3 = E.create(3);
+  s3.scene = 'canal';
+  s3.episode.step = 1;
+  const c3 = S.activeObjects(s3);
+  assert.ok(c3.some(o => o.id === 'koharu' && o.x === 6 && o.y === 9));
+  assert.ok(c3.some(o => o.id === 'nina' && o.dir === 'left'));
+  s3.episode.step = 2;
+  assert.ok(S.activeObjects(s3).some(o => o.id === 'touma' && o.dir === 'right'));
+
+  // 5. Ep.9 Step 1 places Koharu as an interactable NPC beside Elna's stall (8,11)
+  const s9 = E.create(9);
+  s9.scene = 'town';
+  s9.episode.step = 1;
+  assert.equal(D.companion(s9), false);
+  assert.ok(S.activeObjects(s9).some(o => o.id === 'koharu' && o.x === 8 && o.y === 11));
+
+  // 6. Ep.10 Step 0 spawns waiting Nina at her station in the house
+  const s10n = E.create(10, 'nina');
+  assert.ok(S.activeObjects(s10n).some(o => o.id === 'nina' && o.x === 17 && o.y === 10));
+
+  // 7. Battle SFX & motion beats: buffLamp, revive, boss AoE roar + frostHit
+  const buffOut = C.resolveTurn(C.newBattle('guardian'), { touma: { skill: 'guard' }, nina: { skill: 'buff' } }, ['touma', 'nina']);
+  const buffBeat = B.buildBeats(buffOut).find(b => b.actor === 'nina');
+  assert.deepEqual(plain(B.beatSounds(buffBeat, C.newBattle('guardian'), {})), { start: ['cast'], impact: ['buffLamp'] });
+
+  const boss = C.newBattle('alphaBeast');
+  boss.turn = 2; // phase 1: 吹雪の咆哮 (target: 'all', chill: true)
+  const bossOut = C.resolveTurn(boss, { touma: { skill: 'guard' }, nina: { skill: 'guard' } }, ['touma', 'nina']);
+  const roarBeat = B.buildBeats(bossOut).find(b => b.actor === 'enemy:0');
+  assert.deepEqual(plain(B.beatSounds(roarBeat, boss, { touma: 'guard', nina: 'guard' })), {
+    start: ['roar'],
+    impact: ['coverHit', 'frostHit']
+  });
+
+  const down = C.newBattle('mochi', { support: 'koharu' });
+  down.heroes.nina.hp = 0;
+  const revOut = C.resolveTurn(down, { touma: { skill: 'guard' }, koharu: { skill: 'rouse', target: 'nina' } }, ['touma', 'nina', 'koharu']);
+  const revBeat = B.buildBeats(revOut).find(b => b.actor === 'koharu');
+  assert.deepEqual(plain(B.beatSounds(revBeat, down, {})), { start: ['cast'], impact: ['revive'] });
+});
+

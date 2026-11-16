@@ -238,82 +238,134 @@
       tone(440, { type: 'triangle', at: 0.09, decay: 0.24, peak: 0.075 });
     },
     swing() {
-      burst({ attack: 0.008, decay: 0.14, peak: 0.075, type: 'bandpass', freq: 2100, q: 0.9, slide: 0.32 });
-      tone(320, { type: 'sine', decay: 0.1, peak: 0.035, slide: 0.45 });
+      burst({ attack: 0.006, decay: 0.13, peak: 0.085, type: 'bandpass', freq: 2250, q: 0.85, slide: 0.34 });
+      tone(350, { type: 'sine', decay: 0.095, peak: 0.04, slide: 0.44 });
     },
     slash() {
-      burst({ attack: 0.003, decay: 0.085, peak: 0.14, type: 'highpass', freq: 2400, slide: 0.45 });
-      tone(1280, { type: 'sawtooth', attack: 0.003, decay: 0.09, peak: 0.045, slide: 0.42 });
-      tone(138, { type: 'triangle', at: 0.012, decay: 0.14, peak: 0.14, slide: 0.46 });
+      burst({ attack: 0.002, decay: 0.09, peak: 0.155, type: 'highpass', freq: 2500, slide: 0.42 });
+      tone(1420, { type: 'sawtooth', attack: 0.002, decay: 0.085, peak: 0.052, slide: 0.38 });
+      tone(620, { type: 'triangle', attack: 0.004, decay: 0.07, peak: 0.06, slide: 0.5 });
+      tone(132, { type: 'triangle', at: 0.01, decay: 0.15, peak: 0.155, slide: 0.44 });
     },
     heavySlash() {
-      burst({ attack: 0.003, decay: 0.12, peak: 0.16, type: 'bandpass', freq: 1900, q: 0.7, slide: 0.35 });
-      tone(1560, { type: 'sawtooth', attack: 0.003, decay: 0.13, peak: 0.055, slide: 0.38 });
-      tone(98, { type: 'triangle', at: 0.01, decay: 0.22, peak: 0.19, slide: 0.42 });
-      bell(880, 0.035, 0.02, 0.6);
+      burst({ attack: 0.002, decay: 0.14, peak: 0.18, type: 'bandpass', freq: 1950, q: 0.65, slide: 0.32 });
+      tone(1680, { type: 'sawtooth', attack: 0.002, decay: 0.14, peak: 0.065, slide: 0.34 });
+      tone(96, { type: 'triangle', at: 0.008, decay: 0.24, peak: 0.21, slide: 0.4 });
+      tone(64, { type: 'sine', at: 0.015, decay: 0.22, peak: 0.14, slide: 0.5 });
+      bell(880, 0.042, 0.02, 0.68);
     },
     cast() {
-      burst({ attack: 0.03, decay: 0.28, peak: 0.038, type: 'highpass', freq: 3200 });
+      burst({ attack: 0.03, decay: 0.28, peak: 0.042, type: 'highpass', freq: 3200 });
       for (const [f, at] of [
         [523.3, 0],
         [659.3, 0.06],
         [784, 0.12]
       ])
-        tone(f, { type: 'sine', at, attack: 0.012, decay: 0.2, peak: 0.042 });
+        tone(f, { type: 'sine', at, attack: 0.012, decay: 0.2, peak: 0.045 });
+    },
+    throwPot() {
+      tone(520, { type: 'triangle', attack: 0.003, decay: 0.055, peak: 0.065, slide: 1.7 });
+      burst({ at: 0.03, attack: 0.015, decay: 0.22, peak: 0.075, type: 'bandpass', freq: 980, q: 1.2, slide: 2.3 });
+    },
+    potBurst() {
+      burst({ attack: 0.002, decay: 0.08, peak: 0.15, type: 'highpass', freq: 3600 });
+      for (const [f, at] of [
+        [2349, 0],
+        [2960, 0.022],
+        [3729, 0.045],
+        [1975, 0.065]
+      ])
+        tone(f, { type: 'sine', at, attack: 0.002, decay: 0.09, peak: 0.042 });
     },
     fireHit() {
-      burst({ attack: 0.008, decay: 0.28, peak: 0.13, type: 'bandpass', freq: 1150, q: 0.75, slide: 2.1 });
-      for (let i = 0; i < 3; i++)
-        burst({ at: 0.03 + i * 0.055, decay: 0.05, peak: 0.08, type: 'highpass', freq: 2600 + i * 500 });
-      tone(240, { type: 'triangle', decay: 0.18, peak: 0.11, slide: 0.48 });
+      burst({ attack: 0.006, decay: 0.3, peak: 0.145, type: 'bandpass', freq: 1120, q: 0.7, slide: 2.2 });
+      for (let i = 0; i < 4; i++)
+        burst({ at: 0.025 + i * 0.05, decay: 0.055, peak: 0.085, type: 'highpass', freq: 2500 + i * 480 });
+      tone(220, { type: 'triangle', decay: 0.2, peak: 0.125, slide: 0.45 });
     },
     ringHit() {
-      burst({ attack: 0.015, decay: 0.32, peak: 0.065, type: 'bandpass', freq: 1600, q: 1.1, slide: 1.8 });
-      bell(587.3, 0.055, 0, 0.9);
-      bell(880, 0.048, 0.07, 1.1);
+      burst({ attack: 0.015, decay: 0.34, peak: 0.072, type: 'bandpass', freq: 1650, q: 1.05, slide: 1.85 });
+      bell(587.3, 0.06, 0, 0.95);
+      bell(880, 0.052, 0.07, 1.15);
+      bell(1174.7, 0.038, 0.14, 1.25);
+    },
+    buffLamp() {
+      burst({ attack: 0.02, decay: 0.32, peak: 0.055, type: 'bandpass', freq: 1350, q: 0.9, slide: 1.9 });
+      for (const [f, at] of [
+        [523.3, 0],
+        [784, 0.07],
+        [1046.5, 0.14]
+      ])
+        bell(f, 0.048, at, 1.05);
     },
     teamCharge() {
-      burst({ attack: 0.04, decay: 0.45, peak: 0.07, type: 'bandpass', freq: 850, q: 0.9, slide: 2.5 });
+      burst({ attack: 0.04, decay: 0.48, peak: 0.08, type: 'bandpass', freq: 860, q: 0.85, slide: 2.6 });
       for (const [f, at] of [
         [392, 0],
         [523.3, 0.08],
         [659.3, 0.16],
-        [784, 0.24]
+        [784, 0.24],
+        [1046.5, 0.32]
       ])
-        tone(f, { type: 'triangle', at, attack: 0.01, decay: 0.26, peak: 0.055 });
+        tone(f, { type: 'triangle', at, attack: 0.01, decay: 0.28, peak: 0.058 });
     },
     teamSlash() {
-      burst({ attack: 0.004, decay: 0.36, peak: 0.17, type: 'bandpass', freq: 1450, q: 0.65, slide: 1.9 });
-      tone(1760, { type: 'sawtooth', attack: 0.003, decay: 0.16, peak: 0.06, slide: 0.4 });
-      tone(88, { type: 'triangle', at: 0.01, decay: 0.28, peak: 0.2, slide: 0.45 });
-      bell(659.3, 0.06, 0.03, 1.4);
-      bell(987.8, 0.05, 0.1, 1.6);
-      bell(1318.5, 0.045, 0.18, 1.8);
+      burst({ attack: 0.003, decay: 0.4, peak: 0.19, type: 'bandpass', freq: 1500, q: 0.6, slide: 2.0 });
+      tone(1840, { type: 'sawtooth', attack: 0.002, decay: 0.18, peak: 0.07, slide: 0.38 });
+      tone(84, { type: 'triangle', at: 0.008, decay: 0.32, peak: 0.22, slide: 0.42 });
+      bell(659.3, 0.065, 0.03, 1.45);
+      bell(987.8, 0.055, 0.1, 1.65);
+      bell(1318.5, 0.05, 0.18, 1.85);
     },
     heal() {
-      burst({ attack: 0.02, decay: 0.26, peak: 0.03, type: 'highpass', freq: 3600 });
+      burst({ attack: 0.02, decay: 0.26, peak: 0.032, type: 'highpass', freq: 3600 });
       for (const [f, at] of [
         [523.3, 0],
         [659.3, 0.07],
         [784, 0.14],
         [1046.5, 0.22]
       ])
-        bell(f, 0.045, at, 0.95);
+        bell(f, 0.048, at, 0.95);
+    },
+    revive() {
+      burst({ attack: 0.02, decay: 0.32, peak: 0.04, type: 'highpass', freq: 3200 });
+      for (const [f, at] of [
+        [392, 0],
+        [493.9, 0.08],
+        [587.3, 0.16],
+        [784, 0.25],
+        [1046.5, 0.35]
+      ])
+        bell(f, 0.052, at, 1.2);
     },
     guard() {
-      tone(520, { type: 'triangle', attack: 0.003, decay: 0.09, peak: 0.065 });
-      tone(780, { type: 'sine', at: 0.025, attack: 0.003, decay: 0.11, peak: 0.045 });
-      tone(165, { type: 'triangle', decay: 0.11, peak: 0.08, slide: 0.75 });
+      tone(520, { type: 'triangle', attack: 0.003, decay: 0.09, peak: 0.068 });
+      tone(780, { type: 'sine', at: 0.025, attack: 0.003, decay: 0.11, peak: 0.048 });
+      tone(165, { type: 'triangle', decay: 0.11, peak: 0.085, slide: 0.75 });
+    },
+    roar() {
+      tone(138, { type: 'sawtooth', attack: 0.02, decay: 0.46, peak: 0.095, slide: 0.45 });
+      tone(92, { type: 'triangle', attack: 0.015, decay: 0.5, peak: 0.16, slide: 0.48 });
+      burst({ attack: 0.04, decay: 0.52, peak: 0.135, type: 'bandpass', freq: 580, q: 0.85, slide: 2.1 });
+    },
+    frostHit() {
+      burst({ attack: 0.004, decay: 0.16, peak: 0.095, type: 'highpass', freq: 3500 });
+      for (const [f, at] of [
+        [1975.5, 0.01],
+        [2489, 0.055],
+        [1661.2, 0.1]
+      ])
+        tone(f, { type: 'sine', at, attack: 0.003, decay: 0.13, peak: 0.038 });
     },
     enemyHit() {
-      burst({ attack: 0.004, decay: 0.14, peak: 0.14, type: 'bandpass', freq: 880, q: 0.65, slide: 0.38 });
-      tone(118, { type: 'triangle', attack: 0.004, decay: 0.19, peak: 0.17, slide: 0.44 });
+      burst({ attack: 0.003, decay: 0.15, peak: 0.15, type: 'bandpass', freq: 900, q: 0.65, slide: 0.36 });
+      tone(116, { type: 'triangle', attack: 0.003, decay: 0.2, peak: 0.18, slide: 0.42 });
     },
     coverHit() {
-      tone(640, { type: 'triangle', attack: 0.003, decay: 0.1, peak: 0.075 });
-      tone(960, { type: 'sine', at: 0.02, attack: 0.003, decay: 0.12, peak: 0.05 });
-      burst({ attack: 0.004, decay: 0.1, peak: 0.09, type: 'bandpass', freq: 1200, q: 0.8, slide: 0.5 });
-      tone(135, { type: 'triangle', decay: 0.14, peak: 0.11, slide: 0.55 });
+      tone(720, { type: 'triangle', attack: 0.002, decay: 0.11, peak: 0.082 });
+      tone(1080, { type: 'sine', at: 0.018, attack: 0.002, decay: 0.14, peak: 0.055 });
+      burst({ attack: 0.003, decay: 0.1, peak: 0.1, type: 'bandpass', freq: 1350, q: 0.85, slide: 0.5 });
+      tone(138, { type: 'triangle', decay: 0.14, peak: 0.115, slide: 0.55 });
     },
     iceBreak() {
       burst({ attack: 0.003, decay: 0.09, peak: 0.13, type: 'highpass', freq: 3400 });

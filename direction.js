@@ -146,13 +146,13 @@
       if (ep.chapter === 9 && ep.route === 'both') return true;
       return false;
     }
-    if (!ep || ep.complete || ['house', 'koharuRoom', 'lampworkshop'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
+    if (!ep || ep.complete || ['house', 'koharuRoom'].includes(s.scene) || root.OkaeriJourney?.active(s)) return false;
     // 薬の番として加わった第2話からは、当番の日は町や野道も三人で歩く。
     if (ep.chapter === 2) return true;
     if (ep.chapter === 3) return ep.step === 0 || ep.step >= 4; // 事故の間（1〜3）は一人ずつ動く。診療所と帰り道は三人一緒
     if (ep.chapter === 5) return ep.step >= 1;
     if (ep.chapter === 8) return ep.step <= 5; // 丘から広場へ帰還するまで三人一緒。自宅の夜は眠って寝室にいる
-    if (ep.chapter === 9) return ep.step <= 1 || ep.route === 'both'; // 祭りの途中で姿が見えなくなるが、both では三人で帰る
+    if (ep.chapter === 9) return ep.step === 0 || ep.route === 'both'; // スープのあとエルナの手伝いへ離れ、both では三人で帰る
     if (ep.chapter === 10) return !!root.OkaeriCore?.route(ep.route)?.koharu && ep.step >= 1;
     return false;
   }
@@ -227,6 +227,8 @@
     if (cue.lit) stage.over.lit = true;
     if (cue.breakfast !== undefined) stage.over.breakfast = cue.breakfast;
     if (cue.nina !== undefined) stage.over.nina = cue.nina;
+    if (cue.yura !== undefined) stage.over.yura = cue.yura;
+    if (cue.ritsu !== undefined) stage.over.ritsu = cue.ritsu;
     if (cue.koharu) stage.over.koharu = cue.koharu === 'seat' ? { mode: 'seat', start: t } : cue.koharu;
     if (cue.shake && !calm) stage.shake = { start: t, power: cue.shake === true ? 1 : cue.shake, ms: cue.shakeMs || 520 };
     if (cue.flash) stage.flash = { start: t, color: cue.flash === 'warm' ? '255,222,160' : '255,255,255', ms: calm ? 200 : 520 };

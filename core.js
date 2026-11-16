@@ -2,14 +2,14 @@
   'use strict';
   const skills = {
     touma: [
-      { id: 'attack', name: '斬る', cost: 0, desc: '一体に20ダメージ。', target: 'enemy' },
+      { id: 'attack', name: '峰打ち', cost: 0, desc: '剣の峰で一体に20ダメージ。', target: 'enemy' },
       { id: 'break', name: '崩し斬り', cost: 2, desc: '14ダメージ。次の一撃が1.5倍に。', target: 'enemy' },
       { id: 'protect', name: 'かばう', cost: 0, desc: 'ニナへの単体攻撃を引き受け、半減。' },
       { id: 'counter', name: '灯返し', cost: 2, desc: '防御し、攻撃を受けると24で反撃。' },
       { id: 'cheer', name: '励ます', cost: 2, desc: 'ニナを27回復。冷えも解除。' }
     ],
     nina: [
-      { id: 'attack', name: '灯杖で打つ', cost: 0, desc: '一体に14ダメージ。', target: 'enemy' },
+      { id: 'attack', name: '種火を放つ', cost: 0, desc: '小さな火球で一体に14ダメージ（氷殻は溶けない）。', target: 'enemy' },
       { id: 'fire', name: '火花', cost: 2, desc: '氷殻を溶かし、22ダメージ。', target: 'enemy' },
       { id: 'ring', name: '灯の輪', cost: 3, desc: '敵全体に14ダメージ。' },
       { id: 'heal', name: 'ぬくもり', cost: 2, desc: '味方一人のHPを45％回復。冷え解除。', target: 'ally' },
@@ -594,7 +594,7 @@
             power(c.skill === 'fire' ? 22 : c.skill === 'firepot' ? 18 : c.skill === 'break' ? 14 : id === 'touma' ? 20 : 14),
             isFire || buff,
             id,
-            isFire ? 'fire' : 'slash',
+            isFire || id === 'nina' ? 'fire' : 'slash',
             () => {
               h.buff = 0;
               if (buff) cooperation = true;
@@ -625,7 +625,7 @@
         if (c.skill === 'cheer') heal('nina', Math.round(27 * atkMul), id);
         if (c.skill === 'buff') {
           b.heroes.touma.buff = 2;
-          emit('トウマの剣に灯りが宿った。', { type: 'heal', hero: 'touma' }, id);
+          emit('トウマの剣に灯りが宿った。', { type: 'buff', hero: 'touma' }, id);
         }
         if (c.skill === 'tend') heal(c.target, Math.round(12 * magMul), id);
         if (c.skill === 'warm') heal(c.target, Math.round(b.heroes[c.target].max * 0.4 * (mods ? Math.min(1.35, 1 + (magMul - 1) * 0.4) : 1)), id);
@@ -638,7 +638,7 @@
           const t = b.heroes[c.target],
             before = t.sp;
           t.sp = Math.min(t.maxSp, t.sp + 3);
-          emit(t.name + 'のMPが ' + (t.sp - before) + ' 戻った。', { type: 'heal', hero: c.target }, id);
+          emit(t.name + 'のMPが ' + (t.sp - before) + ' 戻った。', { type: 'heal', hero: c.target, mpAmount: t.sp - before }, id);
         }
         if (c.skill === 'rouse') {
           const t = b.heroes[c.target];
@@ -756,10 +756,11 @@
         y >= 3 &&
         y <= 13 &&
         !(
-          (x >= 4 && x <= 8 && y >= 4 && y <= 5) ||
-          (x >= 16 && x <= 18 && y >= 4 && y <= 5) ||
+          (x >= 4 && x <= 8 && y <= 5) ||
+          (x >= 16 && x <= 18 && y <= 5) ||
+          (x === 3 && (y === 8 || y === 9)) ||
           (x === 10 && y === 8) ||
-          (x >= 18 && y >= 10 && y <= 11)
+          (x >= 18 && y >= 9 && y <= 11)
         )
       );
     return false;
